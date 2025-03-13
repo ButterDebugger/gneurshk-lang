@@ -76,16 +76,16 @@ pub enum Token {
     Integer(isize),
 }
 
-fn lex_word(lexer: &mut Lexer<Token>) -> Result<String, ()> {
-    Ok(lexer.slice().to_string())
+fn lex_word(lexer: &mut Lexer<Token>) -> String {
+    lexer.slice().to_string()
 }
 
-fn lex_integer(lexer: &mut Lexer<Token>) -> Result<isize, ()> {
-    Ok(lexer.slice().parse::<isize>().unwrap())
+fn lex_integer(lexer: &mut Lexer<Token>) -> isize {
+    lexer.slice().parse::<isize>().unwrap()
 }
 
-fn lex_indent(lexer: &mut Lexer<Token>) -> Result<u16, ()> {
-    Ok(lexer.slice().len() as u16)
+fn lex_indent(lexer: &mut Lexer<Token>) -> u16 {
+    lexer.slice().len() as u16
 }
 
 /// Takes a string and returns a vector of tokens
