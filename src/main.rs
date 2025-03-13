@@ -9,12 +9,14 @@ fn main() {
     //     .expect("Expected expression argument (e.g. `1 + 7 * (3 - 4) / 5`)");
 
     // Compile the input
-    compile("var e = 2\n\n");
+    compile("var green_beans = 2 + 5");
 }
 
 fn compile(input: &str) -> Vec<Stmt> {
     // Create a iterable list of tokens
     let tokens = tokenize::lex(&input);
+
+    println!("Tokens: {:#?}", tokens);
 
     // Parse the tokens to construct an AST
     let ast = match parser::parse(&mut tokens.iter().peekable().clone()) {
@@ -68,5 +70,26 @@ mod tests {
     #[test]
     fn expression_variable_declaration() {
         compile("var green_beans = 2 + 5");
+    }
+
+    #[test]
+    fn expression_constant_declaration() {
+        compile(
+            r"
+if 10 + 10:
+    var apple = 2
+
+
+
+
+
+
+
+
+    var green = 5
+
+var borg = 5
+",
+        );
     }
 }

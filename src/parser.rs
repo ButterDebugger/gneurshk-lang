@@ -45,19 +45,15 @@ pub fn parse(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Vec<Stmt>, &'stat
     let mut stmts = vec![];
 
     while let Some(&token) = tokens.peek() {
-        let statement = match token {
-            Token::Var => parse_variable_declaration(&mut tokens),
-            Token::Const => parse_variable_declaration(&mut tokens),
-            // Token::If => parse_if_statement(&mut tokens),
+        match token {
             Token::NewLine => {
-                tokens.next();
+                tokens.next(); // Consume new line token
                 continue;
             }
-            _ => {
-                println!("Unexpected token: {:#?}", token);
-                todo!()
-            }
-        };
+            _ => {}
+        }
+
+        let statement = parse_statement(&mut tokens);
 
         // Append statements or catch and throw errors
         match statement {
@@ -67,6 +63,24 @@ pub fn parse(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Vec<Stmt>, &'stat
     }
 
     Ok(stmts)
+}
+
+fn parse_statement(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'static str> {
+    let mut tokens = tokens;
+
+    let token = match tokens.peek() {
+        Some(e) => e,
+        _ => todo!("Unexpected end of tokens"),
+    };
+
+    match token {
+        Token::Var => parse_variable_declaration(&mut tokens),
+        Token::Const => parse_variable_declaration(&mut tokens),
+        Token::If => parse_if_statement(&mut tokens),
+        _ => {
+            todo!("Unexpected token: {:#?}", token)
+        }
+    }
 }
 
 fn parse_variable_declaration(
@@ -156,10 +170,60 @@ fn parse_literal(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'stati
     };
 }
 
-// fn parse_if_statement(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'static str> {
-//     match tokens.next() {
-//         Some(Token::If) => {},
-//         _ => return Err("Expected if statement".into()),
-//     };
+fn parse_if_statement(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'static str> {
+    // Consume the If token
+    match tokens.next() {
+        Some(Token::If) => {}
+        _ => return Err("Expected if statement".into()),
+    }
 
-// }
+    // Parse the condition
+    let condition = match parse_expression(tokens) {
+        Ok(e) => e,
+        _ => return Err("Expected expression".into()),
+    };
+
+    // Expect a colon after the condition
+    match tokens.next() {
+        Some(Token::Colon) => {}
+        _ => return Err("Expected colon after if condition".into()),
+    }
+
+    // Parse the body of the if statement
+    let body = parse_indented_body(tokens)?;
+
+    Ok(Stmt::IfStatement {
+        condition: Box::new(condition),
+        body,
+    })
+}
+
+fn parse_indented_body(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Vec<Stmt>, &'static str> {
+    // Consume the Indent token
+    match tokens.next() {
+        Some(Token::Indent) => {}
+        _ => return Err("Expected line indent".into()),
+    }
+
+    let mut body = vec![];
+
+    // Keep appending statements until a Dedent token is encountered
+    while let Some(&token) = tokens.peek() {
+        match token {
+            Token::NewLine => {
+                tokens.next(); // Consume the token
+                continue;
+            }
+            Token::Dedent => {
+                tokens.next(); // Consume the token
+                break; // End of the block
+            }
+            _ => {}
+        }
+
+        let statement = parse_statement(tokens)?;
+        body.push(statement);
+    }
+
+    Ok(body)
+}
