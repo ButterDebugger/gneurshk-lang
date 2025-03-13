@@ -60,10 +60,38 @@ struct Point:
     x: f32
     y: f32
 
-    func __init__(x: f32, y: f32):
-        this.x = x
-        this.y = y
+    func __init__(self, x: f32, y: f32):
+        self.x = x
+        self.y = y
 
-    func add(other: Point) -> Point:
-        return Point(this.x + other.x, this.y + other.y)
+    func add(self, other: Point) -> Point:
+        return Point(self.x + other.x, self.y + other.y)
+```
+
+## Imports
+
+```julia
+
+# Importing specific variables
+import sin, cos, sqrt as square_root from math
+
+println(sin(0.5))
+println(cos(0.5))
+println(square_root(2))
+
+# Importing modules
+import os
+import time as t
+import * as rng from random
+
+println(os.cwd())
+println(t.now())
+println(rng.next_int())
+
+# Importing everything from a module
+import * from math
+
+println(pi)
+println(factorial(6))
+
 ```
