@@ -89,13 +89,13 @@ fn parse_variable_declaration(
     let mutable = match tokens.next() {
         Some(Token::Var) => false,
         Some(Token::Const) => true,
-        _ => return Err("Expected variable declaration".into()),
+        _ => return Err("Expected variable declaration"),
     };
 
     // Read variable name
     let name = match tokens.next() {
         Some(Token::Word(name)) => name,
-        _ => return Err("Expected variable name".into()),
+        _ => return Err("Expected variable name"),
     };
 
     let has_value = match tokens.peek() {
@@ -108,7 +108,7 @@ fn parse_variable_declaration(
 
         let value = match parse_expression(tokens) {
             Ok(e) => e,
-            _ => return Err("Expected expression".into()),
+            _ => return Err("Expected expression"),
         };
 
         return Ok(Stmt::Declaration {
@@ -128,7 +128,7 @@ fn parse_variable_declaration(
 fn parse_expression(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'static str> {
     let left = match parse_literal(tokens) {
         Ok(e) => e,
-        _ => return Err("Expected left expression".into()),
+        _ => return Err("Expected left expression"),
     };
 
     let operator: Option<Operator> = match tokens.peek() {
@@ -148,7 +148,7 @@ fn parse_expression(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'st
 
     let right = match parse_literal(tokens) {
         Ok(e) => e,
-        _ => return Err("Expected right expression".into()),
+        _ => return Err("Expected right expression"),
     };
 
     Ok(Stmt::BinaryExpression {
@@ -161,12 +161,12 @@ fn parse_expression(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'st
 fn parse_literal(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'static str> {
     let token = match tokens.next() {
         Some(x) => x,
-        _ => return Err("Expected literal".into()),
+        _ => return Err("Expected literal"),
     };
 
     return match token {
         Token::Integer(val) => Ok(Stmt::Literal { value: val.clone() }),
-        _ => Err("Expected literal".into()),
+        _ => Err("Expected literal"),
     };
 }
 
@@ -174,19 +174,19 @@ fn parse_if_statement(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Stmt, &'
     // Consume the If token
     match tokens.next() {
         Some(Token::If) => {}
-        _ => return Err("Expected if statement".into()),
+        _ => return Err("Expected if statement"),
     }
 
     // Parse the condition
     let condition = match parse_expression(tokens) {
         Ok(e) => e,
-        _ => return Err("Expected expression".into()),
+        _ => return Err("Expected expression"),
     };
 
     // Expect a colon after the condition
     match tokens.next() {
         Some(Token::Colon) => {}
-        _ => return Err("Expected colon after if condition".into()),
+        _ => return Err("Expected colon after if condition"),
     }
 
     // Parse the body of the if statement
@@ -202,7 +202,7 @@ fn parse_indented_body(tokens: &mut Peekable<Iter<'_, Token>>) -> Result<Vec<Stm
     // Consume the Indent token
     match tokens.next() {
         Some(Token::Indent) => {}
-        _ => return Err("Expected line indent".into()),
+        _ => return Err("Expected line indent"),
     }
 
     let mut body = vec![];
