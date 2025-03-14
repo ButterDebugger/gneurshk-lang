@@ -1,4 +1,4 @@
-use crate::tokenize::Token;
+use crate::tokens::Token;
 use std::iter::Peekable;
 use std::slice::Iter;
 

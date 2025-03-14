@@ -1,6 +1,7 @@
 use parser::Stmt;
+mod lexer;
 mod parser;
-mod tokenize;
+mod tokens;
 
 fn main() {
     // Read the input from the command line
@@ -14,7 +15,7 @@ fn main() {
 
 fn compile(input: &str) -> Vec<Stmt> {
     // Create a iterable list of tokens
-    let tokens = tokenize::lex(&input);
+    let tokens = lexer::lex(&input);
 
     println!("Tokens: {:#?}", tokens);
 
@@ -73,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn expression_constant_declaration() {
+    fn large_indented_block() {
         compile(
             r"
 if 10 + 10:
