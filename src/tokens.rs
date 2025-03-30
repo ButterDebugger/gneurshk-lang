@@ -33,6 +33,8 @@ pub enum Token {
     Colon,
     #[token(",")]
     Comma,
+
+    // Math operators
     #[token("+")]
     Plus,
     #[token("-")]
@@ -41,6 +43,22 @@ pub enum Token {
     Multiply,
     #[token("/")]
     Divide,
+    #[token("%")]
+    Modulus,
+
+    // Bitwise operators
+    #[token("|")]
+    BitwiseOr,
+    #[token("&")]
+    BitwiseAnd,
+    #[token("^")]
+    BitwiseXor,
+    #[token("<<")]
+    LeftShift,
+    #[token(">>")]
+    RightShift,
+    #[token("~")]
+    BitwiseNot,
 
     #[token(">")]
     GreaterThan,

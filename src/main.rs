@@ -10,7 +10,7 @@ fn main() {
     //     .expect("Expected expression argument (e.g. `1 + 7 * (3 - 4) / 5`)");
 
     // Compile the input
-    compile("var green_beans = 2 + 5");
+    compile("1 + 7 * (3 - 4) / 5");
 }
 
 fn compile(input: &str) -> Vec<Stmt> {
@@ -21,12 +21,11 @@ fn compile(input: &str) -> Vec<Stmt> {
 
     // Parse the tokens to construct an AST
     let ast = match parser::parse(&mut tokens.iter().peekable().clone()) {
-        Ok(result) => {
-            println!("AST {:#?}", result);
-            result
-        }
+        Ok(result) => result,
         Err(e) => panic!("Parse error: {}", e),
     };
+
+    println!("AST {:#?}", ast);
 
     ast
 }
@@ -92,5 +91,10 @@ if 10 + 10:
 var borg = 5
 ",
         );
+    }
+
+    #[test]
+    fn basic_expression() {
+        compile("1 + 7 * (3 - 4) / 5");
     }
 }
