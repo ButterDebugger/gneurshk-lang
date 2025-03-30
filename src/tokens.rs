@@ -74,6 +74,8 @@ pub enum Token {
     Func,
     #[token("struct")]
     Struct,
+    #[token("type")]
+    Type,
 
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", word)]
     Word(String),

@@ -37,6 +37,10 @@ pub enum Stmt {
     Literal {
         value: isize,
     },
+    // TypeAlias {
+    //     name: String,
+    //     value: Box<Stmt>,
+    // },
 }
 
 /// Parses statements that appear directly after an new line and or indentation
