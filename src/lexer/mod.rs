@@ -1,5 +1,6 @@
 use logos::Logos;
-use crate::tokens::Token;
+use tokens::Token;
+pub mod tokens;
 
 /// Takes a string and returns a vector of tokens
 /// # Panics
