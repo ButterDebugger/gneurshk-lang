@@ -2,9 +2,11 @@ use crate::lexer::tokens::Token;
 use crate::parser::expressions::parse_expression;
 use crate::parser::ifs::parse_if_statement;
 use crate::parser::variables::parse_variable_declaration;
+use funcs::parse_func_declaration;
 use std::iter::Peekable;
 use std::slice::Iter;
 mod expressions;
+mod funcs;
 mod ifs;
 mod variables;
 
@@ -42,10 +44,17 @@ pub enum Stmt {
         condition: Box<Stmt>,
         body: Vec<Stmt>,
     },
-    // FunctionDeclaration {
-    //     name: String,
-    //     body: Vec<Stmt>,
-    // },
+    FunctionDeclaration {
+        name: String,
+        params: Vec<Stmt>,
+        return_type: String,
+        body: Vec<Stmt>,
+    },
+    FunctionParam {
+        name: String,
+        type_name: String,
+        default_value: Option<Box<Stmt>>,
+    },
     // FunctionCall {},
     BinaryExpression {
         left: Box<Stmt>,
@@ -101,6 +110,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         Token::If => parse_if_statement(&mut tokens),
         Token::Integer(_) => parse_expression(&mut tokens),
         Token::OpenParen => parse_expression(&mut tokens),
+        Token::Func => parse_func_declaration(&mut tokens),
         _ => {
             todo!("Unexpected token: {:#?}", token)
         }
