@@ -51,7 +51,7 @@ mod tests {
 
     /// Helper function for testing the parse_variable_declaration function
     fn lex_then_parse(input: &str) -> Stmt {
-        let tokens = lexer::lex(input);
+        let tokens = lexer::lex(input).expect("Failed to lex");
 
         match parse_variable_declaration(&mut tokens.iter().peekable().clone()) {
             Ok(result) => result,

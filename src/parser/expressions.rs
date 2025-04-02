@@ -1,4 +1,4 @@
-use super::{parse_literal, Operator, StatementResult, Stmt, TokenStream};
+use super::{parse_identifier, parse_literal, Operator, StatementResult, Stmt, TokenStream};
 use crate::lexer::tokens::Token;
 
 /// Parses a binary expression based on operator priority
@@ -96,7 +96,8 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
             }
         }
         Some(Token::Integer(_)) => parse_literal(tokens),
-        // TODO: handle identifiers and function calls
+        Some(Token::Word(_)) => parse_identifier(tokens),
+        // TODO: handle function calls
         Some(_) => Err("Unexpected token in expression"),
         None => Err("Unexpected end of tokens"),
     }
@@ -105,15 +106,45 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer::lex;
+    use crate::lexer;
     use crate::parser::Operator;
     use crate::parser::Stmt::{BinaryExpression, Literal};
 
+    /// Helper function for testing the parse_expression function
+    fn lex_then_parse(input: &str) -> Stmt {
+        let tokens = lexer::lex(input).expect("Failed to lex");
+
+        match parse_expression(&mut tokens.iter().peekable().clone()) {
+            Ok(result) => result,
+            Err(e) => panic!("Parsing error: {}", e),
+        }
+    }
+
+    #[test]
+    #[should_panic]
+    fn repeated_identifiers() {
+        lex_then_parse("chicken chicken chicken chicken chicken chicken chicken chicken");
+    }
+
+    #[test]
+    #[should_panic]
+    fn repeated_numbers() {
+        lex_then_parse("1 2 3 4 5 6 7 8 9 10");
+    }
+
+    #[test]
+    fn single_identifier() {
+        lex_then_parse("chicken");
+    }
+
+    #[test]
+    fn single_number() {
+        lex_then_parse("42");
+    }
+
     #[test]
     fn basic_expression() {
-        let tokens = lex("1 + 7 * (3 - 4) / 5");
-
-        let stmt = parse_expression(&mut tokens.iter().peekable()).unwrap();
+        let stmt = lex_then_parse("1 + 7 * (3 - 4) / 5");
 
         match stmt {
             // TODO: make this more readable, maybe with assert matches instead

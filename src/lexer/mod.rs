@@ -5,7 +5,7 @@ pub mod tokens;
 /// Takes a string and returns a vector of tokens
 /// # Panics
 /// Panics if there are any lexing errors
-pub fn lex(input: &str) -> Vec<Token> {
+pub fn lex(input: &str) -> Result<Vec<Token>, String> {
     // Create a lexer instance from the input
     let input = input.to_string() + "\n";
     let lexer = Token::lexer(&input);
@@ -61,13 +61,11 @@ pub fn lex(input: &str) -> Vec<Token> {
                 // Otherwise, add the token
                 tokens.push(token)
             }
-            Err(e) => {
-                panic!("lexer error at {:?}: {:?}", span, e);
-            }
+            Err(e) => return Err(format!("Lexing error at {span:?} {e:#?}")),
         }
     }
 
-    tokens
+    Ok(tokens)
 }
 
 #[cfg(test)]
@@ -77,7 +75,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn unknown_token() {
-        lex("`");
+        lex("`").expect("Failed to lex");
     }
 
     #[test]
@@ -91,7 +89,8 @@ if true:
     4
 else:
     if true:
-        5"#);
+        5"#)
+        .expect("Failed to lex");
 
         assert_eq!(
             tokens,

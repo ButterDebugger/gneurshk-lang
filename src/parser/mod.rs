@@ -61,6 +61,9 @@ pub enum Stmt {
         right: Box<Stmt>,
         operator: Operator,
     },
+    Identifier {
+        name: String,
+    },
     Literal {
         value: isize,
     },
@@ -101,7 +104,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
 
     let token = match tokens.peek() {
         Some(e) => e,
-        _ => todo!("Unexpected end of tokens"),
+        _ => return Err("Unexpected end of tokens"),
     };
 
     match token {
@@ -110,10 +113,9 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         Token::If => parse_if_statement(&mut tokens),
         Token::Integer(_) => parse_expression(&mut tokens),
         Token::OpenParen => parse_expression(&mut tokens),
+        Token::Word(_) => parse_expression(&mut tokens),
         Token::Func => parse_func_declaration(&mut tokens),
-        _ => {
-            todo!("Unexpected token: {:#?}", token)
-        }
+        _ => return Err("Unexpected token"),
     }
 }
 
@@ -121,6 +123,13 @@ fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
     return match tokens.next() {
         Some(Token::Integer(val)) => Ok(Stmt::Literal { value: val.clone() }),
         _ => Err("Expected literal"),
+    };
+}
+
+fn parse_identifier(tokens: &mut TokenStream) -> StatementResult {
+    return match tokens.next() {
+        Some(Token::Word(val)) => Ok(Stmt::Identifier { name: val.clone() }),
+        _ => Err("Expected identifier"),
     };
 }
 
@@ -161,7 +170,7 @@ mod tests {
 
     /// Helper function for testing the parse function
     fn lex_then_parse(input: &str) -> Vec<Stmt> {
-        let tokens = lexer::lex(input);
+        let tokens = lexer::lex(input).expect("Failed to lex");
 
         match parse(&mut tokens.iter().peekable().clone()) {
             Ok(result) => result,

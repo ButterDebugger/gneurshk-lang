@@ -46,7 +46,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                 // Read the parameter type
                 let type_name = match tokens.next() {
                     Some(Token::Word(name)) => name,
-                    _ => return Err("Expected the parameter type name"),
+                    _ => return Err("Expected a parameter type"),
                 };
 
                 // Check for a default value
@@ -91,7 +91,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
             }
             _ => return Err("Expected the return type"),
         },
-        _ => return Err("Unexpected token"),
+        _ => return Err("Missing a colon after the function name or a return type"),
     };
 
     // Parse the body of the function
@@ -112,7 +112,7 @@ mod tests {
 
     /// Helper function for testing the parse_func_declaration function
     fn lex_then_parse(input: &str) -> Stmt {
-        let tokens = lexer::lex(input);
+        let tokens = lexer::lex(input).expect("Failed to lex");
 
         match parse_func_declaration(&mut tokens.iter().peekable().clone()) {
             Ok(result) => result,
