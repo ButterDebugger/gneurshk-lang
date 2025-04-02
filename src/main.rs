@@ -69,11 +69,6 @@ fn check_cmd(path: String) -> notify::Result<()> {
             }
             Err(error) => println!("❌ Error: {error:?}"),
         }
-
-        // println!(
-        //     "{} Process has finished. Restarting on file change...",
-        //     "Watcher".bright_green()
-        // );
     }
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default().with_compare_contents(true))?;
@@ -85,9 +80,39 @@ fn check_cmd(path: String) -> notify::Result<()> {
     check(path);
 
     for res in rx {
+        // Clear the screen
+        clearscreen::clear().unwrap();
+
         match res {
-            Ok(event) => check(path),
-            Err(error) => println!("❔ Error: {error:?}"),
+            Ok(event) => {
+                // Print a restarting message
+                if let Some(path) = event.paths.get(0) {
+                    println!(
+                        "{} Restarting! File change detected: \"{}\"",
+                        "Watcher".bright_green(),
+                        path.display()
+                    );
+                } else {
+                    println!(
+                        "{} Restarting! File change detected",
+                        "Watcher".bright_green()
+                    );
+                }
+
+                // Restart the process
+                check(path);
+
+                // Once the process has finished, print a finishing message
+                println!(
+                    "{} Process has finished. Restarting on file change...",
+                    "Watcher".bright_green()
+                );
+            }
+            Err(error) => println!(
+                "{} Encountered an error: {}",
+                "Watcher".bright_green(),
+                error
+            ),
         }
     }
 
