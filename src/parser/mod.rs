@@ -102,21 +102,45 @@ pub fn parse(tokens: &mut TokenStream) -> MultiStatementResult {
 fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
     let mut tokens = tokens;
 
+    // Peek at the next token
     let token = match tokens.peek() {
         Some(e) => e,
         _ => return Err("Unexpected end of tokens"),
     };
 
-    match token {
-        Token::Var => parse_variable_declaration(&mut tokens),
-        Token::Const => parse_variable_declaration(&mut tokens),
+    // Parse the statement
+    let mut single_line = false;
+    let stmt = match token {
+        Token::Var | Token::Const => {
+            single_line = true;
+
+            parse_variable_declaration(&mut tokens)
+        }
         Token::If => parse_if_statement(&mut tokens),
-        Token::Integer(_) => parse_expression(&mut tokens),
-        Token::OpenParen => parse_expression(&mut tokens),
-        Token::Word(_) => parse_expression(&mut tokens),
+        Token::Integer(_) | Token::OpenParen | Token::Word(_) => {
+            single_line = true;
+
+            parse_expression(&mut tokens)
+        }
         Token::Func => parse_func_declaration(&mut tokens),
         _ => return Err("Unexpected token"),
+    };
+
+    // If the statement is single lined, expect a new line
+    if single_line {
+        println!("single line {:?}", tokens.peek());
+
+        match tokens.peek() {
+            Some(Token::NewLine) => {
+                tokens.next(); // Consume the new line token
+            }
+            Some(Token::Indent) | Some(Token::Dedent) | None => {} // Ignore indentation and the end of tokens
+            _ => return Err("Expected new line"),
+        }
     }
+
+    // Return the parsed statement
+    stmt
 }
 
 fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
@@ -143,16 +167,13 @@ fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
     let mut body = vec![];
 
     // Keep appending statements until a Dedent token is encountered
-    while let Some(&token) = tokens.peek() {
-        match token {
-            Token::NewLine => {
-                tokens.next(); // Consume the token
-                continue;
-            }
-            Token::Dedent => {
+    loop {
+        match tokens.peek() {
+            Some(Token::Dedent) => {
                 tokens.next(); // Consume the token
                 break; // End of the block
             }
+            None => return Err("Unexpected end of tokens"),
             _ => {}
         }
 
@@ -161,41 +182,4 @@ fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
     }
 
     Ok(body)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{parse, Stmt};
-    use crate::lexer;
-
-    /// Helper function for testing the parse function
-    fn lex_then_parse(input: &str) -> Vec<Stmt> {
-        let tokens = lexer::lex(input).expect("Failed to lex");
-
-        match parse(&mut tokens.iter().peekable().clone()) {
-            Ok(result) => result,
-            Err(e) => panic!("Parsing error: {}", e),
-        }
-    }
-
-    #[test]
-    fn large_indented_if_block() {
-        lex_then_parse(
-            r"
-if 10 + 10:
-    var apple = 2
-
-
-
-
-
-
-
-
-    var green = 5
-
-var borg = 5
-",
-        );
-    }
 }

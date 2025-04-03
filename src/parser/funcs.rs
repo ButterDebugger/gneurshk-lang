@@ -107,14 +107,16 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_func_declaration;
-    use crate::{lexer, parser::Stmt};
+    use crate::{
+        lexer,
+        parser::{parse, Stmt},
+    };
 
     /// Helper function for testing the parse_func_declaration function
-    fn lex_then_parse(input: &str) -> Stmt {
+    fn lex_then_parse(input: &str) -> Vec<Stmt> {
         let tokens = lexer::lex(input).expect("Failed to lex");
 
-        match parse_func_declaration(&mut tokens.iter().peekable().clone()) {
+        match parse(&mut tokens.iter().peekable().clone()) {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {}", e),
         }

@@ -3,7 +3,9 @@ use crate::lexer::tokens::Token;
 
 /// Parses a binary expression based on operator priority
 pub fn parse_expression(tokens: &mut TokenStream) -> StatementResult {
-    parse_comparison(tokens)
+    let stmt = parse_comparison(tokens);
+
+    stmt
 }
 
 /// Parses comparison operators (lowest priority)
@@ -107,14 +109,16 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
 mod tests {
     use super::*;
     use crate::lexer;
-    use crate::parser::Operator;
     use crate::parser::Stmt::{BinaryExpression, Literal};
+    use crate::parser::{parse, Operator};
 
     /// Helper function for testing the parse_expression function
-    fn lex_then_parse(input: &str) -> Stmt {
+    fn lex_then_parse(input: &str) -> Vec<Stmt> {
         let tokens = lexer::lex(input).expect("Failed to lex");
 
-        match parse_expression(&mut tokens.iter().peekable().clone()) {
+        println!("tokens {:?}", tokens);
+
+        match parse(&mut tokens.iter().peekable().clone()) {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {}", e),
         }
@@ -146,33 +150,54 @@ mod tests {
     fn basic_expression() {
         let stmt = lex_then_parse("1 + 7 * (3 - 4) / 5");
 
-        match stmt {
-            // TODO: make this more readable, maybe with assert matches instead
-            BinaryExpression {
-                left,
-                right,
-                operator,
-            } => {
-                assert_eq!(left, Box::new(Literal { value: 1 }));
-                assert_eq!(
-                    right,
-                    Box::new(BinaryExpression {
-                        left: Box::new(BinaryExpression {
-                            left: Box::new(Literal { value: 7 }),
-                            right: Box::new(BinaryExpression {
-                                left: Box::new(Literal { value: 3 }),
-                                right: Box::new(Literal { value: 4 }),
-                                operator: Operator::Subtract,
-                            }),
-                            operator: Operator::Multiply,
+        assert_eq!(
+            stmt,
+            vec![BinaryExpression {
+                left: Box::new(Literal { value: 1 }),
+                right: Box::new(BinaryExpression {
+                    left: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 7 }),
+                        right: Box::new(BinaryExpression {
+                            left: Box::new(Literal { value: 3 }),
+                            right: Box::new(Literal { value: 4 }),
+                            operator: Operator::Subtract,
                         }),
-                        right: Box::new(Literal { value: 5 }),
-                        operator: Operator::Divide,
-                    })
-                );
-                assert_eq!(operator, Operator::Add);
-            }
-            _ => unreachable!(),
-        };
+                        operator: Operator::Multiply,
+                    }),
+                    right: Box::new(Literal { value: 5 }),
+                    operator: Operator::Divide,
+                }),
+                operator: Operator::Add
+            }]
+        )
+
+        // match stmt {
+        //     // TODO: make this more readable, maybe with assert matches instead
+        //     BinaryExpression {
+        //         left,
+        //         right,
+        //         operator,
+        //     } => {
+        //         assert_eq!(left, Box::new(Literal { value: 1 }));
+        //         assert_eq!(
+        //             right,
+        //             Box::new(BinaryExpression {
+        //                 left: Box::new(BinaryExpression {
+        //                     left: Box::new(Literal { value: 7 }),
+        //                     right: Box::new(BinaryExpression {
+        //                         left: Box::new(Literal { value: 3 }),
+        //                         right: Box::new(Literal { value: 4 }),
+        //                         operator: Operator::Subtract,
+        //                     }),
+        //                     operator: Operator::Multiply,
+        //                 }),
+        //                 right: Box::new(Literal { value: 5 }),
+        //                 operator: Operator::Divide,
+        //             })
+        //         );
+        //         assert_eq!(operator, Operator::Add);
+        //     }
+        //     _ => unreachable!(),
+        // };
     }
 }
