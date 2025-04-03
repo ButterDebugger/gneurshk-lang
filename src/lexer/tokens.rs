@@ -3,7 +3,7 @@ use logos::{Lexer, Logos};
 #[derive(Logos, Debug, PartialEq, Eq, Hash, Clone)]
 #[logos(skip r"[ \r\f]+")]
 pub enum Token {
-    #[regex(r"\n[ \t]*", indent)]
+    #[regex(r"\n+[ \t]*", spacing)]
     Whitespace(usize),
 
     // Inserted tokens based on whitespace
@@ -111,8 +111,8 @@ fn integer(lexer: &mut Lexer<Token>) -> isize {
     lexer.slice().parse::<isize>().unwrap()
 }
 
-fn indent(lexer: &mut Lexer<Token>) -> usize {
-    lexer.slice()[1..].len()
+fn spacing(lexer: &mut Lexer<Token>) -> usize {
+    lexer.slice().trim_start_matches('\n').len()
 }
 
 fn boolean(lexer: &mut Lexer<Token>) -> bool {

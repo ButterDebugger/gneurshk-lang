@@ -79,7 +79,7 @@ mod tests {
     }
 
     #[test]
-    fn indentation() {
+    fn indentation_no_gaps() {
         let tokens = lex(r#"
 if true:
     1
@@ -121,6 +121,112 @@ else:
                 Token::Indent,
                 Token::Integer(5,),
                 Token::Dedent,
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_single_gap() {
+        let tokens = lex(r#"
+if true:
+    1
+
+    2
+"#)
+        .expect("Failed to lex");
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_double_gap() {
+        let tokens = lex(r#"
+if true:
+    1
+
+
+    2
+"#)
+        .expect("Failed to lex");
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_single_starting_gap() {
+        let tokens = lex(r#"
+if true:
+
+    1
+    2
+"#)
+        .expect("Failed to lex");
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_double_starting_gap() {
+        let tokens = lex(r#"
+if true:
+
+
+    1
+    2
+"#)
+        .expect("Failed to lex");
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
                 Token::Dedent,
             ]
         );
