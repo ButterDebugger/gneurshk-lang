@@ -14,11 +14,11 @@ fn parse_comparison(tokens: &mut TokenStream) -> StatementResult {
 
     // Continuously parse the given operators on this priority level until there are no more
     while let Some(operator) = match tokens.peek() {
-        Some(Token::GreaterThan) => Some(Operator::GreaterThan),
-        Some(Token::GreaterThanEqual) => Some(Operator::GreaterThanEqual),
-        Some(Token::Equal) => Some(Operator::Equal), // Assuming Token::Equal is for '==' comparison
-        Some(Token::LessThanEqual) => Some(Operator::LessThanEqual),
-        Some(Token::LessThan) => Some(Operator::LessThan),
+        Some((Token::GreaterThan, _)) => Some(Operator::GreaterThan),
+        Some((Token::GreaterThanEqual, _)) => Some(Operator::GreaterThanEqual),
+        Some((Token::Equal, _)) => Some(Operator::Equal), // Assuming Token::Equal is for '==' comparison
+        Some((Token::LessThanEqual, _)) => Some(Operator::LessThanEqual),
+        Some((Token::LessThan, _)) => Some(Operator::LessThan),
         _ => None, // Stop parsing this level
     } {
         tokens.next(); // Consume the operator token
@@ -41,8 +41,8 @@ fn parse_addition_subtraction(tokens: &mut TokenStream) -> StatementResult {
 
     // Continuously parse the given operators on this priority level until there are no more
     while let Some(operator) = match tokens.peek() {
-        Some(Token::Plus) => Some(Operator::Add),
-        Some(Token::Minus) => Some(Operator::Subtract),
+        Some((Token::Plus, _)) => Some(Operator::Add),
+        Some((Token::Minus, _)) => Some(Operator::Subtract),
         _ => None, // Stop parsing this level
     } {
         tokens.next(); // Consume the operator token
@@ -64,9 +64,9 @@ fn parse_multiplication_division(tokens: &mut TokenStream) -> StatementResult {
 
     // Continuously parse the given operators on this priority level until there are no more
     while let Some(operator) = match tokens.peek() {
-        Some(Token::Multiply) => Some(Operator::Multiply),
-        Some(Token::Divide) => Some(Operator::Divide),
-        Some(Token::Modulus) => Some(Operator::Modulus),
+        Some((Token::Multiply, _)) => Some(Operator::Multiply),
+        Some((Token::Divide, _)) => Some(Operator::Divide),
+        Some((Token::Modulus, _)) => Some(Operator::Modulus),
         _ => None, // Stop parsing this level
     } {
         tokens.next(); // Consume the operator token
@@ -85,7 +85,7 @@ fn parse_multiplication_division(tokens: &mut TokenStream) -> StatementResult {
 /// Parses literals and parenthesized expressions (highest priority)
 fn parse_term(tokens: &mut TokenStream) -> StatementResult {
     match tokens.peek() {
-        Some(Token::OpenParen) => {
+        Some((Token::OpenParen, _)) => {
             tokens.next(); // Consume the '(' token
 
             // Recursively parse the inner expression
@@ -93,12 +93,12 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
 
             // Consume the ')' token and return the expression
             match tokens.next() {
-                Some(Token::CloseParen) => Ok(expression),
+                Some((Token::CloseParen, _)) => Ok(expression),
                 _ => Err("Expected a closing parenthesis"),
             }
         }
-        Some(Token::Integer(_)) => parse_literal(tokens),
-        Some(Token::Word(_)) => parse_identifier(tokens),
+        Some((Token::Integer(_), _)) => parse_literal(tokens),
+        Some((Token::Word(_), _)) => parse_identifier(tokens),
         // TODO: handle function calls
         Some(_) => Err("Unexpected token in expression"),
         None => Err("Unexpected end of tokens"),
@@ -113,12 +113,12 @@ mod tests {
     use crate::parser::{parse, Operator};
 
     /// Helper function for testing the parse_expression function
-    fn lex_then_parse(input: &str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
         let tokens = lexer::lex(input).expect("Failed to lex");
 
         println!("tokens {:?}", tokens);
 
-        match parse(&mut tokens.iter().peekable().clone()) {
+        match parse(&mut tokens.clone()) {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {}", e),
         }

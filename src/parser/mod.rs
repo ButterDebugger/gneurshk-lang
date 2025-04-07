@@ -1,10 +1,10 @@
 use crate::lexer::tokens::Token;
+use crate::lexer::Scanner;
 use crate::parser::expressions::parse_expression;
 use crate::parser::ifs::parse_if_statement;
 use crate::parser::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
 use std::iter::Peekable;
-use std::slice::Iter;
 mod expressions;
 mod funcs;
 mod ifs;
@@ -15,7 +15,7 @@ pub type StatementResult = Result<Stmt, &'static str>;
 /// An alias for the result of parsing multiple statements
 pub type MultiStatementResult = Result<Vec<Stmt>, &'static str>;
 /// An alias for a peekable iterator of tokens
-pub type TokenStream<'a> = Peekable<Iter<'a, Token>>;
+pub type TokenStream<'a> = Peekable<Scanner<'static>>;
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq)]
@@ -78,7 +78,7 @@ pub fn parse(tokens: &mut TokenStream) -> MultiStatementResult {
     let mut tokens = tokens;
     let mut stmts = vec![];
 
-    while let Some(&token) = tokens.peek() {
+    while let Some((token, _)) = tokens.peek() {
         match token {
             Token::NewLine => {
                 tokens.next(); // Consume new line token
@@ -103,7 +103,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
     let mut tokens = tokens;
 
     // Peek at the next token
-    let token = match tokens.peek() {
+    let (token, _) = match tokens.peek() {
         Some(e) => e,
         _ => return Err("Unexpected end of tokens"),
     };
@@ -128,13 +128,11 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
 
     // If the statement is single lined, expect a new line
     if single_line {
-        println!("single line {:?}", tokens.peek());
-
         match tokens.peek() {
-            Some(Token::NewLine) => {
+            Some((Token::NewLine, _)) => {
                 tokens.next(); // Consume the new line token
             }
-            Some(Token::Indent) | Some(Token::Dedent) | None => {} // Ignore indentation and the end of tokens
+            Some((Token::Indent, _)) | Some((Token::Dedent, _)) | None => {} // Ignore indentation and the end of tokens
             _ => return Err("Expected new line"),
         }
     }
@@ -145,14 +143,14 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
 
 fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
     return match tokens.next() {
-        Some(Token::Integer(val)) => Ok(Stmt::Literal { value: val.clone() }),
+        Some((Token::Integer(val), _)) => Ok(Stmt::Literal { value: val.clone() }),
         _ => Err("Expected literal"),
     };
 }
 
 fn parse_identifier(tokens: &mut TokenStream) -> StatementResult {
     return match tokens.next() {
-        Some(Token::Word(val)) => Ok(Stmt::Identifier { name: val.clone() }),
+        Some((Token::Word(val), _)) => Ok(Stmt::Identifier { name: val.clone() }),
         _ => Err("Expected identifier"),
     };
 }
@@ -160,7 +158,7 @@ fn parse_identifier(tokens: &mut TokenStream) -> StatementResult {
 fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
     // Consume the Indent token
     match tokens.next() {
-        Some(Token::Indent) => {}
+        Some((Token::Indent, _)) => {}
         _ => return Err("Expected line indent"),
     }
 
@@ -169,7 +167,7 @@ fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
     // Keep appending statements until a Dedent token is encountered
     loop {
         match tokens.peek() {
-            Some(Token::Dedent) => {
+            Some((Token::Dedent, _)) => {
                 tokens.next(); // Consume the token
                 break; // End of the block
             }

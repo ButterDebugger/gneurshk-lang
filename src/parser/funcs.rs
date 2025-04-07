@@ -6,52 +6,52 @@ use crate::lexer::tokens::Token;
 pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
     // Consume the Func token
     match tokens.next() {
-        Some(Token::Func) => {}
+        Some((Token::Func, _)) => {}
         _ => return Err("Expected the 'func' keyword"),
     }
 
     // Read the function name
     let name = match tokens.next() {
-        Some(Token::Word(name)) => name,
+        Some((Token::Word(name), _)) => name,
         _ => return Err("Expected the function name"),
     };
 
     // Read the parameters
-    match tokens.next() {
-        Some(Token::OpenParen) => {}
+    match tokens.next().clone() {
+        Some((Token::OpenParen, _)) => {}
         _ => return Err("Expected an opening parenthesis"),
     }
 
     let mut parameters = vec![];
 
-    while let Some(&token) = tokens.peek() {
-        match token {
-            Token::NewLine | Token::Indent | Token::Dedent => {
+    loop {
+        match tokens.peek().cloned() {
+            Some((Token::NewLine | Token::Indent | Token::Dedent, _)) => {
                 tokens.next(); // Consume the token
                 continue; // Skip to the next token
             }
-            Token::CloseParen => {
+            Some((Token::CloseParen, _)) => {
                 tokens.next(); // Consume the token
                 break; // Stop reading parameters
             }
-            Token::Word(name) => {
+            Some((Token::Word(name), _)) => {
                 tokens.next(); // Consume the token
 
                 // Consume the Colon token
-                match tokens.next() {
-                    Some(Token::Colon) => {}
+                match tokens.next().clone() {
+                    Some((Token::Colon, _)) => {}
                     _ => return Err("Expected a colon after the parameter name"),
                 }
 
                 // Read the parameter type
-                let type_name = match tokens.next() {
-                    Some(Token::Word(name)) => name,
+                let type_name = match tokens.next().clone() {
+                    Some((Token::Word(name), _)) => name,
                     _ => return Err("Expected a parameter type"),
                 };
 
                 // Check for a default value
-                let default_value = match tokens.peek() {
-                    Some(Token::Equal) => {
+                let default_value = match tokens.peek().cloned() {
+                    Some((Token::Equal, _)) => {
                         tokens.next(); // Consume the token
 
                         match parse_expression(tokens) {
@@ -74,15 +74,15 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
     }
 
     // Parse the return type
-    let return_type = match tokens.next() {
+    let return_type = match tokens.next().clone() {
         // No return type specified, default to void
-        Some(Token::Colon) => "void".to_string(),
+        Some((Token::Colon, _)) => "void".to_string(),
         // Return type specified
-        Some(Token::Arrow) => match tokens.next() {
-            Some(Token::Word(name)) => {
+        Some((Token::Arrow, _)) => match tokens.next().clone() {
+            Some((Token::Word(name), _)) => {
                 // Expect a colon after the return type
-                match tokens.next() {
-                    Some(Token::Colon) => {}
+                match tokens.next().clone() {
+                    Some((Token::Colon, _)) => {}
                     _ => return Err("Expected a colon after the return type"),
                 }
 
@@ -113,10 +113,10 @@ mod tests {
     };
 
     /// Helper function for testing the parse_func_declaration function
-    fn lex_then_parse(input: &str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
         let tokens = lexer::lex(input).expect("Failed to lex");
 
-        match parse(&mut tokens.iter().peekable().clone()) {
+        match parse(&mut tokens.clone()) {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {}", e),
         }

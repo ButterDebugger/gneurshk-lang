@@ -3,19 +3,19 @@ use crate::lexer::tokens::Token;
 
 pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
     let mutable = match tokens.next() {
-        Some(Token::Var) => true,
-        Some(Token::Const) => false,
+        Some((Token::Var, _)) => true,
+        Some((Token::Const, _)) => false,
         _ => return Err("Expected variable declaration"),
     };
 
     // Read variable name
     let name = match tokens.next() {
-        Some(Token::Word(name)) => name,
+        Some((Token::Word(name), _)) => name,
         _ => return Err("Expected variable name"),
     };
 
     let has_value = match tokens.peek() {
-        Some(Token::Equal) => true,
+        Some((Token::Equal, _)) => true,
         _ => false,
     };
 
@@ -49,10 +49,10 @@ mod tests {
     };
 
     /// Helper function for testing the parse_variable_declaration function
-    fn lex_then_parse(input: &str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
         let tokens = lexer::lex(input).expect("Failed to lex");
 
-        match parse(&mut tokens.iter().peekable().clone()) {
+        match parse(&mut tokens.clone()) {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {}", e),
         }

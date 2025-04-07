@@ -6,7 +6,7 @@ use crate::lexer::tokens::Token;
 pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
     // Consume the If token
     match tokens.next() {
-        Some(Token::If) => {}
+        Some((Token::If, _)) => {}
         _ => return Err("Expected if statement"),
     }
 
@@ -18,7 +18,7 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
 
     // Expect a colon after the condition
     match tokens.next() {
-        Some(Token::Colon) => {}
+        Some((Token::Colon, _)) => {}
         _ => return Err("Expected colon after if condition"),
     }
 
@@ -39,12 +39,12 @@ mod tests {
     };
 
     /// Helper function for testing the parse function
-    fn lex_then_parse(input: &str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
         let tokens = lexer::lex(input).expect("Failed to lex");
 
         println!("tokens {:?}", tokens);
 
-        match parse(&mut tokens.iter().peekable().clone()) {
+        match parse(&mut tokens.clone()) {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {}", e),
         }

@@ -9,11 +9,23 @@ fn main() {
     // Read the input from the command line
     match env::args().nth(1) {
         Some(input) => match input.to_lowercase().as_str() {
-            "run" => todo!(),
+            "parse" => {
+                let input = std::env::args()
+                    .nth(2)
+                    .expect("Argument 2 needs to be a string");
+                let path = Path::new(&input);
+                let source = std::fs::read_to_string(path).expect("Failed to read file");
+
+                match parse(&source) {
+                    Ok(ast) => println!("AST: {:#?}", ast),
+                    Err(e) => println!("Error: {}", e),
+                }
+            }
             "check" => {
                 let path = std::env::args()
                     .nth(2)
                     .expect("Argument 2 needs to be a path");
+                let path: &Path = path.as_ref();
 
                 if let Err(error) = check_cmd(path) {
                     println!("Error: {error:?}");
@@ -38,14 +50,14 @@ fn help_cmd() {
     println!();
 
     // Print command usage
-    println!("Usage: gneurshk <command>");
+    println!("Usage: gneurshk [<flags>] <command>");
     println!();
 
     // Print list of commands
     println!("Commands:");
     println!(
-        "  {}    {}  Execute a file with Gneurshk",
-        "run".blue(),
+        "  {}  {}  Parses a file and prints the AST",
+        "parse".blue(),
         "<file path>".dimmed()
     );
     println!(
@@ -56,17 +68,14 @@ fn help_cmd() {
     println!("  {}                Prints a help message", "help".blue());
 }
 
-fn check_cmd(path: String) -> notify::Result<()> {
-    let path = path.as_ref();
+fn check_cmd(path: &Path) -> notify::Result<()> {
     let (tx, rx) = std::sync::mpsc::channel();
 
     fn check(path: &Path) {
         let source = std::fs::read_to_string(path).expect("Failed to read file");
 
-        match build(&source.to_string()) {
-            Ok(_ast) => {
-                println!("✅");
-            }
+        match parse(&source) {
+            Ok(_ast) => println!("✅"),
             Err(error) => println!("❌ Error: {error:?}"),
         }
     }
@@ -119,7 +128,7 @@ fn check_cmd(path: String) -> notify::Result<()> {
     Ok(())
 }
 
-fn build(input: &str) -> Result<Vec<Stmt>, String> {
+fn parse(input: &'static str) -> Result<Vec<Stmt>, String> {
     // Create a iterable list of tokens
     let tokens = match lexer::lex(&input) {
         Ok(result) => result,
@@ -129,7 +138,7 @@ fn build(input: &str) -> Result<Vec<Stmt>, String> {
     // println!("Tokens: {:#?}", tokens);
 
     // Parse the tokens to construct an AST
-    let ast = match parser::parse(&mut tokens.iter().peekable().clone()) {
+    let ast = match parser::parse(&mut tokens.clone()) {
         Ok(result) => result,
         Err(e) => return Err(e.to_owned()),
     };
