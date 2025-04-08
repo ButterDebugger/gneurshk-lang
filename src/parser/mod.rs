@@ -75,19 +75,15 @@ pub enum Stmt {
 
 /// Parses statements that appear directly after an new line and or indentation
 pub fn parse(tokens: &mut TokenStream) -> MultiStatementResult {
-    let mut tokens = tokens;
     let mut stmts = vec![];
 
     while let Some((token, _)) = tokens.peek() {
-        match token {
-            Token::NewLine => {
-                tokens.next(); // Consume new line token
-                continue;
-            }
-            _ => {}
+        if token == &Token::NewLine {
+            tokens.next(); // Consume new line token
+            continue;
         }
 
-        let statement = parse_statement(&mut tokens);
+        let statement = parse_statement(tokens);
 
         // Append statements or catch and throw errors
         match statement {
@@ -100,12 +96,10 @@ pub fn parse(tokens: &mut TokenStream) -> MultiStatementResult {
 }
 
 fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
-    let mut tokens = tokens;
-
     // Peek at the next token
     let (token, _) = match tokens.peek() {
         Some(e) => e,
-        _ => return Err("Unexpected end of tokens"),
+        _ => return Err("Unexpected end of tokens at beginning of line"),
     };
 
     // Parse the statement
@@ -114,15 +108,15 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         Token::Var | Token::Const => {
             single_line = true;
 
-            parse_variable_declaration(&mut tokens)
+            parse_variable_declaration(tokens)
         }
-        Token::If => parse_if_statement(&mut tokens),
+        Token::If => parse_if_statement(tokens),
         Token::Integer(_) | Token::OpenParen | Token::Word(_) => {
             single_line = true;
 
-            parse_expression(&mut tokens)
+            parse_expression(tokens)
         }
-        Token::Func => parse_func_declaration(&mut tokens),
+        Token::Func => parse_func_declaration(tokens),
         _ => return Err("Unexpected token"),
     };
 
@@ -142,17 +136,17 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
 }
 
 fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
-    return match tokens.next() {
-        Some((Token::Integer(val), _)) => Ok(Stmt::Literal { value: val.clone() }),
+    match tokens.next() {
+        Some((Token::Integer(value), _)) => Ok(Stmt::Literal { value }),
         _ => Err("Expected literal"),
-    };
+    }
 }
 
 fn parse_identifier(tokens: &mut TokenStream) -> StatementResult {
-    return match tokens.next() {
+    match tokens.next() {
         Some((Token::Word(val), _)) => Ok(Stmt::Identifier { name: val.clone() }),
         _ => Err("Expected identifier"),
-    };
+    }
 }
 
 fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
@@ -166,12 +160,14 @@ fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
 
     // Keep appending statements until a Dedent token is encountered
     loop {
+        println!("peek: {:?}", tokens.peek());
+
         match tokens.peek() {
             Some((Token::Dedent, _)) => {
                 tokens.next(); // Consume the token
                 break; // End of the block
             }
-            None => return Err("Unexpected end of tokens"),
+            None => return Err("Unexpected end of tokens in indented block"),
             _ => {}
         }
 

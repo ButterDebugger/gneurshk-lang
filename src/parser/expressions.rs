@@ -3,9 +3,7 @@ use crate::lexer::tokens::Token;
 
 /// Parses a binary expression based on operator priority
 pub fn parse_expression(tokens: &mut TokenStream) -> StatementResult {
-    let stmt = parse_comparison(tokens);
-
-    stmt
+    parse_comparison(tokens)
 }
 
 /// Parses comparison operators (lowest priority)
@@ -101,7 +99,7 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
         Some((Token::Word(_), _)) => parse_identifier(tokens),
         // TODO: handle function calls
         Some(_) => Err("Unexpected token in expression"),
-        None => Err("Unexpected end of tokens"),
+        None => Err("Unexpected end of tokens in expression"),
     }
 }
 

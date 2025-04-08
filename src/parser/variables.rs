@@ -14,11 +14,10 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
         _ => return Err("Expected variable name"),
     };
 
-    let has_value = match tokens.peek() {
-        Some((Token::Equal, _)) => true,
-        _ => false,
-    };
+    // Check if there is an equal sign which indicates a value
+    let has_value = matches!(tokens.peek(), Some((Token::Equal, _)));
 
+    // If there is a value, parse it
     if has_value {
         tokens.next(); // Consume token
 

@@ -95,7 +95,7 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
         match res {
             Ok(event) => {
                 // Print a restarting message
-                if let Some(path) = event.paths.get(0) {
+                if let Some(path) = event.paths.first() {
                     println!(
                         "{} Restarting! File change detected: \"{}\"",
                         "Watcher".bright_green(),
@@ -132,7 +132,10 @@ fn parse(input: &str) -> Result<Vec<Stmt>, String> {
     // Create a iterable list of tokens
     let tokens = lexer::lex(input)?;
 
-    // println!("Tokens: {:#?}", tokens);
+    // println!(
+    //     "Tokens: {:#?}",
+    //     tokens.clone().map(|(token, _)| token).collect::<Vec<_>>()
+    // );
 
     // Parse the tokens to construct an AST
     let ast = match parser::parse(&mut tokens.clone()) {

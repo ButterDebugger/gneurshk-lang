@@ -28,7 +28,7 @@ impl<'source> Scanner<'source> {
     }
 }
 
-impl<'source> Clone for Scanner<'source> {
+impl Clone for Scanner<'_> {
     fn clone(&self) -> Self {
         Scanner {
             lexer: self.lexer.clone(),
@@ -37,7 +37,7 @@ impl<'source> Clone for Scanner<'source> {
     }
 }
 
-impl<'source> core::fmt::Debug for Scanner<'source> {
+impl core::fmt::Debug for Scanner<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Scanner")
             .field("pending_dedents", &self.pending_dedents)
@@ -45,7 +45,7 @@ impl<'source> core::fmt::Debug for Scanner<'source> {
     }
 }
 
-impl<'source> Iterator for Scanner<'source> {
+impl Iterator for Scanner<'_> {
     type Item = (Token, Span);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -75,7 +75,7 @@ impl<'source> Iterator for Scanner<'source> {
 /// Panics if there are any lexing errors
 pub fn lex(input: &str) -> Result<Peekable<Scanner<'_>>, String> {
     // Create a lexer instance from the input
-    let scanner = Scanner::new(&input);
+    let scanner = Scanner::new(input);
 
     // Return ahead of time lexing errors
     if scanner.is_err() {
@@ -93,7 +93,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn unknown_token() {
-        lex("`").expect("Failed to lex");
+        let _ = lex("`").expect("Failed to lex");
     }
 
     #[test]
