@@ -15,7 +15,7 @@ pub type StatementResult = Result<Stmt, &'static str>;
 /// An alias for the result of parsing multiple statements
 pub type MultiStatementResult = Result<Vec<Stmt>, &'static str>;
 /// An alias for a peekable iterator of tokens
-pub type TokenStream<'a> = Peekable<Scanner<'static>>;
+pub type TokenStream<'a> = Peekable<Scanner<'a>>;
 
 #[allow(dead_code)]
 #[derive(Debug, PartialEq)]

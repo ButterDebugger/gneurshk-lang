@@ -128,12 +128,9 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
     Ok(())
 }
 
-fn parse(input: &'static str) -> Result<Vec<Stmt>, String> {
+fn parse(input: &str) -> Result<Vec<Stmt>, String> {
     // Create a iterable list of tokens
-    let tokens = match lexer::lex(&input) {
-        Ok(result) => result,
-        Err(e) => return Err(e),
-    };
+    let tokens = lexer::lex(input)?;
 
     // println!("Tokens: {:#?}", tokens);
 
