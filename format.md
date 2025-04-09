@@ -95,3 +95,20 @@ println(pi)
 println(factorial(6))
 
 ```
+
+## Type Aliases
+
+```julia
+struct Circle:
+    radius: f32
+    x: f32
+    y: f32
+
+struct Rectangle:
+    width: f32
+    height: f32
+    x: f32
+    y: f32
+
+type Shape = Circle | Rectangle
+```

@@ -1,10 +1,18 @@
 use logos::{Lexer, Logos};
 
+#[derive(Debug, Default, Clone)]
+pub struct LexerState {
+    indent_size: usize,
+    previous_indent: usize,
+}
+
 #[derive(Logos, Debug, PartialEq, Eq, Hash, Clone)]
+#[logos(extras = LexerState)]
 #[logos(skip r"[ \r\f]+")]
 pub enum Token {
-    #[regex(r"\n[ \t]*", indent)]
-    Whitespace(usize),
+    #[regex(r"\n+[ \t]*", spacing)]
+    _Whitespace,
+    _Dedents(usize),
 
     // Inserted tokens based on whitespace
     NewLine,
@@ -111,8 +119,28 @@ fn integer(lexer: &mut Lexer<Token>) -> isize {
     lexer.slice().parse::<isize>().unwrap()
 }
 
-fn indent(lexer: &mut Lexer<Token>) -> usize {
-    lexer.slice()[1..].len()
+fn spacing(lexer: &mut Lexer<Token>) -> Token {
+    let size = lexer.slice().trim_start_matches('\n').len();
+
+    // Detect indentation
+    if lexer.extras.indent_size == 0 {
+        lexer.extras.indent_size = size;
+    }
+
+    // Add the appropriate tokens based on indentation
+    if size > lexer.extras.previous_indent {
+        lexer.extras.previous_indent = size;
+
+        Token::Indent
+    } else if size < lexer.extras.previous_indent {
+        // Calculate the number of dedents
+        let dedents = (lexer.extras.previous_indent - size) / lexer.extras.indent_size;
+        lexer.extras.previous_indent = size;
+
+        Token::_Dedents(dedents)
+    } else {
+        Token::NewLine
+    }
 }
 
 fn boolean(lexer: &mut Lexer<Token>) -> bool {

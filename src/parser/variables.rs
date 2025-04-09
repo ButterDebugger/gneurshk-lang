@@ -3,22 +3,21 @@ use crate::lexer::tokens::Token;
 
 pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
     let mutable = match tokens.next() {
-        Some(Token::Var) => true,
-        Some(Token::Const) => false,
+        Some((Token::Var, _)) => true,
+        Some((Token::Const, _)) => false,
         _ => return Err("Expected variable declaration"),
     };
 
     // Read variable name
     let name = match tokens.next() {
-        Some(Token::Word(name)) => name,
+        Some((Token::Word(name), _)) => name,
         _ => return Err("Expected variable name"),
     };
 
-    let has_value = match tokens.peek() {
-        Some(Token::Equal) => true,
-        _ => false,
-    };
+    // Check if there is an equal sign which indicates a value
+    let has_value = matches!(tokens.peek(), Some((Token::Equal, _)));
 
+    // If there is a value, parse it
     if has_value {
         tokens.next(); // Consume token
 
@@ -43,17 +42,16 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_variable_declaration;
     use crate::{
         lexer,
-        parser::{Operator, Stmt},
+        parser::{parse, Operator, Stmt},
     };
 
     /// Helper function for testing the parse_variable_declaration function
-    fn lex_then_parse(input: &str) -> Stmt {
-        let tokens = lexer::lex(input);
+    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
+        let tokens = lexer::lex(input).expect("Failed to lex");
 
-        match parse_variable_declaration(&mut tokens.iter().peekable().clone()) {
+        match parse(&mut tokens.clone()) {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {}", e),
         }
@@ -83,11 +81,11 @@ mod tests {
 
         assert_eq!(
             stmt,
-            Stmt::Declaration {
+            vec![Stmt::Declaration {
                 mutable: true,
                 name: "apple".to_string(),
                 value: None
-            }
+            }]
         );
     }
 
@@ -97,11 +95,11 @@ mod tests {
 
         assert_eq!(
             stmt,
-            Stmt::Declaration {
+            vec![Stmt::Declaration {
                 mutable: false,
                 name: "orange".to_string(),
                 value: None
-            }
+            }]
         );
     }
 
@@ -111,11 +109,11 @@ mod tests {
 
         assert_eq!(
             stmt,
-            Stmt::Declaration {
+            vec![Stmt::Declaration {
                 mutable: true,
                 name: "green_beans".to_string(),
                 value: Some(Box::new(Stmt::Literal { value: 2 }))
-            }
+            }]
         );
     }
 
@@ -125,7 +123,7 @@ mod tests {
 
         assert_eq!(
             stmt,
-            Stmt::Declaration {
+            vec![Stmt::Declaration {
                 mutable: true,
                 name: "canned_corn".to_string(),
                 value: Some(Box::new(Stmt::BinaryExpression {
@@ -133,7 +131,7 @@ mod tests {
                     right: Box::new(Stmt::Literal { value: 5 }),
                     operator: Operator::Add
                 }))
-            }
+            }]
         );
     }
 }

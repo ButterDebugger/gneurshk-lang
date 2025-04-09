@@ -1,73 +1,89 @@
-use logos::Logos;
+use logos::{Logos, Span, SpannedIter};
+use std::iter::Peekable;
 use tokens::Token;
 pub mod tokens;
 
-/// Takes a string and returns a vector of tokens
-/// # Panics
-/// Panics if there are any lexing errors
-pub fn lex(input: &str) -> Vec<Token> {
-    // Create a lexer instance from the input
-    let input = input.to_string() + "\n";
-    let lexer = Token::lexer(&input);
+pub struct Scanner<'source> {
+    lexer: SpannedIter<'source, Token>,
+    pending_dedents: usize,
+}
 
-    // Split the input into tokens
-    // Panic if there are any errors
-    // Detect indentation and add Indent and Dedent tokens
-    let mut tokens = vec![];
-    let mut indent_size = 0;
-    let mut previous_indent = 0;
-    for (token, span) in lexer.spanned() {
-        match token {
-            Ok(token) => {
-                // If the token is a whitespace token, add Indent and Dedent tokens
-                if let Token::Whitespace(spacing) = token {
-                    if spacing > previous_indent {
-                        // If this is the first indentation token, set the indent size
-                        if indent_size == 0 {
-                            indent_size = spacing;
-                        }
+impl<'source> Scanner<'source> {
+    pub fn new(input: &'source str) -> Result<Self, String> {
+        let lexer = Token::lexer(input).spanned();
+        let scanner = Scanner {
+            lexer: lexer.clone(),
+            pending_dedents: 0,
+        };
 
-                        // Add the indent token if the last token was not a dedent
-                        match tokens.last() {
-                            Some(Token::Dedent) => {
-                                tokens.pop();
-                            }
-                            None => tokens.push(Token::Indent),
-                            _ => tokens.push(Token::Indent),
-                        }
-                    } else if spacing < previous_indent {
-                        // Add the dedent token
-                        let dedents = (previous_indent - spacing) / indent_size;
-
-                        for _ in 0..dedents {
-                            tokens.push(Token::Dedent)
-                        }
-                    } else {
-                        // Only add an indent after non whitespace tokens
-                        // i.e. Indent, Dedent, and NewLine
-                        match tokens.last() {
-                            Some(Token::NewLine) => {}
-                            Some(Token::Indent) => {}
-                            Some(Token::Dedent) => {}
-                            None => tokens.push(Token::NewLine),
-                            _ => tokens.push(Token::NewLine),
-                        }
-                    }
-
-                    previous_indent = spacing;
-                    continue;
-                }
-
-                // Otherwise, add the token
-                tokens.push(token)
-            }
-            Err(e) => {
-                panic!("lexer error at {:?}: {:?}", span, e);
+        // Return an error ahead of time if there are any errors
+        for (token, span) in lexer.clone() {
+            if let Err(e) = token {
+                return Err(format!("Lexing error at {span:?} {e:#?}"));
             }
         }
+
+        // Return the scanner
+        Ok(scanner)
+    }
+}
+
+impl Clone for Scanner<'_> {
+    fn clone(&self) -> Self {
+        Scanner {
+            lexer: self.lexer.clone(),
+            pending_dedents: self.pending_dedents,
+        }
+    }
+}
+
+impl core::fmt::Debug for Scanner<'_> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("Scanner")
+            .field("pending_dedents", &self.pending_dedents)
+            .finish()
+    }
+}
+
+impl Iterator for Scanner<'_> {
+    type Item = (Token, Span);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pending_dedents > 0 {
+            self.pending_dedents -= 1;
+            return Some((Token::Dedent, 0..0));
+        }
+
+        if let Some((token, span)) = self.lexer.next() {
+            match token {
+                Ok(Token::_Dedents(dedents)) => {
+                    self.pending_dedents += dedents - 1;
+
+                    Some((Token::Dedent, span))
+                }
+                Ok(token) => Some((token, span)),
+                Err(_) => panic!("Somehow overlooked a lexing error"),
+            }
+        } else {
+            None
+        }
+    }
+}
+
+/// Takes a string and returns a peekable iterator of tokens
+/// # Panics
+/// Panics if there are any lexing errors
+pub fn lex(input: &str) -> Result<Peekable<Scanner<'_>>, String> {
+    // Create a lexer instance from the input
+    let scanner = Scanner::new(input);
+
+    // Return ahead of time lexing errors
+    if scanner.is_err() {
+        return Err(scanner.unwrap_err());
     }
 
-    tokens
+    // Return the scanner with the peekable trait
+    Ok(scanner.unwrap().peekable())
 }
 
 #[cfg(test)]
@@ -77,11 +93,11 @@ mod tests {
     #[test]
     #[should_panic]
     fn unknown_token() {
-        lex("`");
+        let _ = lex("`").expect("Failed to lex");
     }
 
     #[test]
-    fn indentation() {
+    fn indentation_no_gaps() {
         let tokens = lex(r#"
 if true:
     1
@@ -91,7 +107,10 @@ if true:
     4
 else:
     if true:
-        5"#);
+        5"#)
+        .expect("Failed to lex")
+        .map(|(token, _)| token)
+        .collect::<Vec<_>>();
 
         assert_eq!(
             tokens,
@@ -122,6 +141,120 @@ else:
                 Token::Indent,
                 Token::Integer(5,),
                 Token::Dedent,
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_single_gap() {
+        let tokens = lex(r#"
+if true:
+    1
+
+    2
+"#)
+        .expect("Failed to lex")
+        .map(|(token, _)| token)
+        .collect::<Vec<_>>();
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_double_gap() {
+        let tokens = lex(r#"
+if true:
+    1
+
+
+    2
+"#)
+        .expect("Failed to lex")
+        .map(|(token, _)| token)
+        .collect::<Vec<_>>();
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_single_starting_gap() {
+        let tokens = lex(r#"
+if true:
+
+    1
+    2
+"#)
+        .expect("Failed to lex")
+        .map(|(token, _)| token)
+        .collect::<Vec<_>>();
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
+                Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn indentation_double_starting_gap() {
+        let tokens = lex(r#"
+if true:
+
+
+    1
+    2
+"#)
+        .expect("Failed to lex")
+        .map(|(token, _)| token)
+        .collect::<Vec<_>>();
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::If,
+                Token::Boolean(true,),
+                Token::Colon,
+                Token::Indent,
+                Token::Integer(1,),
+                Token::NewLine,
+                Token::Integer(2,),
                 Token::Dedent,
             ]
         );
