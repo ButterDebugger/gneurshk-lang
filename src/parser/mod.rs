@@ -160,8 +160,6 @@ fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
 
     // Keep appending statements until a Dedent token is encountered
     loop {
-        println!("peek: {:?}", tokens.peek());
-
         match tokens.peek() {
             Some((Token::Dedent, _)) => {
                 tokens.next(); // Consume the token
