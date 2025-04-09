@@ -2,12 +2,14 @@ use crate::lexer::tokens::Token;
 use crate::lexer::Scanner;
 use crate::parser::expressions::parse_expression;
 use crate::parser::ifs::parse_if_statement;
+use crate::parser::imports::parse_import;
 use crate::parser::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
 use std::iter::Peekable;
 mod expressions;
 mod funcs;
 mod ifs;
+mod imports;
 mod variables;
 
 /// An alias for the result of parsing a single statement
@@ -55,7 +57,10 @@ pub enum Stmt {
         type_name: String,
         default_value: Option<Box<Stmt>>,
     },
-    // FunctionCall {},
+    FunctionCall {
+        name: String,
+        args: Vec<Stmt>,
+    },
     BinaryExpression {
         left: Box<Stmt>,
         right: Box<Stmt>,
@@ -69,8 +74,22 @@ pub enum Stmt {
     },
     // TypeAlias {
     //     name: String,
-    //     value: Box<Stmt>,
+    //     types: Vec<String>,
     // },
+    ImportModule {
+        module: String,
+        alias: Option<String>,
+    },
+    ImportModules {
+        modules: Vec<(String, Option<String>)>,
+    },
+    ImportEverything {
+        module: String,
+    },
+    ImportCollection {
+        module: String,
+        items: Vec<(String, Option<String>)>,
+    },
 }
 
 /// Parses statements that appear directly after an new line and or indentation
@@ -117,6 +136,11 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
             parse_expression(tokens)
         }
         Token::Func => parse_func_declaration(tokens),
+        Token::Import => {
+            single_line = true;
+
+            parse_import(tokens)
+        }
         _ => return Err("Unexpected token"),
     };
 
@@ -133,20 +157,6 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
 
     // Return the parsed statement
     stmt
-}
-
-fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
-    match tokens.next() {
-        Some((Token::Integer(value), _)) => Ok(Stmt::Literal { value }),
-        _ => Err("Expected literal"),
-    }
-}
-
-fn parse_identifier(tokens: &mut TokenStream) -> StatementResult {
-    match tokens.next() {
-        Some((Token::Word(val), _)) => Ok(Stmt::Identifier { name: val.clone() }),
-        _ => Err("Expected identifier"),
-    }
 }
 
 fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
