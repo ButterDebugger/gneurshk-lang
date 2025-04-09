@@ -75,15 +75,11 @@ impl Iterator for Scanner<'_> {
 /// Panics if there are any lexing errors
 pub fn lex(input: &str) -> Result<Peekable<Scanner<'_>>, String> {
     // Create a lexer instance from the input
-    let scanner = Scanner::new(input);
-
-    // Return ahead of time lexing errors
-    if scanner.is_err() {
-        return Err(scanner.unwrap_err());
-    }
+    // Panic ahead of time if there are any errors
+    let scanner = Scanner::new(input)?;
 
     // Return the scanner with the peekable trait
-    Ok(scanner.unwrap().peekable())
+    Ok(scanner.peekable())
 }
 
 #[cfg(test)]
@@ -107,7 +103,8 @@ if true:
     4
 else:
     if true:
-        5"#)
+        5
+"#)
         .expect("Failed to lex")
         .map(|(token, _)| token)
         .collect::<Vec<_>>();
