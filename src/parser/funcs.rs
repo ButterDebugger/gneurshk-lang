@@ -136,11 +136,11 @@ mod tests {
 
     #[test]
     fn return_type_specified() {
-        lex_then_parse("func apple() -> int:\n    var peas = 2");
+        lex_then_parse("func apple() -> int:\n    var peas = 2\n");
     }
 
     #[test]
     fn no_return_specified() {
-        lex_then_parse("func apple():\n    const cucumbers = 8");
+        lex_then_parse("func apple():\n    const cucumbers = 8\n");
     }
 }
