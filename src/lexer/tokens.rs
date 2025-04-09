@@ -102,6 +102,12 @@ pub enum Token {
     Struct,
     #[token("type")]
     Type,
+    #[token("import")]
+    Import,
+    #[token("as")]
+    As,
+    #[token("from")]
+    From,
 
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", word)]
     Word(String),
