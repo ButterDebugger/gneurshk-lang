@@ -14,7 +14,8 @@ fn parse_comparison(tokens: &mut TokenStream) -> StatementResult {
     while let Some(operator) = match tokens.peek() {
         Some((Token::GreaterThan, _)) => Some(Operator::GreaterThan),
         Some((Token::GreaterThanEqual, _)) => Some(Operator::GreaterThanEqual),
-        Some((Token::Equal, _)) => Some(Operator::Equal), // Assuming Token::Equal is for '==' comparison
+        Some((Token::EqualEqual, _)) => Some(Operator::Equal),
+        Some((Token::NotEqual, _)) => Some(Operator::NotEqual),
         Some((Token::LessThanEqual, _)) => Some(Operator::LessThanEqual),
         Some((Token::LessThan, _)) => Some(Operator::LessThan),
         _ => None, // Stop parsing this level
