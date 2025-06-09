@@ -1,5 +1,5 @@
 use super::{Operator, StatementResult, Stmt, TokenStream};
-use crate::lexer::tokens::Token;
+use gneurshk_lexer::tokens::Token;
 
 /// Parses a binary expression based on operator priority
 pub fn parse_expression(tokens: &mut TokenStream) -> StatementResult {
@@ -143,7 +143,7 @@ fn parse_identifier_or_function_call(tokens: &mut TokenStream) -> StatementResul
                         _ => {
                             return Err(
                                 "Expected a comma or closing parenthesis in the function call",
-                            )
+                            );
                         }
                     }
                 }
@@ -160,13 +160,13 @@ fn parse_identifier_or_function_call(tokens: &mut TokenStream) -> StatementResul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer;
-    use crate::parser::Stmt::{BinaryExpression, Literal};
-    use crate::parser::{parse, Operator};
+    use crate::Stmt::{BinaryExpression, Literal};
+    use crate::{Operator, parse};
+    use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_expression function
     fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
-        let tokens = lexer::lex(input).expect("Failed to lex");
+        let tokens = lex(input).expect("Failed to lex");
 
         println!("tokens {:?}", tokens);
 

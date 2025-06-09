@@ -1,10 +1,10 @@
-use crate::lexer::tokens::Token;
-use crate::lexer::Scanner;
-use crate::parser::expressions::parse_expression;
-use crate::parser::ifs::parse_if_statement;
-use crate::parser::imports::parse_import;
-use crate::parser::variables::parse_variable_declaration;
+use crate::expressions::parse_expression;
+use crate::ifs::parse_if_statement;
+use crate::imports::parse_import;
+use crate::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
+use gneurshk_lexer::Scanner;
+use gneurshk_lexer::tokens::Token;
 use std::iter::Peekable;
 mod expressions;
 mod funcs;

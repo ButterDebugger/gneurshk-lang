@@ -1,5 +1,5 @@
-use super::{expressions::parse_expression, StatementResult, Stmt, TokenStream};
-use crate::lexer::tokens::Token;
+use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
+use gneurshk_lexer::tokens::Token;
 
 pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
     let mutable = match tokens.next() {
@@ -42,14 +42,14 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        lexer,
-        parser::{parse, Operator, Stmt},
-    };
+    use gneurshk_lexer::lex;
+    use crate::Operator;
+    use crate::Stmt;
+    use crate::parse;
 
     /// Helper function for testing the parse_variable_declaration function
     fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
-        let tokens = lexer::lex(input).expect("Failed to lex");
+        let tokens = lex(input).expect("Failed to lex");
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,

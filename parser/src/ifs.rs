@@ -1,7 +1,7 @@
 use super::{
-    expressions::parse_expression, parse_indented_body, StatementResult, Stmt, TokenStream,
+    StatementResult, Stmt, TokenStream, expressions::parse_expression, parse_indented_body,
 };
-use crate::lexer::tokens::Token;
+use gneurshk_lexer::tokens::Token;
 
 pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
     // Consume the If token
@@ -33,14 +33,14 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        lexer,
-        parser::{parse, Operator, Stmt},
-    };
+    use crate::Operator;
+    use crate::Stmt;
+    use crate::parse;
+    use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
     fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
-        let tokens = lexer::lex(input).expect("Failed to lex");
+        let tokens = lex(input).expect("Failed to lex");
 
         println!("tokens {:?}", tokens);
 

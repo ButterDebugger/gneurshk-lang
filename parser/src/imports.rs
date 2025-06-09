@@ -1,5 +1,5 @@
 use super::{StatementResult, Stmt, TokenStream};
-use crate::lexer::tokens::Token;
+use gneurshk_lexer::tokens::Token;
 
 pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
     // Consume the Import token
@@ -86,20 +86,21 @@ fn read_import_items(
         match tokens.next() {
             Some((Token::Word(name), _)) => {
                 // Check if there's an alias for this item
-                let item_alias =
-                    if let Some((Token::As, _)) = tokens.peek() {
-                        tokens.next(); // Consume the token
+                let item_alias = if let Some((Token::As, _)) = tokens.peek() {
+                    tokens.next(); // Consume the token
 
-                        // Get the alias name
-                        match tokens.next() {
-                            Some((Token::Word(name), _)) => Some(name),
-                            _ => return Err(
+                    // Get the alias name
+                    match tokens.next() {
+                        Some((Token::Word(name), _)) => Some(name),
+                        _ => {
+                            return Err(
                                 "Expected an alias for the imported item after the 'as' keyword",
-                            ),
+                            );
                         }
-                    } else {
-                        None
-                    };
+                    }
+                } else {
+                    None
+                };
 
                 // Add the item to the list of items
                 items.push((name, item_alias));
@@ -124,12 +125,12 @@ fn read_import_items(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lexer;
-    use crate::parser::parse;
+    use crate::parse;
+    use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_import function
     fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
-        let tokens = lexer::lex(input).expect("Failed to lex");
+        let tokens = lex(input).expect("Failed to lex");
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,

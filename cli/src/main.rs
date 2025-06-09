@@ -1,9 +1,8 @@
 use colored::Colorize;
+use gneurshk_lexer::lex;
+use gneurshk_parser::{Stmt, parse};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use parser::Stmt;
 use std::{env, path::Path};
-mod lexer;
-mod parser;
 
 fn main() {
     // Read the input from the command line
@@ -16,7 +15,7 @@ fn main() {
                 let path = Path::new(&input);
                 let source = std::fs::read_to_string(path).expect("Failed to read file");
 
-                match parse(&source) {
+                match create_ast(&source) {
                     Ok(ast) => println!("AST: {:#?}", ast),
                     Err(e) => println!("Error: {}", e),
                 }
@@ -74,7 +73,7 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
     fn check(path: &Path) {
         let source = std::fs::read_to_string(path).expect("Failed to read file");
 
-        match parse(&source) {
+        match create_ast(&source) {
             Ok(_ast) => println!("✅"),
             Err(error) => println!("❌ Error: {error:?}"),
         }
@@ -128,9 +127,9 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
     Ok(())
 }
 
-fn parse(input: &str) -> Result<Vec<Stmt>, String> {
+fn create_ast(input: &str) -> Result<Vec<Stmt>, String> {
     // Create a iterable list of tokens
-    let tokens = lexer::lex(input)?;
+    let tokens = lex(input)?;
 
     // println!(
     //     "Tokens: {:#?}",
@@ -138,7 +137,7 @@ fn parse(input: &str) -> Result<Vec<Stmt>, String> {
     // );
 
     // Parse the tokens to construct an AST
-    let ast = match parser::parse(&mut tokens.clone()) {
+    let ast = match parse(&mut tokens.clone()) {
         Ok(result) => result,
         Err(e) => return Err(e.to_owned()),
     };
