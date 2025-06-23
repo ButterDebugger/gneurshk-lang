@@ -6,6 +6,7 @@ pub mod tokens;
 pub struct Scanner<'source> {
     lexer: SpannedIter<'source, Token>,
     pending_dedents: usize,
+    source: &'source str,
 }
 
 impl<'source> Scanner<'source> {
@@ -14,12 +15,13 @@ impl<'source> Scanner<'source> {
         let scanner = Scanner {
             lexer: lexer.clone(),
             pending_dedents: 0,
+            source: input,
         };
 
         // Return an error ahead of time if there are any errors
         for (token, span) in lexer.clone() {
-            if let Err(e) = token {
-                return Err(format!("Lexing error at {span:?} {e:#?}"));
+            if token.is_err() {
+                return Err(format_lexing_error(input, span));
             }
         }
 
@@ -33,6 +35,7 @@ impl Clone for Scanner<'_> {
         Scanner {
             lexer: self.lexer.clone(),
             pending_dedents: self.pending_dedents,
+            source: self.source,
         }
     }
 }
@@ -80,6 +83,39 @@ pub fn lex(input: &str) -> Result<Peekable<Scanner<'_>>, String> {
 
     // Return the scanner with the peekable trait
     Ok(scanner.peekable())
+}
+
+/// Formats a lexing error with source code context
+fn format_lexing_error(source: &str, span: logos::Span) -> String {
+    let lines: Vec<&str> = source.lines().collect();
+    let mut line_start = 0;
+    let mut line_number = 1;
+
+    // Find which line the error is on
+    for (i, line) in lines.iter().enumerate() {
+        let line_end = line_start + line.len();
+        if span.start >= line_start && span.start <= line_end {
+            line_number = i + 1;
+            break;
+        }
+        line_start = line_end + 1; // +1 for the newline character
+    }
+
+    let column = span.start - line_start + 1;
+    let error_line = lines.get(line_number - 1).unwrap_or(&"");
+    let error_char = source.chars().nth(span.start).unwrap_or('?');
+
+    format!(
+        "Lexing error at line {}, column {}:\n\
+         {}\n\
+         {}^\n\
+         Unexpected character: '{}'",
+        line_number,
+        column,
+        error_line,
+        " ".repeat(column - 1),
+        error_char
+    )
 }
 
 #[cfg(test)]
@@ -253,6 +289,34 @@ if true:
                 Token::NewLine,
                 Token::Integer(2,),
                 Token::Dedent,
+            ]
+        );
+    }
+
+    #[test]
+    fn comments_are_ignored() {
+        let tokens = lex(r#"# This is a comment
+var x = 5  # Inline comment
+# Another comment
+var y = 10"#)
+        .expect("Failed to lex")
+        .map(|(token, _)| token)
+        .collect::<Vec<_>>();
+
+        assert_eq!(
+            tokens,
+            [
+                Token::NewLine,
+                Token::Var,
+                Token::Word("x".to_string()),
+                Token::Equal,
+                Token::Integer(5),
+                Token::NewLine,
+                Token::NewLine,
+                Token::Var,
+                Token::Word("y".to_string()),
+                Token::Equal,
+                Token::Integer(10),
             ]
         );
     }

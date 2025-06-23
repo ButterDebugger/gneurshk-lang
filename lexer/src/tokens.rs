@@ -9,6 +9,7 @@ pub struct LexerState {
 #[derive(Logos, Debug, PartialEq, Eq, Hash, Clone)]
 #[logos(extras = LexerState)]
 #[logos(skip r"[ \r\f]+")]
+#[logos(skip r"#[^\r\n]*")]
 pub enum Token {
     #[regex(r"\n+[ \t]*", spacing)]
     _Whitespace,
