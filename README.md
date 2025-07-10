@@ -19,7 +19,7 @@ If you would like to contribute to the project, please follow the steps below to
 -   LLVM 18.1.x
 
 > [!IMPORTANT]
-> On Windows, you should install LLVM by building it from its source as the windows installer does not come with `llvm-config`
+> On Windows, you should install LLVM by building it from its source. The Windows installer unfortunately does not come with `llvm-config` which is required
 >
 > The install location should not contain spaces, so it is best to install it at `C:\LLVM`
 >
