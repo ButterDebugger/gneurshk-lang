@@ -16,8 +16,8 @@ fn main() {
                 let source = std::fs::read_to_string(path).expect("Failed to read file");
 
                 match create_ast(&source) {
-                    Ok(ast) => println!("AST: {:#?}", ast),
-                    Err(e) => println!("Error: {}", e),
+                    Ok(ast) => println!("AST: {ast:#?}"),
+                    Err(e) => println!("Error: {e}"),
                 }
             }
             "check" => {
@@ -31,7 +31,7 @@ fn main() {
                 }
             }
             "help" => help_cmd(),
-            _ => println!("Unknown command: {}", input),
+            _ => println!("Unknown command: {input}"),
         },
         None => help_cmd(),
     };

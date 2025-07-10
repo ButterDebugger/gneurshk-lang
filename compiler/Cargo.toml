@@ -1,0 +1,11 @@
+[package]
+name = "gneurshk_compiler"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "gneurshk_compiler"
+path = "src/lib.rs"
+
+[dependencies]
+inkwell = { version = "0.6.0", features = ["llvm18-1"] }
