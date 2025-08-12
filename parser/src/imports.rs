@@ -134,7 +134,7 @@ mod tests {
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,
-            Err(e) => panic!("Parsing error: {}", e),
+            Err(e) => panic!("Parsing error: {e}"),
         }
     }
 

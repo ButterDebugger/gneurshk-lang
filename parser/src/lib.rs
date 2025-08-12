@@ -142,7 +142,10 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
 
             parse_import(tokens)
         }
-        _ => return Err("Unexpected token"),
+        _ => {
+            println!("token: {token:?}");
+            return Err("Unexpected token");
+        }
     };
 
     // If the statement is single lined, expect a new line
@@ -151,7 +154,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
             Some((Token::NewLine, _)) => {
                 tokens.next(); // Consume the new line token
             }
-            Some((Token::Indent, _)) | Some((Token::Dedent, _)) | None => {} // Ignore indentation and the end of tokens
+            None => {} // Ignore indentation and the end of tokens
             _ => return Err("Expected new line"),
         }
     }
@@ -160,19 +163,29 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
     stmt
 }
 
-fn parse_indented_body(tokens: &mut TokenStream) -> MultiStatementResult {
-    // Consume the Indent token
+fn parse_wrapped_body(tokens: &mut TokenStream) -> MultiStatementResult {
+    // Consume an optional NewLine token if its present
+    if let Some((Token::NewLine, _)) = tokens.peek() {
+        tokens.next(); // Consume the new line token
+    }
+
+    // Consume the OpenBrace token
     match tokens.next() {
-        Some((Token::Indent, _)) => {}
-        _ => return Err("Expected line indent"),
+        Some((Token::OpenBrace, _)) => {}
+        _ => return Err("Expected opening brace"),
+    }
+
+    // Consume an optional NewLine token if its present
+    if let Some((Token::NewLine, _)) = tokens.peek() {
+        tokens.next(); // Consume the new line token
     }
 
     let mut body = vec![];
 
-    // Keep appending statements until a Dedent token is encountered
+    // Keep appending statements until a CloseBrace token is encountered
     loop {
         match tokens.peek() {
-            Some((Token::Dedent, _)) => {
+            Some((Token::CloseBrace, _)) => {
                 tokens.next(); // Consume the token
                 break; // End of the block
             }

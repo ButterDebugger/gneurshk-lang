@@ -168,11 +168,11 @@ mod tests {
     fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
         let tokens = lex(input).expect("Failed to lex");
 
-        println!("tokens {:?}", tokens);
+        println!("tokens {tokens:?}");
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,
-            Err(e) => panic!("Parsing error: {}", e),
+            Err(e) => panic!("Parsing error: {e}"),
         }
     }
 

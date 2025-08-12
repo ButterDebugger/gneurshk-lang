@@ -1,5 +1,5 @@
 use super::{
-    StatementResult, Stmt, TokenStream, expressions::parse_expression, parse_indented_body,
+    StatementResult, Stmt, TokenStream, expressions::parse_expression, parse_wrapped_body,
 };
 use gneurshk_lexer::tokens::Token;
 
@@ -26,7 +26,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
 
     loop {
         match tokens.peek().cloned() {
-            Some((Token::NewLine | Token::Indent | Token::Dedent, _)) => {
+            Some((Token::NewLine, _)) => {
                 tokens.next(); // Consume the token
                 continue; // Skip to the next token
             }
@@ -74,28 +74,22 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
     }
 
     // Parse the return type
-    let return_type = match tokens.next().clone() {
-        // No return type specified, default to void
-        Some((Token::Colon, _)) => "void".to_string(),
-        // Return type specified
-        Some((Token::Arrow, _)) => match tokens.next().clone() {
-            Some((Token::Word(name), _)) => {
-                // Expect a colon after the return type
-                match tokens.next().clone() {
-                    Some((Token::Colon, _)) => {}
-                    _ => return Err("Expected a colon after the return type"),
-                }
+    let return_type = match tokens.peek() {
+        Some((Token::OpenBrace, _)) => "void".to_string(),
+        Some((Token::Arrow, _)) => {
+            tokens.next(); // Consume the token
 
-                // Read the return type
-                name.to_string()
+            // Read the type
+            match tokens.next() {
+                Some((Token::Word(name), _)) => name.to_string(),
+                _ => return Err("Expected a return type"),
             }
-            _ => return Err("Expected the return type"),
-        },
+        }
         _ => return Err("Missing a colon after the function name or a return type"),
     };
 
     // Parse the body of the function
-    let body = parse_indented_body(tokens)?;
+    let body = parse_wrapped_body(tokens)?;
 
     Ok(Stmt::FunctionDeclaration {
         name: name.to_string(),
@@ -117,7 +111,7 @@ mod tests {
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,
-            Err(e) => panic!("Parsing error: {}", e),
+            Err(e) => panic!("Parsing error: {e}"),
         }
     }
 

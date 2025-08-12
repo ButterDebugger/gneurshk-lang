@@ -5,7 +5,6 @@ pub mod tokens;
 
 pub struct Scanner<'source> {
     lexer: SpannedIter<'source, Token>,
-    pending_dedents: usize,
     source: &'source str,
 }
 
@@ -14,7 +13,6 @@ impl<'source> Scanner<'source> {
         let lexer = Token::lexer(input).spanned();
         let scanner = Scanner {
             lexer: lexer.clone(),
-            pending_dedents: 0,
             source: input,
         };
 
@@ -34,7 +32,6 @@ impl Clone for Scanner<'_> {
     fn clone(&self) -> Self {
         Scanner {
             lexer: self.lexer.clone(),
-            pending_dedents: self.pending_dedents,
             source: self.source,
         }
     }
@@ -43,7 +40,6 @@ impl Clone for Scanner<'_> {
 impl core::fmt::Debug for Scanner<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Scanner")
-            .field("pending_dedents", &self.pending_dedents)
             .finish()
     }
 }
@@ -52,18 +48,8 @@ impl Iterator for Scanner<'_> {
     type Item = (Token, Span);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pending_dedents > 0 {
-            self.pending_dedents -= 1;
-            return Some((Token::Dedent, 0..0));
-        }
-
         if let Some((token, span)) = self.lexer.next() {
             match token {
-                Ok(Token::_Dedents(dedents)) => {
-                    self.pending_dedents += dedents - 1;
-
-                    Some((Token::Dedent, span))
-                }
                 Ok(token) => Some((token, span)),
                 Err(_) => panic!("Somehow overlooked a lexing error"),
             }
@@ -129,176 +115,11 @@ mod tests {
     }
 
     #[test]
-    fn indentation_no_gaps() {
-        let tokens = lex(r#"
-if true:
-    1
-    2
-    if true:
-        3
-    4
-else:
-    if true:
-        5
-"#)
-        .expect("Failed to lex")
-        .map(|(token, _)| token)
-        .collect::<Vec<_>>();
-
-        assert_eq!(
-            tokens,
-            [
-                Token::NewLine,
-                Token::If,
-                Token::Boolean(true,),
-                Token::Colon,
-                Token::Indent,
-                Token::Integer(1,),
-                Token::NewLine,
-                Token::Integer(2,),
-                Token::NewLine,
-                Token::If,
-                Token::Boolean(true,),
-                Token::Colon,
-                Token::Indent,
-                Token::Integer(3,),
-                Token::Dedent,
-                Token::Integer(4,),
-                Token::Dedent,
-                Token::Else,
-                Token::Colon,
-                Token::Indent,
-                Token::If,
-                Token::Boolean(true,),
-                Token::Colon,
-                Token::Indent,
-                Token::Integer(5,),
-                Token::Dedent,
-                Token::Dedent,
-            ]
-        );
-    }
-
-    #[test]
-    fn indentation_single_gap() {
-        let tokens = lex(r#"
-if true:
-    1
-
-    2
-"#)
-        .expect("Failed to lex")
-        .map(|(token, _)| token)
-        .collect::<Vec<_>>();
-
-        assert_eq!(
-            tokens,
-            [
-                Token::NewLine,
-                Token::If,
-                Token::Boolean(true,),
-                Token::Colon,
-                Token::Indent,
-                Token::Integer(1,),
-                Token::NewLine,
-                Token::Integer(2,),
-                Token::Dedent,
-            ]
-        );
-    }
-
-    #[test]
-    fn indentation_double_gap() {
-        let tokens = lex(r#"
-if true:
-    1
-
-
-    2
-"#)
-        .expect("Failed to lex")
-        .map(|(token, _)| token)
-        .collect::<Vec<_>>();
-
-        assert_eq!(
-            tokens,
-            [
-                Token::NewLine,
-                Token::If,
-                Token::Boolean(true,),
-                Token::Colon,
-                Token::Indent,
-                Token::Integer(1,),
-                Token::NewLine,
-                Token::Integer(2,),
-                Token::Dedent,
-            ]
-        );
-    }
-
-    #[test]
-    fn indentation_single_starting_gap() {
-        let tokens = lex(r#"
-if true:
-
-    1
-    2
-"#)
-        .expect("Failed to lex")
-        .map(|(token, _)| token)
-        .collect::<Vec<_>>();
-
-        assert_eq!(
-            tokens,
-            [
-                Token::NewLine,
-                Token::If,
-                Token::Boolean(true,),
-                Token::Colon,
-                Token::Indent,
-                Token::Integer(1,),
-                Token::NewLine,
-                Token::Integer(2,),
-                Token::Dedent,
-            ]
-        );
-    }
-
-    #[test]
-    fn indentation_double_starting_gap() {
-        let tokens = lex(r#"
-if true:
-
-
-    1
-    2
-"#)
-        .expect("Failed to lex")
-        .map(|(token, _)| token)
-        .collect::<Vec<_>>();
-
-        assert_eq!(
-            tokens,
-            [
-                Token::NewLine,
-                Token::If,
-                Token::Boolean(true,),
-                Token::Colon,
-                Token::Indent,
-                Token::Integer(1,),
-                Token::NewLine,
-                Token::Integer(2,),
-                Token::Dedent,
-            ]
-        );
-    }
-
-    #[test]
     fn comments_are_ignored() {
         let tokens = lex(r#"# This is a comment
-var x = 5  # Inline comment
-# Another comment
-var y = 10"#)
+    var x = 5  # Inline comment
+    # Another comment
+    var y = 10"#)
         .expect("Failed to lex")
         .map(|(token, _)| token)
         .collect::<Vec<_>>();

@@ -49,23 +49,27 @@ var letter =
 ## Functions
 
 ```julia
-func square(x: f32) -> f32:
+func square(x: f32) -> f32 {
     return x * x
+}
 ```
 
 ## Structs
 
 ```julia
-struct Point:
+struct Point {
     x: f32
     y: f32
 
-    func __init__(self, x: f32, y: f32):
+    func __init__(self, x: f32, y: f32) {
         self.x = x
         self.y = y
+    }
 
-    func add(self, other: Point) -> Point:
+    func add(self, other: Point) -> Point {
         return Point(self.x + other.x, self.y + other.y)
+    }
+}
 ```
 
 ## Imports
@@ -99,16 +103,18 @@ println(factorial(6))
 ## Type Aliases
 
 ```julia
-struct Circle:
+struct Circle {
     radius: f32
     x: f32
     y: f32
+}
 
-struct Rectangle:
+struct Rectangle {
     width: f32
     height: f32
     x: f32
     y: f32
+}
 
 type Shape = Circle | Rectangle
 ```

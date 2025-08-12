@@ -1,5 +1,5 @@
 use super::{
-    StatementResult, Stmt, TokenStream, expressions::parse_expression, parse_indented_body,
+    StatementResult, Stmt, TokenStream, expressions::parse_expression, parse_wrapped_body,
 };
 use gneurshk_lexer::tokens::Token;
 
@@ -11,19 +11,10 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
     }
 
     // Parse the condition
-    let condition = match parse_expression(tokens) {
-        Ok(e) => e,
-        _ => return Err("Expected expression"),
-    };
-
-    // Expect a colon after the condition
-    match tokens.next() {
-        Some((Token::Colon, _)) => {}
-        _ => return Err("Expected colon after if condition"),
-    }
+    let condition = parse_expression(tokens)?;
 
     // Parse the body of the if statement
-    let body = parse_indented_body(tokens)?;
+    let body = parse_wrapped_body(tokens)?;
 
     Ok(Stmt::IfStatement {
         condition: Box::new(condition),
@@ -42,11 +33,11 @@ mod tests {
     fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
         let tokens = lex(input).expect("Failed to lex");
 
-        println!("tokens {:?}", tokens);
+        println!("tokens {tokens:?}");
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,
-            Err(e) => panic!("Parsing error: {}", e),
+            Err(e) => panic!("Parsing error: {e}"),
         }
     }
 
