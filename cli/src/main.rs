@@ -8,6 +8,22 @@ fn main() {
     // Read the input from the command line
     match env::args().nth(1) {
         Some(input) => match input.to_lowercase().as_str() {
+            "lex" => {
+                let input = std::env::args()
+                    .nth(2)
+                    .expect("Argument 2 needs to be a string");
+                let path = Path::new(&input);
+                let source = std::fs::read_to_string(path).expect("Failed to read file");
+
+                match lex(&source) {
+                    Ok(tokens) => {
+                        for (token, range) in tokens {
+                            println!("{}..{}\t{:?}", range.start, range.end, token);
+                        }
+                    }
+                    Err(e) => println!("Error: {e}"),
+                }
+            }
             "parse" => {
                 let input = std::env::args()
                     .nth(2)
@@ -54,6 +70,11 @@ fn help_cmd() {
 
     // Print list of commands
     println!("Commands:");
+    println!(
+        "  {}    {}  Lexes a file and prints the tokens",
+        "lex".blue(),
+        "<file path>".dimmed()
+    );
     println!(
         "  {}  {}  Parses a file and prints the AST",
         "parse".blue(),
