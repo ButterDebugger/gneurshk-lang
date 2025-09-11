@@ -1,19 +1,28 @@
 use colored::Colorize;
+use gneurshk_compiler::compile;
 use gneurshk_lexer::lex;
 use gneurshk_parser::{Stmt, parse};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{env, path::Path};
+use std::{env::args, fs::read_to_string, path::Path};
 
 fn main() {
     // Read the input from the command line
-    match env::args().nth(1) {
+    match args().nth(1) {
         Some(input) => match input.to_lowercase().as_str() {
+            "run" => {
+                todo!();
+            }
+            "build" => {
+                let path = args().nth(2).expect("Argument 2 needs to be a path");
+                let path: &Path = path.as_ref();
+                let source = read_to_string(path).expect("Failed to read file");
+
+                build_cmd(&source);
+            }
             "lex" => {
-                let input = std::env::args()
-                    .nth(2)
-                    .expect("Argument 2 needs to be a string");
+                let input = args().nth(2).expect("Argument 2 needs to be a string");
                 let path = Path::new(&input);
-                let source = std::fs::read_to_string(path).expect("Failed to read file");
+                let source = read_to_string(path).expect("Failed to read file");
 
                 match lex(&source) {
                     Ok(tokens) => {
@@ -25,11 +34,9 @@ fn main() {
                 }
             }
             "parse" => {
-                let input = std::env::args()
-                    .nth(2)
-                    .expect("Argument 2 needs to be a string");
+                let input = args().nth(2).expect("Argument 2 needs to be a string");
                 let path = Path::new(&input);
-                let source = std::fs::read_to_string(path).expect("Failed to read file");
+                let source = read_to_string(path).expect("Failed to read file");
 
                 match create_ast(&source) {
                     Ok(ast) => println!("AST: {ast:#?}"),
@@ -37,9 +44,7 @@ fn main() {
                 }
             }
             "check" => {
-                let path = std::env::args()
-                    .nth(2)
-                    .expect("Argument 2 needs to be a path");
+                let path = args().nth(2).expect("Argument 2 needs to be a path");
                 let path: &Path = path.as_ref();
 
                 if let Err(error) = check_cmd(path) {
@@ -51,9 +56,6 @@ fn main() {
         },
         None => help_cmd(),
     };
-
-    // Compile the input
-    // build("1 + 7 * (3 - 4) / 5");
 }
 
 fn help_cmd() {
@@ -70,6 +72,16 @@ fn help_cmd() {
 
     // Print list of commands
     println!("Commands:");
+    println!(
+        "  {}    {}  Builds and runs a file",
+        "run".blue(),
+        "<file path>".dimmed()
+    );
+    println!(
+        "  {}  {}  Compiles a file into an executable",
+        "build".blue(),
+        "<file path>".dimmed()
+    );
     println!(
         "  {}    {}  Lexes a file and prints the tokens",
         "lex".blue(),
@@ -88,11 +100,23 @@ fn help_cmd() {
     println!("  {}                Prints a help message", "help".blue());
 }
 
+fn build_cmd(input: &str) {
+    let ast = match create_ast(input) {
+        Ok(ast) => ast,
+        Err(e) => {
+            println!("Error: {e}");
+            return;
+        }
+    };
+
+    compile(ast);
+}
+
 fn check_cmd(path: &Path) -> notify::Result<()> {
     let (tx, rx) = std::sync::mpsc::channel();
 
     fn check(path: &Path) {
-        let source = std::fs::read_to_string(path).expect("Failed to read file");
+        let source = read_to_string(path).expect("Failed to read file");
 
         match create_ast(&source) {
             Ok(_ast) => println!("✅"),

@@ -8,4 +8,6 @@ name = "gneurshk_compiler"
 path = "src/lib.rs"
 
 [dependencies]
+gneurshk_parser = { path = "../parser" }
+
 inkwell = { version = "0.6.0", features = ["llvm18-1"] }

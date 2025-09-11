@@ -124,6 +124,7 @@ version = "0.1.0"
 dependencies = [
  "clearscreen",
  "colored",
+ "gneurshk_compiler",
  "gneurshk_lexer",
  "gneurshk_parser",
  "notify",
@@ -133,6 +134,7 @@ dependencies = [
 name = "gneurshk_compiler"
 version = "0.1.0"
 dependencies = [
+ "gneurshk_parser",
  "inkwell",
 ]
 

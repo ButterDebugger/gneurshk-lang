@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+gneurshk_compiler = { path = "../compiler" }
 gneurshk_parser = { path = "../parser" }
 gneurshk_lexer = { path = "../lexer" }
 
