@@ -1,6 +1,5 @@
-use super::{
-    StatementResult, Stmt, TokenStream, expressions::parse_expression, parse_wrapped_body,
-};
+use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
+use crate::block::parse_block;
 use gneurshk_lexer::tokens::Token;
 
 pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
@@ -14,11 +13,11 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
     let condition = parse_expression(tokens)?;
 
     // Parse the body of the if statement
-    let body = parse_wrapped_body(tokens)?;
+    let body = parse_block(tokens)?;
 
     Ok(Stmt::IfStatement {
         condition: Box::new(condition),
-        body,
+        block: Box::new(body),
     })
 }
 
@@ -45,7 +44,7 @@ mod tests {
     fn large_indented_if_block() {
         let stmt = lex_then_parse(
             r"
-if 10 + 10:
+if 10 + 10 {
     var apple = 1
 
 
@@ -56,7 +55,7 @@ if 10 + 10:
 
 
     var green = 3
-
+}
 const borg = 5
 ",
         );
@@ -70,18 +69,20 @@ const borg = 5
                         right: Box::new(Stmt::Literal { value: 10 }),
                         operator: Operator::Add,
                     }),
-                    body: vec![
-                        Stmt::Declaration {
-                            mutable: true,
-                            name: "apple".to_string(),
-                            value: Some(Box::new(Stmt::Literal { value: 1 })),
-                        },
-                        Stmt::Declaration {
-                            mutable: true,
-                            name: "green".to_string(),
-                            value: Some(Box::new(Stmt::Literal { value: 3 })),
-                        },
-                    ],
+                    block: Box::new(Stmt::Block {
+                        body: vec![
+                            Stmt::Declaration {
+                                mutable: true,
+                                name: "apple".to_string(),
+                                value: Some(Box::new(Stmt::Literal { value: 1 })),
+                            },
+                            Stmt::Declaration {
+                                mutable: true,
+                                name: "green".to_string(),
+                                value: Some(Box::new(Stmt::Literal { value: 3 })),
+                            },
+                        ],
+                    }),
                 },
                 Stmt::Declaration {
                     mutable: false,
@@ -96,13 +97,14 @@ const borg = 5
     fn nested_if_blocks() {
         let stmt = lex_then_parse(
             r"
-if 10 + 10:
-    if 20 + 20:
+if 10 + 10 {
+    if 20 + 20 {
         var apple = 1
-
-    if 30 + 30:
+    }
+    if 30 + 30 {
         var green = 3
-
+    }
+}
 const borg = 5
 ",
         );
@@ -116,32 +118,38 @@ const borg = 5
                         right: Box::new(Stmt::Literal { value: 10 }),
                         operator: Operator::Add,
                     }),
-                    body: vec![
-                        Stmt::IfStatement {
-                            condition: Box::new(Stmt::BinaryExpression {
-                                left: Box::new(Stmt::Literal { value: 20 }),
-                                right: Box::new(Stmt::Literal { value: 20 }),
-                                operator: Operator::Add,
-                            }),
-                            body: vec![Stmt::Declaration {
-                                mutable: true,
-                                name: "apple".to_string(),
-                                value: Some(Box::new(Stmt::Literal { value: 1 })),
-                            }],
-                        },
-                        Stmt::IfStatement {
-                            condition: Box::new(Stmt::BinaryExpression {
-                                left: Box::new(Stmt::Literal { value: 30 }),
-                                right: Box::new(Stmt::Literal { value: 30 }),
-                                operator: Operator::Add,
-                            }),
-                            body: vec![Stmt::Declaration {
-                                mutable: true,
-                                name: "green".to_string(),
-                                value: Some(Box::new(Stmt::Literal { value: 3 })),
-                            }],
-                        }
-                    ],
+                    block: Box::new(Stmt::Block {
+                        body: vec![
+                            Stmt::IfStatement {
+                                condition: Box::new(Stmt::BinaryExpression {
+                                    left: Box::new(Stmt::Literal { value: 20 }),
+                                    right: Box::new(Stmt::Literal { value: 20 }),
+                                    operator: Operator::Add,
+                                }),
+                                block: Box::new(Stmt::Block {
+                                    body: vec![Stmt::Declaration {
+                                        mutable: true,
+                                        name: "apple".to_string(),
+                                        value: Some(Box::new(Stmt::Literal { value: 1 })),
+                                    }]
+                                }),
+                            },
+                            Stmt::IfStatement {
+                                condition: Box::new(Stmt::BinaryExpression {
+                                    left: Box::new(Stmt::Literal { value: 30 }),
+                                    right: Box::new(Stmt::Literal { value: 30 }),
+                                    operator: Operator::Add,
+                                }),
+                                block: Box::new(Stmt::Block {
+                                    body: vec![Stmt::Declaration {
+                                        mutable: true,
+                                        name: "green".to_string(),
+                                        value: Some(Box::new(Stmt::Literal { value: 3 })),
+                                    }]
+                                }),
+                            }
+                        ]
+                    }),
                 },
                 Stmt::Declaration {
                     mutable: false,

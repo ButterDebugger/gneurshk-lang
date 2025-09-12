@@ -1,3 +1,4 @@
+use crate::block::parse_block;
 use crate::expressions::parse_expression;
 use crate::ifs::parse_if_statement;
 use crate::imports::parse_import;
@@ -6,6 +7,7 @@ use funcs::parse_func_declaration;
 use gneurshk_lexer::Scanner;
 use gneurshk_lexer::tokens::Token;
 use std::iter::Peekable;
+mod block;
 mod expressions;
 mod funcs;
 mod ifs;
@@ -43,15 +45,20 @@ pub enum Stmt {
         name: String,
         value: Option<Box<Stmt>>,
     },
+    Block {
+        body: Vec<Stmt>,
+    },
     IfStatement {
         condition: Box<Stmt>,
-        body: Vec<Stmt>,
+        /// Should always be a block statement
+        block: Box<Stmt>,
     },
     FunctionDeclaration {
         name: String,
         params: Vec<Stmt>,
         return_type: String,
-        body: Vec<Stmt>,
+        /// Should always be a block statement
+        block: Box<Stmt>,
     },
     FunctionParam {
         name: String,
@@ -142,6 +149,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
 
             parse_import(tokens)
         }
+        Token::OpenBrace => parse_block(tokens),
         _ => {
             println!("token: {token:?}");
             return Err("Unexpected token");
@@ -154,48 +162,11 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
             Some((Token::NewLine, _)) => {
                 tokens.next(); // Consume the new line token
             }
-            None => {} // Ignore indentation and the end of tokens
+            Some((Token::CloseBrace, _)) | None => {} // Ignore the end of block and the end of tokens
             _ => return Err("Expected new line"),
         }
     }
 
     // Return the parsed statement
     stmt
-}
-
-fn parse_wrapped_body(tokens: &mut TokenStream) -> MultiStatementResult {
-    // Consume an optional NewLine token if its present
-    if let Some((Token::NewLine, _)) = tokens.peek() {
-        tokens.next(); // Consume the new line token
-    }
-
-    // Consume the OpenBrace token
-    match tokens.next() {
-        Some((Token::OpenBrace, _)) => {}
-        _ => return Err("Expected opening brace"),
-    }
-
-    // Consume an optional NewLine token if its present
-    if let Some((Token::NewLine, _)) = tokens.peek() {
-        tokens.next(); // Consume the new line token
-    }
-
-    let mut body = vec![];
-
-    // Keep appending statements until a CloseBrace token is encountered
-    loop {
-        match tokens.peek() {
-            Some((Token::CloseBrace, _)) => {
-                tokens.next(); // Consume the token
-                break; // End of the block
-            }
-            None => return Err("Unexpected end of tokens in indented block"),
-            _ => {}
-        }
-
-        let statement = parse_statement(tokens)?;
-        body.push(statement);
-    }
-
-    Ok(body)
 }

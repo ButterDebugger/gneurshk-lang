@@ -1,6 +1,5 @@
-use super::{
-    StatementResult, Stmt, TokenStream, expressions::parse_expression, parse_wrapped_body,
-};
+use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
+use crate::block::parse_block;
 use gneurshk_lexer::tokens::Token;
 
 pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
@@ -89,13 +88,13 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
     };
 
     // Parse the body of the function
-    let body = parse_wrapped_body(tokens)?;
+    let body = parse_block(tokens)?;
 
     Ok(Stmt::FunctionDeclaration {
         name: name.to_string(),
         params: parameters,
         return_type,
-        body,
+        block: Box::new(body),
     })
 }
 
@@ -129,11 +128,11 @@ mod tests {
 
     #[test]
     fn return_type_specified() {
-        lex_then_parse("func apple() -> int:\n    var peas = 2\n");
+        lex_then_parse("func apple() -> int { \n var peas = 2 \n }");
     }
 
     #[test]
     fn no_return_specified() {
-        lex_then_parse("func apple():\n    const cucumbers = 8\n");
+        lex_then_parse("func apple() { \n const cucumbers = 8 \n }");
     }
 }
