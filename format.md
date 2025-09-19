@@ -24,6 +24,9 @@ var explicit_float: f16 = 6.0
 
 ## Strings
 
+> [!NOTE]
+> This has not been implemented yet
+
 ```julia
 # Single-line strings
 
@@ -56,6 +59,9 @@ func square(x: f32) -> f32 {
 
 ## Structs
 
+> [!NOTE]
+> This has not been implemented yet
+
 ```julia
 struct Point {
     x: f32
@@ -73,6 +79,9 @@ struct Point {
 ```
 
 ## Imports
+
+> [!NOTE]
+> This has not been implemented yet
 
 ```julia
 
@@ -101,6 +110,9 @@ println(factorial(6))
 ```
 
 ## Type Aliases
+
+> [!NOTE]
+> This has not been implemented yet
 
 ```julia
 struct Circle {
