@@ -4,8 +4,7 @@ use inkwell::AddressSpace;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
-use inkwell::values::{BasicValueEnum, FunctionValue, PointerValue};
-use std::collections::HashMap;
+use inkwell::values::BasicValueEnum;
 
 mod binary_expression;
 mod block;

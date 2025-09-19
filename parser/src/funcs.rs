@@ -1,7 +1,7 @@
 use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
 use crate::{
     block::parse_block,
-    types::{DataType, parse_type},
+    types::{parse_type, DataType}, FunctionParam,
 };
 use gneurshk_lexer::tokens::Token;
 
@@ -67,7 +67,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                 }
 
                 // Add the parameter to the list of parameters
-                parameters.push(Stmt::FunctionParam {
+                parameters.push(FunctionParam {
                     name: name.to_string(),
                     data_type,
                     default_value,

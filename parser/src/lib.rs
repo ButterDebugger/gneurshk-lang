@@ -47,6 +47,13 @@ pub enum UnaryOperator {
     Not,
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct FunctionParam {
+    pub name: String,
+    pub data_type: DataType,
+    pub default_value: Option<Box<Stmt>>,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
@@ -66,15 +73,10 @@ pub enum Stmt {
     },
     FunctionDeclaration {
         name: String,
-        params: Vec<Stmt>,
+        params: Vec<FunctionParam>,
         return_type: DataType,
         /// Should always be a block statement
         block: Box<Stmt>,
-    },
-    FunctionParam {
-        name: String,
-        data_type: DataType,
-        default_value: Option<Box<Stmt>>,
     },
     FunctionCall {
         name: String,

@@ -1,13 +1,13 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::Stmt;
 use gneurshk_parser::types::DataType;
+use gneurshk_parser::{FunctionParam, Stmt};
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn compile_function_declaration(
         &mut self,
         name: String,
-        params: Vec<Stmt>,
+        params: Vec<FunctionParam>,
         return_type: DataType,
         block: Stmt,
     ) -> Option<BasicValueEnum<'ctx>> {
@@ -38,16 +38,11 @@ impl<'ctx> Codegen<'ctx> {
 
         // Create a variable for each parameter in the current scope
         for (i, param) in params.iter().enumerate() {
-            if let Stmt::FunctionParam {
-                name: param_name, ..
-            } = param
-            {
-                let param_value = function.get_nth_param(i as u32).unwrap();
-                let alloca = self.builder.build_alloca(i32_type, param_name).unwrap();
-                self.builder.build_store(alloca, param_value).unwrap();
+            let param_value = function.get_nth_param(i as u32).unwrap();
+            let alloca = self.builder.build_alloca(i32_type, &param.name).unwrap();
+            self.builder.build_store(alloca, param_value).unwrap();
 
-                self.scope.set_variable(param_name.clone(), alloca);
-            }
+            self.scope.set_variable(param.name.clone(), alloca);
         }
 
         // Compile function body
