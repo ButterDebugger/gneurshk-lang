@@ -1,5 +1,6 @@
 use crate::codegen::Codegen;
 use gneurshk_parser::Stmt;
+use gneurshk_parser::types::DataType;
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
@@ -7,7 +8,7 @@ impl<'ctx> Codegen<'ctx> {
         &mut self,
         name: String,
         params: Vec<Stmt>,
-        return_type: String,
+        return_type: DataType,
         block: Stmt,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Get i32 type since functions only support that type TODO: Support other types

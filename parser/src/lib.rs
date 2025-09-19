@@ -3,6 +3,7 @@ use crate::expressions::parse_expression;
 use crate::ifs::parse_if_statement;
 use crate::imports::parse_import;
 use crate::returns::parse_return_statement;
+use crate::types::DataType;
 use crate::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
 use gneurshk_lexer::TokenStream;
@@ -14,6 +15,7 @@ mod funcs;
 mod ifs;
 mod imports;
 mod returns;
+pub mod types;
 mod variables;
 
 /// An alias for the result of parsing a single statement
@@ -65,13 +67,13 @@ pub enum Stmt {
     FunctionDeclaration {
         name: String,
         params: Vec<Stmt>,
-        return_type: String,
+        return_type: DataType,
         /// Should always be a block statement
         block: Box<Stmt>,
     },
     FunctionParam {
         name: String,
-        type_name: String,
+        data_type: DataType,
         default_value: Option<Box<Stmt>>,
     },
     FunctionCall {

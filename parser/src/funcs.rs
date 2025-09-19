@@ -1,5 +1,8 @@
 use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
-use crate::block::parse_block;
+use crate::{
+    block::parse_block,
+    types::{DataType, parse_type},
+};
 use gneurshk_lexer::tokens::Token;
 
 pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
@@ -43,10 +46,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                 }
 
                 // Read the parameter type
-                let type_name = match tokens.next().clone() {
-                    Some((Token::Word(name), _)) => name,
-                    _ => return Err("Expected a parameter type"),
-                };
+                let data_type = parse_type(tokens)?;
 
                 // Check for a default value
                 let default_value = match tokens.peek().cloned() {
@@ -69,7 +69,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                 // Add the parameter to the list of parameters
                 parameters.push(Stmt::FunctionParam {
                     name: name.to_string(),
-                    type_name: type_name.to_string(),
+                    data_type,
                     default_value,
                 });
             }
@@ -79,15 +79,12 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
 
     // Parse the return type
     let return_type = match tokens.peek() {
-        Some((Token::OpenBrace, _)) => "void".to_string(),
+        Some((Token::OpenBrace, _)) => DataType::default(),
         Some((Token::Arrow, _)) => {
-            tokens.next(); // Consume the token
+            tokens.next(); // Consume the Arrow token
 
             // Read the type
-            match tokens.next() {
-                Some((Token::Word(name), _)) => name.to_string(),
-                _ => return Err("Expected a return type"),
-            }
+            parse_type(tokens)?
         }
         _ => return Err("Missing a colon after the function name or a return type"),
     };
@@ -107,6 +104,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
 mod tests {
     use crate::Stmt;
     use crate::parse;
+    use crate::types::DataType;
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_func_declaration function
@@ -133,11 +131,43 @@ mod tests {
 
     #[test]
     fn return_type_specified() {
-        lex_then_parse("func apple() -> int { \n var peas = 2 \n }");
+        let stmt = lex_then_parse("func apple() -> Int32 { \n var peas = 2 \n }");
+
+        assert_eq!(
+            stmt,
+            vec![Stmt::FunctionDeclaration {
+                name: "apple".to_string(),
+                params: vec![],
+                return_type: DataType::Int32,
+                block: Box::new(Stmt::Block {
+                    body: vec![Stmt::Declaration {
+                        mutable: true,
+                        name: "peas".to_string(),
+                        value: Some(Box::new(Stmt::Literal { value: 2 })),
+                    }]
+                }),
+            }]
+        );
     }
 
     #[test]
     fn no_return_specified() {
-        lex_then_parse("func apple() { \n const cucumbers = 8 \n }");
+        let stmt = lex_then_parse("func apple() { \n const cucumbers = 8 \n }");
+
+        assert_eq!(
+            stmt,
+            vec![Stmt::FunctionDeclaration {
+                name: "apple".to_string(),
+                params: vec![],
+                return_type: DataType::default(),
+                block: Box::new(Stmt::Block {
+                    body: vec![Stmt::Declaration {
+                        mutable: false,
+                        name: "cucumbers".to_string(),
+                        value: Some(Box::new(Stmt::Literal { value: 8 })),
+                    }]
+                }),
+            }]
+        );
     }
 }
