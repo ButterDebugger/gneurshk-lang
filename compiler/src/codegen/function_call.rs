@@ -8,9 +8,11 @@ impl<'ctx> Codegen<'ctx> {
         name: String,
         args: Vec<Stmt>,
     ) -> Option<BasicValueEnum<'ctx>> {
-        // Handle built-in println function
-        if name == "println" {
-            return self.compile_println(args);
+        // Handle built-in functions
+        match name.as_str() {
+            "println" => return self.compile_println(args),
+            "print" => return self.compile_print(args),
+            _ => (),
         }
 
         // Get the function from the scope
@@ -53,7 +55,49 @@ impl<'ctx> Codegen<'ctx> {
             }
         }
 
-        format_str.push_str("\n\0");
+        format_str.push_str("\n\0"); // Append a new line and null terminator
+
+        // Create global string
+        let format_str_global = self
+            .builder
+            .build_global_string_ptr(&format_str, "format_str")
+            .unwrap();
+
+        // Get printf function
+        let printf_fn = self.scope.get_function("printf")?;
+
+        // Call printf
+        let mut printf_args = vec![format_str_global.as_pointer_value().into()];
+        printf_args.extend(arg_values);
+
+        self.builder
+            .build_call(printf_fn, &printf_args, "printf_call")
+            .unwrap();
+
+        None
+    }
+
+    fn compile_print(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
+        // Compile the arguments
+        let mut arg_values: Vec<BasicMetadataValueEnum<'ctx>> = Vec::new();
+        for arg in args {
+            if let Some(value) = self.compile_stmt(arg) {
+                arg_values.push(value.into());
+            }
+        }
+
+        // Create format string
+        let mut format_str = String::new();
+
+        for i in 0..arg_values.len() {
+            format_str.push_str("%d");
+
+            if i != arg_values.len() - 1 {
+                format_str.push(' ');
+            }
+        }
+
+        format_str.push('\0'); // Append null terminator
 
         // Create global string
         let format_str_global = self

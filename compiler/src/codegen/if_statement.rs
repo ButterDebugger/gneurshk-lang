@@ -60,17 +60,30 @@ impl<'ctx> Codegen<'ctx> {
         // Build the then block
         self.builder.position_at_end(then_branch);
         self.compile_stmt(block);
-        self.builder
-            .build_unconditional_branch(merge_branch)
-            .unwrap();
 
-        // Build the else block
-        if let Some(else_block) = else_block {
-            self.builder.position_at_end(else_branch.unwrap());
-            self.compile_stmt(else_block);
+        // Only add the merge branch if the current block doesn't have a terminator
+        let current_block = self.builder.get_insert_block().unwrap();
+
+        if current_block.get_terminator().is_none() {
             self.builder
                 .build_unconditional_branch(merge_branch)
                 .unwrap();
+        }
+
+        // Build the else block
+        if let Some(else_block) = else_block {
+            let else_branch_block = else_branch.unwrap();
+            self.builder.position_at_end(else_branch_block);
+            self.compile_stmt(else_block);
+
+            // Only add the merge branch if the current block doesn't have a terminator
+            let current_block = self.builder.get_insert_block().unwrap();
+
+            if current_block.get_terminator().is_none() {
+                self.builder
+                    .build_unconditional_branch(merge_branch)
+                    .unwrap();
+            }
         }
 
         // Position at merge block for subsequent code

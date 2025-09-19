@@ -48,18 +48,23 @@ impl<'ctx> Codegen<'ctx> {
         // Compile function body
         let return_value = self.compile_stmt(block);
 
-        // Add default return
-        if let Some(return_value) = return_value {
-            self.builder
-                .build_return(Some(&return_value.into_int_value()))
-                .unwrap();
-        } else {
-            // Default to 0 if no return value provided
-            // NOTE: This is a temporary solution and should be removed later when other types are added
-            let i32_type = self.context.i32_type();
-            self.builder
-                .build_return(Some(&i32_type.const_int(0, true)))
-                .unwrap();
+        // Only add default return if the current basic block doesn't already have a terminator
+        let current_block = self.builder.get_insert_block().unwrap();
+        
+        if current_block.get_terminator().is_none() {
+            // Add default return
+            if let Some(return_value) = return_value {
+                self.builder
+                    .build_return(Some(&return_value.into_int_value()))
+                    .unwrap();
+            } else {
+                // Default to 0 if no return value provided
+                // NOTE: This is a temporary solution and should be removed later when other types are added
+                let i32_type = self.context.i32_type();
+                self.builder
+                    .build_return(Some(&i32_type.const_int(0, true)))
+                    .unwrap();
+            }
         }
 
         // Exit function scope
