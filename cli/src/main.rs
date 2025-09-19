@@ -1,9 +1,10 @@
 use colored::Colorize;
-use gneurshk_compiler::compile;
-use gneurshk_lexer::lex;
+use gneurshk_compiler::{compile_to_executable, create_llvm_ir_file};
+use gneurshk_lexer::{TokenStream, lex};
 use gneurshk_parser::{Stmt, parse};
+use indicatif::{ProgressBar, ProgressStyle};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{env::args, fs::read_to_string, path::Path};
+use std::{env::args, fs::read_to_string, path::Path, time::Duration};
 
 fn main() {
     // Read the input from the command line
@@ -17,20 +18,39 @@ fn main() {
                 let path: &Path = path.as_ref();
                 let source = read_to_string(path).expect("Failed to read file");
 
-                build_cmd(&source);
+                let pb = create_progress_bar();
+
+                match build_cmd(&source, pb.clone()) {
+                    Ok(_) => {
+                        pb.finish_with_message("Successfully built executable");
+                    }
+                    Err(e) => {
+                        pb.finish_and_clear();
+
+                        println!("Error: {e}");
+                    }
+                };
             }
             "lex" => {
                 let input = args().nth(2).expect("Argument 2 needs to be a string");
                 let path = Path::new(&input);
                 let source = read_to_string(path).expect("Failed to read file");
 
-                match lex(&source) {
+                let pb = create_progress_bar();
+
+                match tokenize(&source, pb.clone()) {
                     Ok(tokens) => {
+                        pb.finish_with_message("Finished lexing");
+
                         for (token, range) in tokens {
                             println!("{}..{}\t{:?}", range.start, range.end, token);
                         }
                     }
-                    Err(e) => println!("Error: {e}"),
+                    Err(e) => {
+                        pb.finish_and_clear();
+
+                        println!("Error: {e}")
+                    }
                 }
             }
             "parse" => {
@@ -38,9 +58,19 @@ fn main() {
                 let path = Path::new(&input);
                 let source = read_to_string(path).expect("Failed to read file");
 
-                match create_ast(&source) {
-                    Ok(ast) => println!("AST: {ast:#?}"),
-                    Err(e) => println!("Error: {e}"),
+                let pb = create_progress_bar();
+
+                match create_ast(&source, pb.clone()) {
+                    Ok(ast) => {
+                        pb.finish_with_message("Finished parsing");
+
+                        println!("AST: {ast:#?}")
+                    }
+                    Err(e) => {
+                        pb.finish_and_clear();
+
+                        println!("Error: {e}")
+                    }
                 }
             }
             "check" => {
@@ -100,16 +130,25 @@ fn help_cmd() {
     println!("  {}                Prints a help message", "help".blue());
 }
 
-fn build_cmd(input: &str) {
-    let ast = match create_ast(input) {
+fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<(), String> {
+    let ast = match create_ast(input, pb.clone()) {
         Ok(ast) => ast,
         Err(e) => {
-            println!("Error: {e}");
-            return;
+            return Err(e);
         }
     };
 
-    compile(ast);
+    pb.set_message("Creating LLVM IR file...");
+
+    create_llvm_ir_file(ast.clone(), "output")?;
+
+    pb.set_message("Compiling to executable...");
+
+    compile_to_executable(ast.clone(), "output")?;
+
+    pb.finish_with_message("Done");
+
+    Ok(())
 }
 
 fn check_cmd(path: &Path) -> notify::Result<()> {
@@ -118,9 +157,19 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
     fn check(path: &Path) {
         let source = read_to_string(path).expect("Failed to read file");
 
-        match create_ast(&source) {
-            Ok(_ast) => println!("✅"),
-            Err(error) => println!("❌ Error: {error:?}"),
+        let pb = create_progress_bar();
+
+        match create_ast(&source, pb.clone()) {
+            Ok(_ast) => {
+                pb.finish_and_clear();
+
+                println!("✅");
+            }
+            Err(error) => {
+                pb.finish_and_clear();
+
+                println!("❌ Error: {error:?}");
+            }
         }
     }
 
@@ -172,22 +221,48 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
     Ok(())
 }
 
-fn create_ast(input: &str) -> Result<Vec<Stmt>, String> {
+fn tokenize(input: &str, pb: Box<ProgressBar>) -> Result<TokenStream<'_>, String> {
     // Create a iterable list of tokens
-    let tokens = lex(input)?;
+    pb.set_message("Tokenizing...");
 
-    // println!(
-    //     "Tokens: {:#?}",
-    //     tokens.clone().map(|(token, _)| token).collect::<Vec<_>>()
-    // );
+    let tokens = match lex(input) {
+        Ok(result) => result,
+        Err(e) => return Err(e.to_owned()),
+    };
+
+    Ok(tokens)
+}
+
+fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Vec<Stmt>, String> {
+    // Tokenize the input
+    let tokens = tokenize(input, pb.clone())?;
 
     // Parse the tokens to construct an AST
+    pb.set_message("Parsing...");
+
     let ast = match parse(&mut tokens.clone()) {
         Ok(result) => result,
         Err(e) => return Err(e.to_owned()),
     };
 
-    // println!("AST {:#?}", ast);
-
     Ok(ast)
+}
+
+fn create_progress_bar() -> Box<ProgressBar> {
+    let pb = ProgressBar::new_spinner();
+    pb.enable_steady_tick(Duration::from_millis(80));
+    pb.set_style(
+        ProgressStyle::with_template("{spinner:.blue} {msg}")
+            .unwrap()
+            // For more spinners check out the cli-spinners project:
+            // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
+            .tick_strings(&[
+                "⠁", "⠂", "⠄", "⡀", "⡈", "⡐", "⡠", "⣀", "⣁", "⣂", "⣄", "⣌", "⣔", "⣤", "⣥", "⣦",
+                "⣮", "⣶", "⣷", "⣿", "⡿", "⠿", "⢟", "⠟", "⡛", "⠛", "⠫", "⢋", "⠋", "⠍", "⡉", "⠉",
+                "⠑", "⠡", "⢁", "✔",
+            ]),
+    );
+    pb.set_message("Initializing...");
+
+    Box::new(pb)
 }

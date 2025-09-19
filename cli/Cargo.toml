@@ -11,3 +11,4 @@ gneurshk_lexer = { path = "../lexer" }
 clearscreen = "4.0.1"
 colored = "3.0.0"
 notify = "8.0.0"
+indicatif = "0.18.0"

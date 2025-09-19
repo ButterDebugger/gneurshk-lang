@@ -58,10 +58,13 @@ impl Iterator for Scanner<'_> {
     }
 }
 
+/// An alias for a peekable iterator of tokens
+pub type TokenStream<'a> = Peekable<Scanner<'a>>;
+
 /// Takes a string and returns a peekable iterator of tokens
 /// # Panics
 /// Panics if there are any lexing errors
-pub fn lex(input: &str) -> Result<Peekable<Scanner<'_>>, String> {
+pub fn lex(input: &str) -> Result<TokenStream<'_>, String> {
     // Create a lexer instance from the input
     // Panic ahead of time if there are any errors
     let scanner = Scanner::new(input)?;

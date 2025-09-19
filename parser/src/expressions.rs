@@ -1,23 +1,69 @@
-use super::{Operator, StatementResult, Stmt, TokenStream};
+use super::{BinaryOperator, StatementResult, Stmt, TokenStream};
 use gneurshk_lexer::tokens::Token;
 
 /// Parses a binary expression based on operator priority
 pub fn parse_expression(tokens: &mut TokenStream) -> StatementResult {
-    parse_comparison(tokens)
+    parse_logical_or(tokens)
 }
 
-/// Parses comparison operators (lowest priority)
+/// Parses logical or (lowest priority)
+fn parse_logical_or(tokens: &mut TokenStream) -> StatementResult {
+    let mut left = parse_logical_and(tokens)?; // Parse the next priority level first
+
+    // Continuously parse the given operators on this priority level until there are no more
+    while let Some(operator) = match tokens.peek() {
+        Some((Token::Or, _)) => Some(BinaryOperator::Or),
+        _ => None, // Stop parsing this level
+    } {
+        tokens.next(); // Consume the operator token
+
+        // With the next lowest priority, parse the right operand
+        let right = parse_logical_and(tokens)?;
+        left = Stmt::BinaryExpression {
+            left: Box::new(left),
+            right: Box::new(right),
+            operator,
+        };
+    }
+
+    Ok(left)
+}
+
+/// Parses logical and
+fn parse_logical_and(tokens: &mut TokenStream) -> StatementResult {
+    let mut left = parse_comparison(tokens)?; // Parse the next priority level first
+
+    // Continuously parse the given operators on this priority level until there are no more
+    while let Some(operator) = match tokens.peek() {
+        Some((Token::And, _)) => Some(BinaryOperator::And),
+        _ => None, // Stop parsing this level
+    } {
+        tokens.next(); // Consume the operator token
+
+        // With the next lowest priority, parse the right operand
+        let right = parse_comparison(tokens)?;
+        left = Stmt::BinaryExpression {
+            left: Box::new(left),
+            right: Box::new(right),
+            operator,
+        };
+    }
+
+    Ok(left)
+}
+
+/// Parses comparison operators
 fn parse_comparison(tokens: &mut TokenStream) -> StatementResult {
     let mut left = parse_addition_subtraction(tokens)?; // Parse the next priority level first
 
     // Continuously parse the given operators on this priority level until there are no more
     while let Some(operator) = match tokens.peek() {
-        Some((Token::GreaterThan, _)) => Some(Operator::GreaterThan),
-        Some((Token::GreaterThanEqual, _)) => Some(Operator::GreaterThanEqual),
-        Some((Token::EqualEqual, _)) => Some(Operator::Equal),
-        Some((Token::NotEqual, _)) => Some(Operator::NotEqual),
-        Some((Token::LessThanEqual, _)) => Some(Operator::LessThanEqual),
-        Some((Token::LessThan, _)) => Some(Operator::LessThan),
+        Some((Token::GreaterThan, _)) => Some(BinaryOperator::GreaterThan),
+        Some((Token::GreaterThanEqual, _)) => Some(BinaryOperator::GreaterThanEqual),
+        Some((Token::EqualEqual, _)) => Some(BinaryOperator::Equal),
+        Some((Token::NotEqual, _)) => Some(BinaryOperator::NotEqual),
+        Some((Token::LessThanEqual, _)) => Some(BinaryOperator::LessThanEqual),
+        Some((Token::LessThan, _)) => Some(BinaryOperator::LessThan),
         _ => None, // Stop parsing this level
     } {
         tokens.next(); // Consume the operator token
@@ -40,8 +86,8 @@ fn parse_addition_subtraction(tokens: &mut TokenStream) -> StatementResult {
 
     // Continuously parse the given operators on this priority level until there are no more
     while let Some(operator) = match tokens.peek() {
-        Some((Token::Plus, _)) => Some(Operator::Add),
-        Some((Token::Minus, _)) => Some(Operator::Subtract),
+        Some((Token::Plus, _)) => Some(BinaryOperator::Add),
+        Some((Token::Minus, _)) => Some(BinaryOperator::Subtract),
         _ => None, // Stop parsing this level
     } {
         tokens.next(); // Consume the operator token
@@ -63,9 +109,9 @@ fn parse_multiplication_division(tokens: &mut TokenStream) -> StatementResult {
 
     // Continuously parse the given operators on this priority level until there are no more
     while let Some(operator) = match tokens.peek() {
-        Some((Token::Multiply, _)) => Some(Operator::Multiply),
-        Some((Token::Divide, _)) => Some(Operator::Divide),
-        Some((Token::Modulus, _)) => Some(Operator::Modulus),
+        Some((Token::Multiply, _)) => Some(BinaryOperator::Multiply),
+        Some((Token::Divide, _)) => Some(BinaryOperator::Divide),
+        Some((Token::Modulus, _)) => Some(BinaryOperator::Modulus),
         _ => None, // Stop parsing this level
     } {
         tokens.next(); // Consume the operator token
@@ -160,8 +206,8 @@ fn parse_identifier_or_function_call(tokens: &mut TokenStream) -> StatementResul
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::Stmt::{BinaryExpression, Literal};
-    use crate::{Operator, parse};
+    use crate::Stmt::{BinaryExpression, Identifier, Literal};
+    use crate::{BinaryOperator, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_expression function
@@ -177,15 +223,66 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn repeated_identifiers() {
-        lex_then_parse("chicken chicken chicken chicken chicken chicken chicken chicken");
+        let stmt =
+            lex_then_parse("chicken chicken chicken chicken chicken chicken chicken chicken");
+
+        assert_eq!(
+            stmt,
+            vec![
+                Identifier {
+                    name: "chicken".to_string()
+                },
+                Identifier {
+                    name: "chicken".to_string()
+                },
+                Identifier {
+                    name: "chicken".to_string()
+                },
+                Identifier {
+                    name: "chicken".to_string()
+                },
+                Identifier {
+                    name: "chicken".to_string()
+                },
+                Identifier {
+                    name: "chicken".to_string()
+                },
+                Identifier {
+                    name: "chicken".to_string()
+                },
+                Identifier {
+                    name: "chicken".to_string()
+                },
+            ]
+        );
     }
 
     #[test]
-    #[should_panic]
     fn repeated_numbers() {
-        lex_then_parse("1 2 3 4 5 6 7 8 9 10");
+        let stmt = lex_then_parse("1 2 3 + 4 == 5 6 7 8 9 10");
+
+        assert_eq!(
+            stmt,
+            vec![
+                Literal { value: 1 },
+                Literal { value: 2 },
+                BinaryExpression {
+                    left: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 3 }),
+                        right: Box::new(Literal { value: 4 }),
+                        operator: BinaryOperator::Add,
+                    }),
+                    right: Box::new(Literal { value: 5 }),
+                    operator: BinaryOperator::Equal,
+                },
+                Literal { value: 6 },
+                Literal { value: 7 },
+                Literal { value: 8 },
+                Literal { value: 9 },
+                Literal { value: 10 },
+            ]
+        );
     }
 
     #[test]
@@ -212,16 +309,152 @@ mod tests {
                         right: Box::new(BinaryExpression {
                             left: Box::new(Literal { value: 3 }),
                             right: Box::new(Literal { value: 4 }),
-                            operator: Operator::Subtract,
+                            operator: BinaryOperator::Subtract,
                         }),
-                        operator: Operator::Multiply,
+                        operator: BinaryOperator::Multiply,
                     }),
                     right: Box::new(Literal { value: 5 }),
-                    operator: Operator::Divide,
+                    operator: BinaryOperator::Divide,
                 }),
-                operator: Operator::Add
+                operator: BinaryOperator::Add
             }]
         )
+    }
+
+    #[test]
+    fn and_or_logical_expression() {
+        let stmt = lex_then_parse("1 < 2 && 3 > 4 || 5 == 6");
+
+        assert_eq!(
+            stmt,
+            vec![BinaryExpression {
+                left: Box::new(BinaryExpression {
+                    left: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 1 }),
+                        right: Box::new(Literal { value: 2 }),
+                        operator: BinaryOperator::LessThan,
+                    }),
+                    right: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 3 }),
+                        right: Box::new(Literal { value: 4 }),
+                        operator: BinaryOperator::GreaterThan,
+                    }),
+                    operator: BinaryOperator::And,
+                }),
+                right: Box::new(BinaryExpression {
+                    left: Box::new(Literal { value: 5 }),
+                    right: Box::new(Literal { value: 6 }),
+                    operator: BinaryOperator::Equal,
+                }),
+                operator: BinaryOperator::Or,
+            }]
+        );
+    }
+
+    #[test]
+    fn or_and_logical_expression() {
+        let stmt = lex_then_parse("1 < 2 || 3 > 4 && 5 == 6");
+
+        assert_eq!(
+            stmt,
+            vec![BinaryExpression {
+                left: Box::new(BinaryExpression {
+                    left: Box::new(Literal { value: 1 }),
+                    right: Box::new(Literal { value: 2 }),
+                    operator: BinaryOperator::LessThan,
+                }),
+                right: Box::new(BinaryExpression {
+                    left: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 3 }),
+                        right: Box::new(Literal { value: 4 }),
+                        operator: BinaryOperator::GreaterThan,
+                    }),
+                    right: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 5 }),
+                        right: Box::new(Literal { value: 6 }),
+                        operator: BinaryOperator::Equal,
+                    }),
+                    operator: BinaryOperator::And,
+                }),
+                operator: BinaryOperator::Or,
+            }]
+        );
+    }
+
+    #[test]
+    fn and_or_and_logical_expression() {
+        let stmt = lex_then_parse("1 < 2 && 3 > 4 || 5 == 6 && 7 != 8");
+
+        assert_eq!(
+            stmt,
+            vec![BinaryExpression {
+                left: Box::new(BinaryExpression {
+                    left: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 1 }),
+                        right: Box::new(Literal { value: 2 }),
+                        operator: BinaryOperator::LessThan,
+                    }),
+                    right: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 3 }),
+                        right: Box::new(Literal { value: 4 }),
+                        operator: BinaryOperator::GreaterThan,
+                    }),
+                    operator: BinaryOperator::And,
+                }),
+                right: Box::new(BinaryExpression {
+                    left: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 5 }),
+                        right: Box::new(Literal { value: 6 }),
+                        operator: BinaryOperator::Equal,
+                    }),
+                    right: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 7 }),
+                        right: Box::new(Literal { value: 8 }),
+                        operator: BinaryOperator::NotEqual,
+                    }),
+                    operator: BinaryOperator::And,
+                }),
+                operator: BinaryOperator::Or,
+            }]
+        );
+    }
+
+    #[test]
+    fn or_and_or_logical_expression() {
+        let stmt = lex_then_parse("1 < 2 || 3 > 4 && 5 == 6 || 7 != 8");
+
+        assert_eq!(
+            stmt,
+            vec![BinaryExpression {
+                left: Box::new(BinaryExpression {
+                    left: Box::new(BinaryExpression {
+                        left: Box::new(Literal { value: 1 }),
+                        right: Box::new(Literal { value: 2 }),
+                        operator: BinaryOperator::LessThan,
+                    }),
+                    right: Box::new(BinaryExpression {
+                        left: Box::new(BinaryExpression {
+                            left: Box::new(Literal { value: 3 }),
+                            right: Box::new(Literal { value: 4 }),
+                            operator: BinaryOperator::GreaterThan,
+                        }),
+                        right: Box::new(BinaryExpression {
+                            left: Box::new(Literal { value: 5 }),
+                            right: Box::new(Literal { value: 6 }),
+                            operator: BinaryOperator::Equal,
+                        }),
+                        operator: BinaryOperator::And,
+                    }),
+                    operator: BinaryOperator::Or,
+                }),
+                right: Box::new(BinaryExpression {
+                    left: Box::new(Literal { value: 7 }),
+                    right: Box::new(Literal { value: 8 }),
+                    operator: BinaryOperator::NotEqual,
+                }),
+                operator: BinaryOperator::Or,
+            }]
+        );
     }
 
     #[test]
@@ -281,14 +514,14 @@ mod tests {
                         right: Box::new(Stmt::BinaryExpression {
                             left: Box::new(Stmt::Literal { value: 2 }),
                             right: Box::new(Stmt::Literal { value: 5 }),
-                            operator: Operator::Add,
+                            operator: BinaryOperator::Add,
                         }),
-                        operator: Operator::Add,
+                        operator: BinaryOperator::Add,
                     },
                     Stmt::BinaryExpression {
                         left: Box::new(Stmt::Literal { value: 3 }),
                         right: Box::new(Stmt::Literal { value: 4 }),
-                        operator: Operator::Multiply,
+                        operator: BinaryOperator::Multiply,
                     },
                 ],
             }]

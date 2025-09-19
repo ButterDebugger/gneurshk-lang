@@ -76,11 +76,11 @@ pub enum Token {
     #[token("!=")]
     NotEqual,
 
-    #[regex(r"and|&&")]
+    #[regex(r"and|&&", priority = 20)]
     And,
-    #[token(r"or|\|\|")]
+    #[regex(r"or|\|\|", priority = 20)]
     Or,
-    #[token(r"not|!")]
+    #[regex(r"not|!", priority = 20)]
     Not,
 
     #[token("var")]
@@ -103,8 +103,10 @@ pub enum Token {
     As,
     #[token("from")]
     From,
+    #[token("return")]
+    Return,
 
-    #[regex("[a-zA-Z_][a-zA-Z0-9_]*", word)]
+    #[regex("[a-zA-Z_][a-zA-Z0-9_]*", word, priority = 1)]
     Word(String),
     #[regex("[0-9]+", integer)]
     Integer(isize),

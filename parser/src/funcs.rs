@@ -61,6 +61,11 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                     _ => None,
                 };
 
+                // Consume the comma if it exists
+                if let Some((Token::Comma, _)) = tokens.peek().cloned() {
+                    tokens.next(); // Consume the token
+                }
+
                 // Add the parameter to the list of parameters
                 parameters.push(Stmt::FunctionParam {
                     name: name.to_string(),

@@ -2,28 +2,28 @@ use crate::block::parse_block;
 use crate::expressions::parse_expression;
 use crate::ifs::parse_if_statement;
 use crate::imports::parse_import;
+use crate::returns::parse_return_statement;
 use crate::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
-use gneurshk_lexer::Scanner;
+use gneurshk_lexer::TokenStream;
 use gneurshk_lexer::tokens::Token;
-use std::iter::Peekable;
+
 mod block;
 mod expressions;
 mod funcs;
 mod ifs;
 mod imports;
+mod returns;
 mod variables;
 
 /// An alias for the result of parsing a single statement
 pub type StatementResult = Result<Stmt, &'static str>;
 /// An alias for the result of parsing multiple statements
 pub type MultiStatementResult = Result<Vec<Stmt>, &'static str>;
-/// An alias for a peekable iterator of tokens
-pub type TokenStream<'a> = Peekable<Scanner<'a>>;
 
-#[allow(dead_code)]
-#[derive(Debug, PartialEq)]
-pub enum Operator {
+/// A binary operator which takes in two operands
+#[derive(Debug, PartialEq, Clone)]
+pub enum BinaryOperator {
     Add,
     Subtract,
     Multiply,
@@ -35,10 +35,18 @@ pub enum Operator {
     NotEqual,
     LessThanEqual,
     LessThan,
+    And,
+    Or,
+}
+
+/// A unary operator which takes in one operand
+#[derive(Debug, PartialEq, Clone)]
+pub enum UnaryOperator {
+    Not,
 }
 
 #[allow(dead_code)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
     Declaration {
         mutable: bool,
@@ -52,6 +60,7 @@ pub enum Stmt {
         condition: Box<Stmt>,
         /// Should always be a block statement
         block: Box<Stmt>,
+        else_block: Option<Box<Stmt>>,
     },
     FunctionDeclaration {
         name: String,
@@ -72,13 +81,20 @@ pub enum Stmt {
     BinaryExpression {
         left: Box<Stmt>,
         right: Box<Stmt>,
-        operator: Operator,
+        operator: BinaryOperator,
+    },
+    UnaryExpression {
+        value: Box<Stmt>,
+        operator: UnaryOperator,
     },
     Identifier {
         name: String,
     },
     Literal {
         value: isize,
+    },
+    ReturnStatement {
+        value: Option<Box<Stmt>>,
     },
     // TypeAlias {
     //     name: String,
@@ -130,41 +146,23 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
     };
 
     // Parse the statement
-    let mut single_line = false;
     let stmt = match token {
-        Token::Var | Token::Const => {
-            single_line = true;
-
-            parse_variable_declaration(tokens)
-        }
+        Token::Var | Token::Const => parse_variable_declaration(tokens),
         Token::If => parse_if_statement(tokens),
-        Token::Integer(_) | Token::OpenParen | Token::Word(_) => {
-            single_line = true;
-
-            parse_expression(tokens)
-        }
+        Token::Integer(_) | Token::OpenParen | Token::Word(_) => parse_expression(tokens),
         Token::Func => parse_func_declaration(tokens),
-        Token::Import => {
-            single_line = true;
-
-            parse_import(tokens)
-        }
+        Token::Import => parse_import(tokens),
         Token::OpenBrace => parse_block(tokens),
+        Token::Return => parse_return_statement(tokens),
         _ => {
             println!("token: {token:?}");
             return Err("Unexpected token");
         }
     };
 
-    // If the statement is single lined, expect a new line
-    if single_line {
-        match tokens.peek() {
-            Some((Token::NewLine, _)) => {
-                tokens.next(); // Consume the new line token
-            }
-            Some((Token::CloseBrace, _)) | None => {} // Ignore the end of block and the end of tokens
-            _ => return Err("Expected new line"),
-        }
+    // Consume a NewLine token if its present
+    if let Some((Token::NewLine, _)) = tokens.peek() {
+        tokens.next(); // Consume the new line token
     }
 
     // Return the parsed statement

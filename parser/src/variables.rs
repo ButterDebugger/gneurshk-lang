@@ -23,7 +23,7 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 
         let value = match parse_expression(tokens) {
             Ok(e) => e,
-            _ => return Err("Expected an expression"),
+            _ => return Err("Expected a value for the variable"),
         };
 
         return Ok(Stmt::Declaration {
@@ -42,10 +42,10 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use gneurshk_lexer::lex;
-    use crate::Operator;
+    use crate::BinaryOperator;
     use crate::Stmt;
     use crate::parse;
+    use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_variable_declaration function
     fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
@@ -129,7 +129,7 @@ mod tests {
                 value: Some(Box::new(Stmt::BinaryExpression {
                     left: Box::new(Stmt::Literal { value: 2 }),
                     right: Box::new(Stmt::Literal { value: 5 }),
-                    operator: Operator::Add
+                    operator: BinaryOperator::Add
                 }))
             }]
         );
