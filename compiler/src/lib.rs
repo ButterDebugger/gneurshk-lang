@@ -11,7 +11,10 @@ use std::process::Command;
 mod codegen;
 
 /// Creates LLVM IR files (.ll) from the AST
-pub fn create_llvm_ir_file(ast: Vec<Stmt>, output_path: &str) -> Result<(), String> {
+///
+/// # Returns
+/// The path to the LLVM IR file
+pub fn create_llvm_ir_file(ast: Vec<Stmt>, output_path: &str) -> Result<String, String> {
     let context = Context::create();
     let mut codegen = Codegen::new(&context, "main");
 
@@ -20,14 +23,18 @@ pub fn create_llvm_ir_file(ast: Vec<Stmt>, output_path: &str) -> Result<(), Stri
     // Write LLVM IR to file
     let module = codegen.get_module();
     let ir = module.print_to_string().to_string();
-    std::fs::write(output_path.to_owned() + ".ll", ir)
-        .map_err(|e| format!("Failed to write LLVM IR file: {}", e))?;
+    let ir_path = format!("{}.ll", output_path);
 
-    Ok(())
+    std::fs::write(&ir_path, ir).map_err(|e| format!("Failed to write LLVM IR file: {}", e))?;
+
+    Ok(ir_path)
 }
 
 /// Creates object files (.o) from the AST
-pub fn create_object_file(ast: Vec<Stmt>, output_path: &str) -> Result<(), String> {
+///
+/// # Returns
+/// The path to the object file
+pub fn create_object_file(ast: Vec<Stmt>, output_path: &str) -> Result<String, String> {
     let context = Context::create();
     let mut codegen = Codegen::new(&context, "main");
 
@@ -55,18 +62,19 @@ pub fn create_object_file(ast: Vec<Stmt>, output_path: &str) -> Result<(), Strin
 
     // Write object file
     let module = codegen.get_module();
+    let obj_path = format!("{}.o", output_path);
+
     target_machine
-        .write_to_file(module, FileType::Object, Path::new(output_path))
+        .write_to_file(module, FileType::Object, Path::new(&obj_path))
         .map_err(|e| format!("Failed to write object file: {}", e))?;
 
-    Ok(())
+    Ok(obj_path)
 }
 
 /// Compiles the AST into an executable
 pub fn compile_to_executable(ast: Vec<Stmt>, output_path: &str) -> Result<(), String> {
     // First create an object file
-    let obj_path = format!("{}.o", output_path);
-    create_object_file(ast, &obj_path)?;
+    let obj_path = create_object_file(ast, output_path)?;
 
     // Link the object file to create an executable
     let output = Command::new("gcc")
