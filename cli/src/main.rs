@@ -221,6 +221,7 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
     Ok(())
 }
 
+#[allow(clippy::boxed_local)]
 fn tokenize(input: &str, pb: Box<ProgressBar>) -> Result<TokenStream<'_>, String> {
     // Create a iterable list of tokens
     pb.set_message("Tokenizing...");
@@ -245,7 +246,7 @@ fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Vec<Stmt>, String> {
         Err(e) => return Err(e.to_owned()),
     };
 
-    Ok(ast)
+    Ok(ast.body) // TODO: change this when top level statements are implemented
 }
 
 fn create_progress_bar() -> Box<ProgressBar> {

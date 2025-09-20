@@ -4,7 +4,7 @@ use gneurshk_parser::{FunctionParam, Stmt};
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn compile_function_declaration(
+    pub(crate) fn build_function_declaration(
         &mut self,
         name: String,
         params: Vec<FunctionParam>,
@@ -46,11 +46,11 @@ impl<'ctx> Codegen<'ctx> {
         }
 
         // Compile function body
-        let return_value = self.compile_stmt(block);
+        let return_value = self.build_stmt(block);
 
         // Only add default return if the current basic block doesn't already have a terminator
         let current_block = self.builder.get_insert_block().unwrap();
-        
+
         if current_block.get_terminator().is_none() {
             // Add default return
             if let Some(return_value) = return_value {

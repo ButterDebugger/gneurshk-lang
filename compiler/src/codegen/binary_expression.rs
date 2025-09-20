@@ -1,18 +1,38 @@
 use crate::codegen::Codegen;
 use gneurshk_parser::{BinaryOperator, Stmt};
 use inkwell::IntPredicate;
-use inkwell::values::BasicValueEnum;
+use inkwell::values::{BasicValueEnum, IntValue};
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn compile_binary_expression(
+    pub(crate) fn build_binary_expression(
         &mut self,
         left: Stmt,
         right: Stmt,
         operator: BinaryOperator,
     ) -> Option<BasicValueEnum<'ctx>> {
-        let left_value = self.compile_stmt(left)?.into_int_value();
-        let right_value = self.compile_stmt(right)?.into_int_value();
+        let left_value = self.build_stmt(left)?;
+        let right_value = self.build_stmt(right)?;
 
+        match (left_value, right_value) {
+            (BasicValueEnum::IntValue(left_value), BasicValueEnum::IntValue(right_value)) => {
+                self.build_int_int_expression(left_value, right_value, operator)
+            }
+            _ => {
+                panic!(
+                    "Unsupported operand types for '{}' and '{}'",
+                    left_value.get_type(),
+                    right_value.get_type()
+                );
+            }
+        }
+    }
+
+    fn build_int_int_expression(
+        &mut self,
+        left_value: IntValue<'ctx>,
+        right_value: IntValue<'ctx>,
+        operator: BinaryOperator,
+    ) -> Option<BasicValueEnum<'ctx>> {
         let result = match operator {
             BinaryOperator::Add => self
                 .builder

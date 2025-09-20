@@ -1,3 +1,5 @@
+use crate::strings::parse_string;
+
 use super::{BinaryOperator, StatementResult, Stmt, TokenStream};
 use gneurshk_lexer::tokens::Token;
 
@@ -144,6 +146,7 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
         }
         Some((Token::Integer(_), _)) => parse_literal(tokens),
         Some((Token::Word(_), _)) => parse_identifier_or_function_call(tokens),
+        Some((Token::String(_), _)) => parse_string(tokens),
         Some(_) => Err("Unexpected token in expression"),
         None => Err("Unexpected end of tokens in expression"),
     }
@@ -205,13 +208,12 @@ fn parse_identifier_or_function_call(tokens: &mut TokenStream) -> StatementResul
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::Stmt::{BinaryExpression, Identifier, Literal};
-    use crate::{BinaryOperator, parse};
+    use crate::Stmt::{self, BinaryExpression, Identifier, Literal};
+    use crate::{BinaryOperator, Program, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_expression function
-    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
         println!("tokens {tokens:?}");
@@ -225,7 +227,7 @@ mod tests {
     #[test]
     fn repeated_identifiers() {
         let stmt =
-            lex_then_parse("chicken chicken chicken chicken chicken chicken chicken chicken");
+            lex_then_parse("chicken chicken chicken chicken chicken chicken chicken chicken").body;
 
         assert_eq!(
             stmt,
@@ -260,7 +262,7 @@ mod tests {
 
     #[test]
     fn repeated_numbers() {
-        let stmt = lex_then_parse("1 2 3 + 4 == 5 6 7 8 9 10");
+        let stmt = lex_then_parse("1 2 3 + 4 == 5 6 7 8 9 10").body;
 
         assert_eq!(
             stmt,
@@ -297,7 +299,7 @@ mod tests {
 
     #[test]
     fn basic_expression() {
-        let stmt = lex_then_parse("1 + 7 * (3 - 4) / 5");
+        let stmt = lex_then_parse("1 + 7 * (3 - 4) / 5").body;
 
         assert_eq!(
             stmt,
@@ -323,7 +325,7 @@ mod tests {
 
     #[test]
     fn and_or_logical_expression() {
-        let stmt = lex_then_parse("1 < 2 && 3 > 4 || 5 == 6");
+        let stmt = lex_then_parse("1 < 2 && 3 > 4 || 5 == 6").body;
 
         assert_eq!(
             stmt,
@@ -353,7 +355,7 @@ mod tests {
 
     #[test]
     fn or_and_logical_expression() {
-        let stmt = lex_then_parse("1 < 2 || 3 > 4 && 5 == 6");
+        let stmt = lex_then_parse("1 < 2 || 3 > 4 && 5 == 6").body;
 
         assert_eq!(
             stmt,
@@ -383,7 +385,7 @@ mod tests {
 
     #[test]
     fn and_or_and_logical_expression() {
-        let stmt = lex_then_parse("1 < 2 && 3 > 4 || 5 == 6 && 7 != 8");
+        let stmt = lex_then_parse("1 < 2 && 3 > 4 || 5 == 6 && 7 != 8").body;
 
         assert_eq!(
             stmt,
@@ -421,7 +423,7 @@ mod tests {
 
     #[test]
     fn or_and_or_logical_expression() {
-        let stmt = lex_then_parse("1 < 2 || 3 > 4 && 5 == 6 || 7 != 8");
+        let stmt = lex_then_parse("1 < 2 || 3 > 4 && 5 == 6 || 7 != 8").body;
 
         assert_eq!(
             stmt,
@@ -459,7 +461,7 @@ mod tests {
 
     #[test]
     fn function_call_no_args() {
-        let stmt = lex_then_parse("foo()");
+        let stmt = lex_then_parse("foo()").body;
 
         assert_eq!(
             stmt,
@@ -472,7 +474,7 @@ mod tests {
 
     #[test]
     fn function_call_single_arg() {
-        let stmt = lex_then_parse("bar(42)");
+        let stmt = lex_then_parse("bar(42)").body;
 
         assert_eq!(
             stmt,
@@ -485,7 +487,7 @@ mod tests {
 
     #[test]
     fn function_call_multiple_args() {
-        let stmt = lex_then_parse("baz(1, 2, 3)");
+        let stmt = lex_then_parse("baz(1, 2, 3)").body;
 
         assert_eq!(
             stmt,
@@ -502,7 +504,7 @@ mod tests {
 
     #[test]
     fn function_call_with_expression_args() {
-        let stmt = lex_then_parse("calculate(1 + (2 + 5), 3 * 4)");
+        let stmt = lex_then_parse("calculate(1 + (2 + 5), 3 * 4)").body;
 
         assert_eq!(
             stmt,

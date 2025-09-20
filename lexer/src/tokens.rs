@@ -108,6 +108,8 @@ pub enum Token {
 
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", word, priority = 1)]
     Word(String),
+    #[regex(r#""([^"\\\x00-\x1F]|\\(["\\bnfrt/]|u[a-fA-F0-9]{4}))*""#, string)]
+    String(String),
     #[regex("[0-9]+", integer)]
     Integer(isize),
     #[regex(r"true|false", boolean)]
@@ -116,6 +118,11 @@ pub enum Token {
 
 fn word(lexer: &mut Lexer<Token>) -> String {
     lexer.slice().to_string()
+}
+
+fn string(lexer: &mut Lexer<Token>) -> String {
+    let slice = lexer.slice();
+    slice[1..slice.len() - 1].to_string()
 }
 
 fn integer(lexer: &mut Lexer<Token>) -> isize {

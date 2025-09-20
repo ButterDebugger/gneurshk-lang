@@ -42,13 +42,11 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::BinaryOperator;
-    use crate::Stmt;
-    use crate::parse;
+    use crate::{BinaryOperator, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_variable_declaration function
-    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
         match parse(&mut tokens.clone()) {
@@ -77,7 +75,7 @@ mod tests {
 
     #[test]
     fn blank_variable_declaration() {
-        let stmt = lex_then_parse("var apple");
+        let stmt = lex_then_parse("var apple").body;
 
         assert_eq!(
             stmt,
@@ -91,7 +89,7 @@ mod tests {
 
     #[test]
     fn blank_constant_declaration() {
-        let stmt = lex_then_parse("const orange");
+        let stmt = lex_then_parse("const orange").body;
 
         assert_eq!(
             stmt,
@@ -105,7 +103,7 @@ mod tests {
 
     #[test]
     fn literal_variable_declaration() {
-        let stmt = lex_then_parse("var green_beans = 2");
+        let stmt = lex_then_parse("var green_beans = 2").body;
 
         assert_eq!(
             stmt,
@@ -119,7 +117,7 @@ mod tests {
 
     #[test]
     fn expression_variable_declaration() {
-        let stmt = lex_then_parse("var canned_corn = 2 + 5");
+        let stmt = lex_then_parse("var canned_corn = 2 + 5").body;
 
         assert_eq!(
             stmt,

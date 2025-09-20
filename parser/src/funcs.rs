@@ -1,7 +1,8 @@
 use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
 use crate::{
+    FunctionParam,
     block::parse_block,
-    types::{parse_type, DataType}, FunctionParam,
+    types::{DataType, parse_type},
 };
 use gneurshk_lexer::tokens::Token;
 
@@ -102,13 +103,12 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::Stmt;
-    use crate::parse;
     use crate::types::DataType;
+    use crate::{Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_func_declaration function
-    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
         match parse(&mut tokens.clone()) {
@@ -131,7 +131,7 @@ mod tests {
 
     #[test]
     fn return_type_specified() {
-        let stmt = lex_then_parse("func apple() -> Int32 { \n var peas = 2 \n }");
+        let stmt = lex_then_parse("func apple() -> Int32 { \n var peas = 2 \n }").body;
 
         assert_eq!(
             stmt,
@@ -152,7 +152,7 @@ mod tests {
 
     #[test]
     fn no_return_specified() {
-        let stmt = lex_then_parse("func apple() { \n const cucumbers = 8 \n }");
+        let stmt = lex_then_parse("func apple() { \n const cucumbers = 8 \n }").body;
 
         assert_eq!(
             stmt,

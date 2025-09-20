@@ -3,15 +3,15 @@ use gneurshk_parser::Stmt;
 use inkwell::values::{BasicMetadataValueEnum, BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn compile_function_call(
+    pub(crate) fn build_function_call(
         &mut self,
         name: String,
         args: Vec<Stmt>,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Handle built-in functions
         match name.as_str() {
-            "println" => return self.compile_println(args),
-            "print" => return self.compile_print(args),
+            "println" => return self.build_println(args),
+            "print" => return self.build_print(args),
             _ => (),
         }
 
@@ -21,7 +21,7 @@ impl<'ctx> Codegen<'ctx> {
         // Compile the arguments
         let mut arg_values = Vec::new();
         for arg in args {
-            if let Some(value) = self.compile_stmt(arg) {
+            if let Some(value) = self.build_stmt(arg) {
                 arg_values.push(value.into());
             }
         }
@@ -35,22 +35,30 @@ impl<'ctx> Codegen<'ctx> {
         call_result.try_as_basic_value().left()
     }
 
-    fn compile_println(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
-        // Compile the arguments
+    fn build_println(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
+        // Compile the arguments and create format string
         let mut arg_values: Vec<BasicMetadataValueEnum<'ctx>> = Vec::new();
-        for arg in args {
-            if let Some(value) = self.compile_stmt(arg) {
-                arg_values.push(value.into());
-            }
-        }
-
-        // Create format string
         let mut format_str = String::new();
 
-        for i in 0..arg_values.len() {
-            format_str.push_str("%d");
+        for (i, arg) in args.iter().enumerate() {
+            if let Some(value) = self.build_stmt(arg.clone()) {
+                // Depending on the type, add the appropriate format specifier
+                match value {
+                    BasicValueEnum::IntValue(_) => {
+                        format_str.push_str("%d");
+                        arg_values.push(value.into());
+                    }
+                    BasicValueEnum::PointerValue(_) => {
+                        // WARNING: Not all pointers are will be strings
+                        format_str.push_str("%s");
+                        arg_values.push(value.into());
+                    }
+                    _ => panic!("Unsupported argument type"),
+                }
+            }
 
-            if i != arg_values.len() - 1 {
+            // Add a space between arguments
+            if i != args.len() - 1 {
                 format_str.push(' ');
             }
         }
@@ -77,22 +85,30 @@ impl<'ctx> Codegen<'ctx> {
         None
     }
 
-    fn compile_print(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
-        // Compile the arguments
+    fn build_print(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
+        // Compile the arguments and create format string
         let mut arg_values: Vec<BasicMetadataValueEnum<'ctx>> = Vec::new();
-        for arg in args {
-            if let Some(value) = self.compile_stmt(arg) {
-                arg_values.push(value.into());
-            }
-        }
-
-        // Create format string
         let mut format_str = String::new();
 
-        for i in 0..arg_values.len() {
-            format_str.push_str("%d");
+        for (i, arg) in args.iter().enumerate() {
+            if let Some(value) = self.build_stmt(arg.clone()) {
+                // Depending on the type, add the appropriate format specifier
+                match value {
+                    BasicValueEnum::IntValue(_) => {
+                        format_str.push_str("%d");
+                        arg_values.push(value.into());
+                    }
+                    BasicValueEnum::PointerValue(_) => {
+                        // WARNING: Not all pointers are will be strings
+                        format_str.push_str("%s");
+                        arg_values.push(value.into());
+                    }
+                    _ => panic!("Unsupported argument type"),
+                }
+            }
 
-            if i != arg_values.len() - 1 {
+            // Add a space between arguments
+            if i != args.len() - 1 {
                 format_str.push(' ');
             }
         }

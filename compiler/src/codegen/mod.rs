@@ -16,6 +16,7 @@ mod if_statement;
 mod literal;
 mod return_statement;
 mod scope;
+mod strings;
 
 pub struct Codegen<'ctx> {
     context: &'ctx Context,
@@ -65,7 +66,7 @@ impl<'ctx> Codegen<'ctx> {
 
         // Compile all statements
         for stmt in ast {
-            self.compile_stmt(stmt);
+            self.build_stmt(stmt);
         }
 
         // Return 0 from main
@@ -73,34 +74,35 @@ impl<'ctx> Codegen<'ctx> {
         self.builder.build_return(Some(&zero)).unwrap();
     }
 
-    fn compile_stmt(&mut self, stmt: Stmt) -> Option<BasicValueEnum<'ctx>> {
+    fn build_stmt(&mut self, stmt: Stmt) -> Option<BasicValueEnum<'ctx>> {
         match stmt {
             Stmt::Declaration {
                 mutable: _,
                 name,
                 value,
-            } => self.compile_declaration(name, value),
-            Stmt::Block { body } => self.compile_block(body),
+            } => self.build_declaration(name, value),
+            Stmt::Block { body } => self.build_block(body),
             Stmt::IfStatement {
                 condition,
                 block,
                 else_block,
-            } => self.compile_if_statement(*condition, *block, else_block.map(|b| *b)),
+            } => self.build_if_statement(*condition, *block, else_block.map(|b| *b)),
             Stmt::FunctionDeclaration {
                 name,
                 params,
                 return_type,
                 block,
-            } => self.compile_function_declaration(name, params, return_type, *block),
-            Stmt::FunctionCall { name, args } => self.compile_function_call(name, args),
+            } => self.build_function_declaration(name, params, return_type, *block),
+            Stmt::FunctionCall { name, args } => self.build_function_call(name, args),
             Stmt::BinaryExpression {
                 left,
                 right,
                 operator,
-            } => self.compile_binary_expression(*left, *right, operator),
-            Stmt::Identifier { name } => self.compile_identifier(name),
-            Stmt::Literal { value } => self.compile_literal(value),
-            Stmt::ReturnStatement { value } => self.compile_return_statement(value),
+            } => self.build_binary_expression(*left, *right, operator),
+            Stmt::Identifier { name } => self.build_identifier(name),
+            Stmt::Literal { value } => self.build_literal(value),
+            Stmt::String { value } => self.build_global_string(value),
+            Stmt::ReturnStatement { value } => self.build_return_statement(value),
             _ => {
                 // TODO: Handle other statements
                 None

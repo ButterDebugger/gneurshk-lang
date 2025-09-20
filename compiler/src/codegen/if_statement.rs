@@ -3,14 +3,14 @@ use gneurshk_parser::Stmt;
 use inkwell::{IntPredicate, values::BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn compile_if_statement(
+    pub(crate) fn build_if_statement(
         &mut self,
         condition: Stmt,
         block: Stmt,
         else_block: Option<Stmt>,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Compile the condition
-        let condition_value = self.compile_stmt(condition)?;
+        let condition_value = self.build_stmt(condition)?;
 
         // Convert to boolean (non-zero is true)
         let zero = self.context.i32_type().const_int(0, false);
@@ -59,7 +59,7 @@ impl<'ctx> Codegen<'ctx> {
 
         // Build the then block
         self.builder.position_at_end(then_branch);
-        self.compile_stmt(block);
+        self.build_stmt(block);
 
         // Only add the merge branch if the current block doesn't have a terminator
         let current_block = self.builder.get_insert_block().unwrap();
@@ -74,7 +74,7 @@ impl<'ctx> Codegen<'ctx> {
         if let Some(else_block) = else_block {
             let else_branch_block = else_branch.unwrap();
             self.builder.position_at_end(else_branch_block);
-            self.compile_stmt(else_block);
+            self.build_stmt(else_block);
 
             // Only add the merge branch if the current block doesn't have a terminator
             let current_block = self.builder.get_insert_block().unwrap();

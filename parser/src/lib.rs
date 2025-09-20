@@ -3,6 +3,7 @@ use crate::expressions::parse_expression;
 use crate::ifs::parse_if_statement;
 use crate::imports::parse_import;
 use crate::returns::parse_return_statement;
+use crate::strings::parse_string;
 use crate::types::DataType;
 use crate::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
@@ -15,6 +16,7 @@ mod funcs;
 mod ifs;
 mod imports;
 mod returns;
+mod strings;
 pub mod types;
 mod variables;
 
@@ -22,6 +24,15 @@ mod variables;
 pub type StatementResult = Result<Stmt, &'static str>;
 /// An alias for the result of parsing multiple statements
 pub type MultiStatementResult = Result<Vec<Stmt>, &'static str>;
+/// An alias for the result of parsing a program
+pub type ProgramResult = Result<Program, &'static str>;
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Program {
+    pub imports: Vec<Stmt>,
+    pub functions: Vec<Stmt>,
+    pub body: Vec<Stmt>,
+}
 
 /// A binary operator which takes in two operands
 #[derive(Debug, PartialEq, Clone)]
@@ -97,6 +108,9 @@ pub enum Stmt {
     Literal {
         value: isize,
     },
+    String {
+        value: String,
+    },
     ReturnStatement {
         value: Option<Box<Stmt>>,
     },
@@ -121,7 +135,7 @@ pub enum Stmt {
 }
 
 /// Parses statements that appear directly after an new line and or indentation
-pub fn parse(tokens: &mut TokenStream) -> MultiStatementResult {
+pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
     let mut stmts = vec![];
 
     while let Some((token, _)) = tokens.peek() {
@@ -139,7 +153,11 @@ pub fn parse(tokens: &mut TokenStream) -> MultiStatementResult {
         }
     }
 
-    Ok(stmts)
+    Ok(Program {
+        imports: vec![],
+        functions: vec![],
+        body: stmts,
+    })
 }
 
 fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
@@ -158,6 +176,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         Token::Import => parse_import(tokens),
         Token::OpenBrace => parse_block(tokens),
         Token::Return => parse_return_statement(tokens),
+        Token::String(_) => parse_string(tokens),
         _ => {
             println!("token: {token:?}");
             return Err("Unexpected token");

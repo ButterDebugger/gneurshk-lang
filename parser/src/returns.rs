@@ -21,13 +21,11 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::BinaryOperator;
-    use crate::Stmt;
-    use crate::parse;
+    use crate::{BinaryOperator, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
-    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
         println!("tokens {tokens:?}");
@@ -40,14 +38,14 @@ mod tests {
 
     #[test]
     fn return_nothing() {
-        let stmt = lex_then_parse("return");
+        let stmt = lex_then_parse("return").body;
 
         assert_eq!(stmt, vec![Stmt::ReturnStatement { value: None }]);
     }
 
     #[test]
     fn return_literal() {
-        let stmt = lex_then_parse("return 1");
+        let stmt = lex_then_parse("return 1").body;
 
         assert_eq!(
             stmt,
@@ -59,7 +57,7 @@ mod tests {
 
     #[test]
     fn return_expression() {
-        let stmt = lex_then_parse("return 1 + 2");
+        let stmt = lex_then_parse("return 1 + 2").body;
 
         assert_eq!(
             stmt,
@@ -75,7 +73,7 @@ mod tests {
 
     #[test]
     fn return_nothing_in_a_block() {
-        let stmt = lex_then_parse("{ return }");
+        let stmt = lex_then_parse("{ return }").body;
 
         assert_eq!(
             stmt,
@@ -87,7 +85,7 @@ mod tests {
 
     #[test]
     fn return_literal_in_a_block() {
-        let stmt = lex_then_parse("{ return 1 }");
+        let stmt = lex_then_parse("{ return 1 }").body;
 
         assert_eq!(
             stmt,

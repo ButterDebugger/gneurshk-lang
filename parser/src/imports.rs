@@ -124,12 +124,11 @@ fn read_import_items(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::parse;
+    use crate::{Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_import function
-    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
         match parse(&mut tokens.clone()) {
@@ -140,7 +139,7 @@ mod tests {
 
     #[test]
     fn import_specific_variables() {
-        let stmt = lex_then_parse("import sin, cos, sqrt as square_root from math");
+        let stmt = lex_then_parse("import sin, cos, sqrt as square_root from math").body;
 
         assert_eq!(
             stmt,
@@ -157,7 +156,7 @@ mod tests {
 
     #[test]
     fn import_individual_modules() {
-        let stmt = lex_then_parse("import os\nimport time as t\nimport * as rng from random");
+        let stmt = lex_then_parse("import os\nimport time as t\nimport * as rng from random").body;
 
         assert_eq!(
             stmt,
@@ -177,7 +176,7 @@ mod tests {
 
     #[test]
     fn import_multiple_modules() {
-        let stmt = lex_then_parse("import os, time as t, random as rng");
+        let stmt = lex_then_parse("import os, time as t, random as rng").body;
 
         assert_eq!(
             stmt,
@@ -193,7 +192,7 @@ mod tests {
 
     #[test]
     fn import_everything_from_module() {
-        let stmt = lex_then_parse("import * from math");
+        let stmt = lex_then_parse("import * from math").body;
 
         assert_eq!(
             stmt,

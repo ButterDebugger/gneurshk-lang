@@ -38,13 +38,11 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::BinaryOperator;
-    use crate::Stmt;
-    use crate::parse;
+    use crate::{BinaryOperator, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
-    fn lex_then_parse(input: &'static str) -> Vec<Stmt> {
+    fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
         println!("tokens {tokens:?}");
@@ -73,7 +71,8 @@ if 10 + 10 {
 }
 const borg = 5
 ",
-        );
+        )
+        .body;
 
         assert_eq!(
             stmt,
@@ -123,7 +122,8 @@ if 10 + 10 {
 }
 const borg = 5
 ",
-        );
+        )
+        .body;
 
         assert_eq!(
             stmt,
@@ -188,7 +188,8 @@ if 10 + 10 {
     2
 }
 ",
-        );
+        )
+        .body;
 
         assert_eq!(
             stmt,
@@ -218,7 +219,8 @@ if 10 + 10 {
     2
 }
 ",
-        );
+        )
+        .body;
 
         assert_eq!(
             stmt,
@@ -258,7 +260,8 @@ if 10 + 10 {
     3
 }
 ",
-        );
+        )
+        .body;
 
         assert_eq!(
             stmt,

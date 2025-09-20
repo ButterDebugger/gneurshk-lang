@@ -3,7 +3,7 @@ use gneurshk_parser::Stmt;
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn compile_declaration(
+    pub(crate) fn build_declaration(
         &mut self,
         name: String,
         value: Option<Box<Stmt>>,
@@ -15,7 +15,7 @@ impl<'ctx> Codegen<'ctx> {
 
         // If its initial value is provided, compile and store it
         if let Some(val) = value {
-            if let Some(init_value) = self.compile_stmt(*val) {
+            if let Some(init_value) = self.build_stmt(*val) {
                 self.builder.build_store(alloca, init_value).unwrap();
             } else {
                 // Default to 0 if no value provided

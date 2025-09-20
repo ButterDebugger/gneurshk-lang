@@ -110,21 +110,28 @@ fn format_lexing_error(source: &str, span: logos::Span) -> String {
 mod tests {
     use super::*;
 
+    /// Helper function for testing the parse function
+    fn lex_and_vectorize(input: &'static str) -> Vec<Token> {
+        lex(input)
+            .expect("Failed to lex")
+            .map(|(token, _)| token)
+            .collect::<Vec<_>>()
+    }
+
     #[test]
     #[should_panic]
     fn unknown_token() {
-        let _ = lex("`").expect("Failed to lex");
+        let _ = lex_and_vectorize("`");
     }
 
     #[test]
     fn comments_are_ignored() {
-        let tokens = lex(r#"# This is a comment
+        let tokens = lex_and_vectorize(
+            r#"# This is a comment
     var x = 5  # Inline comment
     # Another comment
-    var y = 10"#)
-        .expect("Failed to lex")
-        .map(|(token, _)| token)
-        .collect::<Vec<_>>();
+    var y = 10"#,
+        );
 
         assert_eq!(
             tokens,
@@ -140,6 +147,21 @@ mod tests {
                 Token::Word("y".to_string()),
                 Token::Equal,
                 Token::Integer(10),
+            ]
+        );
+    }
+
+    #[test]
+    fn strings() {
+        let tokens = lex_and_vectorize(r#"var message = "Hello, world!""#);
+
+        assert_eq!(
+            tokens,
+            [
+                Token::Var,
+                Token::Word("message".to_string()),
+                Token::Equal,
+                Token::String("Hello, world!".to_string()),
             ]
         );
     }
