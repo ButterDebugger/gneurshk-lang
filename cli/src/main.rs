@@ -1,7 +1,7 @@
 use colored::Colorize;
 use gneurshk_compiler::{compile_to_executable, create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
-use gneurshk_parser::{Stmt, parse};
+use gneurshk_parser::{Program, Stmt, parse};
 use indicatif::{ProgressBar, ProgressStyle};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{env::args, fs::read_to_string, path::Path, time::Duration};
@@ -234,7 +234,7 @@ fn tokenize(input: &str, pb: Box<ProgressBar>) -> Result<TokenStream<'_>, String
     Ok(tokens)
 }
 
-fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Vec<Stmt>, String> {
+fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Program, String> {
     // Tokenize the input
     let tokens = tokenize(input, pb.clone())?;
 
@@ -246,7 +246,7 @@ fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Vec<Stmt>, String> {
         Err(e) => return Err(e.to_owned()),
     };
 
-    Ok(ast.body) // TODO: change this when top level statements are implemented
+    Ok(ast)
 }
 
 fn create_progress_bar() -> Box<ProgressBar> {

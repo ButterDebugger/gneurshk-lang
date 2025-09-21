@@ -1,10 +1,11 @@
 use crate::codegen::scope::Scope;
-use gneurshk_parser::Stmt;
+use gneurshk_parser::{Program, Stmt};
 use inkwell::AddressSpace;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
 use inkwell::values::BasicValueEnum;
+use std::collections::HashMap;
 
 mod binary_expression;
 mod block;
@@ -55,7 +56,46 @@ impl<'ctx> Codegen<'ctx> {
         &self.module
     }
 
-    pub fn compile(&mut self, ast: Vec<Stmt>) {
+    pub fn compile(&mut self, program: Program) {
+        // Prebuild all function declarations
+        let mut functions = HashMap::new();
+
+        for function in program.functions.clone() {
+            if let Stmt::FunctionDeclaration {
+                name,
+                params,
+                return_type: _,
+                block: _,
+            } = function
+            {
+                functions.insert(name.clone(), self.build_function_declaration(name, params));
+            } else {
+                panic!("Expected function statement");
+            }
+        }
+
+        // Build main function
+        self.build_main_function(program.body);
+
+        // Build all functions
+        for function in program.functions {
+            if let Stmt::FunctionDeclaration {
+                name,
+                params,
+                return_type,
+                block,
+            } = function
+            {
+                let function = functions.remove(&name).unwrap();
+
+                self.build_function_body(function, params, return_type, *block);
+            } else {
+                panic!("Expected function statement");
+            }
+        }
+    }
+
+    fn build_main_function(&mut self, body: Vec<Stmt>) {
         // Create main function
         let i32_type = self.context.i32_type();
         let main_type = i32_type.fn_type(&[], false);
@@ -64,8 +104,8 @@ impl<'ctx> Codegen<'ctx> {
 
         self.builder.position_at_end(basic_block);
 
-        // Compile all statements
-        for stmt in ast {
+        // Build the main function body
+        for stmt in body {
             self.build_stmt(stmt);
         }
 
@@ -92,7 +132,7 @@ impl<'ctx> Codegen<'ctx> {
                 params,
                 return_type,
                 block,
-            } => self.build_function_declaration(name, params, return_type, *block),
+            } => self.build_function(name, params, return_type, *block),
             Stmt::FunctionCall { name, args } => self.build_function_call(name, args),
             Stmt::BinaryExpression {
                 left,

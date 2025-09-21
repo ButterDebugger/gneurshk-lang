@@ -1,31 +1,32 @@
 use crate::codegen::Codegen;
 use gneurshk_parser::types::DataType;
 use gneurshk_parser::{FunctionParam, Stmt};
-use inkwell::values::BasicValueEnum;
+use inkwell::values::{BasicValueEnum, FunctionValue};
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn build_function_declaration(
+    pub(crate) fn build_function(
         &mut self,
         name: String,
+        params: Vec<FunctionParam>,
+        return_type: DataType,
+        block: Stmt,
+    ) -> Option<BasicValueEnum<'ctx>> {
+        // Build function declaration
+        let function = self.build_function_declaration(name.clone(), params.clone());
+
+        // Build function body
+        self.build_function_body(function, params, return_type, block)
+    }
+
+    pub(crate) fn build_function_body(
+        &mut self,
+        function: FunctionValue<'ctx>,
         params: Vec<FunctionParam>,
         _return_type: DataType,
         block: Stmt,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Get i32 type since functions only support that type TODO: Support other types
         let i32_type = self.context.i32_type();
-
-        // Create vector of parameter types (assuming they are all i32)
-        let mut param_types = Vec::new();
-        for _ in &params {
-            param_types.push(i32_type.into());
-        }
-
-        // Create function type
-        let fn_type = i32_type.fn_type(&param_types, false);
-        let function = self.module.add_function(&name, fn_type, None);
-
-        // Store function in the current scope
-        self.scope.set_function(name.clone(), function);
 
         // Create entry block
         let entry_block = self.context.append_basic_block(function, "entry");
@@ -76,5 +77,31 @@ impl<'ctx> Codegen<'ctx> {
         }
 
         None
+    }
+
+    pub(crate) fn build_function_declaration(
+        &mut self,
+        name: String,
+        params: Vec<FunctionParam>,
+    ) -> FunctionValue<'ctx> {
+        // Get i32 type since functions only support that type TODO: Support other types
+        let i32_type = self.context.i32_type();
+
+        // Create vector of parameter types (assuming they are all i32)
+        let mut param_types = Vec::new();
+        for _ in &params {
+            param_types.push(i32_type.into());
+        }
+
+        // Create function type
+        let fn_type = i32_type.fn_type(&param_types, false);
+
+        // Add function to module
+        let function = self.module.add_function(&name, fn_type, None);
+
+        // Store function in the current scope
+        self.scope.set_function(name.clone(), function);
+
+        function
     }
 }

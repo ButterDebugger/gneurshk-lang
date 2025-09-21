@@ -131,43 +131,51 @@ mod tests {
 
     #[test]
     fn return_type_specified() {
-        let stmt = lex_then_parse("func apple() -> Int32 { \n var peas = 2 \n }").body;
+        let stmt = lex_then_parse("func apple() -> Int32 { \n var peas = 2 \n }");
 
         assert_eq!(
             stmt,
-            vec![Stmt::FunctionDeclaration {
-                name: "apple".to_string(),
-                params: vec![],
-                return_type: DataType::Int32,
-                block: Box::new(Stmt::Block {
-                    body: vec![Stmt::Declaration {
-                        mutable: true,
-                        name: "peas".to_string(),
-                        value: Some(Box::new(Stmt::Literal { value: 2 })),
-                    }]
-                }),
-            }]
+            Program {
+                imports: vec![],
+                functions: vec![Stmt::FunctionDeclaration {
+                    name: "apple".to_string(),
+                    params: vec![],
+                    return_type: DataType::Int32,
+                    block: Box::new(Stmt::Block {
+                        body: vec![Stmt::Declaration {
+                            mutable: true,
+                            name: "peas".to_string(),
+                            value: Some(Box::new(Stmt::Literal { value: 2 })),
+                        }]
+                    }),
+                }],
+                body: vec![],
+            }
         );
     }
 
     #[test]
     fn no_return_specified() {
-        let stmt = lex_then_parse("func apple() { \n const cucumbers = 8 \n }").body;
+        let stmt = lex_then_parse("func apple() { \n const cucumbers = 8 \n }");
 
         assert_eq!(
             stmt,
-            vec![Stmt::FunctionDeclaration {
-                name: "apple".to_string(),
-                params: vec![],
-                return_type: DataType::default(),
-                block: Box::new(Stmt::Block {
-                    body: vec![Stmt::Declaration {
-                        mutable: false,
-                        name: "cucumbers".to_string(),
-                        value: Some(Box::new(Stmt::Literal { value: 8 })),
-                    }]
-                }),
-            }]
+            Program {
+                imports: vec![],
+                functions: vec![Stmt::FunctionDeclaration {
+                    name: "apple".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Stmt::Block {
+                        body: vec![Stmt::Declaration {
+                            mutable: false,
+                            name: "cucumbers".to_string(),
+                            value: Some(Box::new(Stmt::Literal { value: 8 })),
+                        }]
+                    }),
+                }],
+                body: vec![],
+            }
         );
     }
 }

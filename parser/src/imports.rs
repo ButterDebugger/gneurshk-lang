@@ -139,66 +139,82 @@ mod tests {
 
     #[test]
     fn import_specific_variables() {
-        let stmt = lex_then_parse("import sin, cos, sqrt as square_root from math").body;
+        let stmt = lex_then_parse("import sin, cos, sqrt as square_root from math");
 
         assert_eq!(
             stmt,
-            vec![Stmt::ImportCollection {
-                module: "math".to_string(),
-                items: vec![
-                    ("sin".to_string(), None),
-                    ("cos".to_string(), None),
-                    ("sqrt".to_string(), Some("square_root".to_string())),
-                ],
-            }]
+            Program {
+                imports: vec![Stmt::ImportCollection {
+                    module: "math".to_string(),
+                    items: vec![
+                        ("sin".to_string(), None),
+                        ("cos".to_string(), None),
+                        ("sqrt".to_string(), Some("square_root".to_string())),
+                    ],
+                }],
+                functions: vec![],
+                body: vec![],
+            }
         );
     }
 
     #[test]
     fn import_individual_modules() {
-        let stmt = lex_then_parse("import os\nimport time as t\nimport * as rng from random").body;
+        let stmt = lex_then_parse("import os\nimport time as t\nimport * as rng from random");
 
         assert_eq!(
             stmt,
-            vec![
-                Stmt::ImportModules {
-                    modules: vec![("os".to_string(), None)],
-                },
-                Stmt::ImportModules {
-                    modules: vec![("time".to_string(), Some("t".to_string()))],
-                },
-                Stmt::ImportModules {
-                    modules: vec![("random".to_string(), Some("rng".to_string()))],
-                },
-            ]
+            Program {
+                imports: vec![
+                    Stmt::ImportModules {
+                        modules: vec![("os".to_string(), None)],
+                    },
+                    Stmt::ImportModules {
+                        modules: vec![("time".to_string(), Some("t".to_string()))],
+                    },
+                    Stmt::ImportModules {
+                        modules: vec![("random".to_string(), Some("rng".to_string()))],
+                    },
+                ],
+                functions: vec![],
+                body: vec![],
+            }
         );
     }
 
     #[test]
     fn import_multiple_modules() {
-        let stmt = lex_then_parse("import os, time as t, random as rng").body;
+        let stmt = lex_then_parse("import os, time as t, random as rng");
 
         assert_eq!(
             stmt,
-            vec![Stmt::ImportModules {
-                modules: vec![
-                    ("os".to_string(), None),
-                    ("time".to_string(), Some("t".to_string())),
-                    ("random".to_string(), Some("rng".to_string())),
-                ],
-            },]
+            Program {
+                imports: vec![Stmt::ImportModules {
+                    modules: vec![
+                        ("os".to_string(), None),
+                        ("time".to_string(), Some("t".to_string())),
+                        ("random".to_string(), Some("rng".to_string())),
+                    ],
+                }],
+                functions: vec![],
+                body: vec![],
+            }
         );
     }
 
     #[test]
     fn import_everything_from_module() {
-        let stmt = lex_then_parse("import * from math").body;
+        let stmt = lex_then_parse("import * from math");
 
         assert_eq!(
             stmt,
-            vec![Stmt::ImportEverything {
-                module: "math".to_string(),
-            }]
+            Program {
+                imports: vec![Stmt::ImportEverything {
+                    module: "math".to_string(),
+                }],
+                functions: vec![],
+                body: vec![],
+            }
         );
     }
 }

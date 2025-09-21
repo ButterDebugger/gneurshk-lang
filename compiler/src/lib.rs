@@ -1,5 +1,5 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::Stmt;
+use gneurshk_parser::{Program, Stmt};
 use inkwell::OptimizationLevel;
 use inkwell::context::Context;
 use inkwell::targets::{
@@ -14,7 +14,7 @@ mod codegen;
 ///
 /// # Returns
 /// The path to the LLVM IR file
-pub fn create_llvm_ir_file(ast: Vec<Stmt>, output_path: &str) -> Result<String, String> {
+pub fn create_llvm_ir_file(ast: Program, output_path: &str) -> Result<String, String> {
     let context = Context::create();
     let mut codegen = Codegen::new(&context, "main");
 
@@ -34,7 +34,7 @@ pub fn create_llvm_ir_file(ast: Vec<Stmt>, output_path: &str) -> Result<String, 
 ///
 /// # Returns
 /// The path to the object file
-pub fn create_object_file(ast: Vec<Stmt>, output_path: &str) -> Result<String, String> {
+pub fn create_object_file(ast: Program, output_path: &str) -> Result<String, String> {
     let context = Context::create();
     let mut codegen = Codegen::new(&context, "main");
 
@@ -72,7 +72,7 @@ pub fn create_object_file(ast: Vec<Stmt>, output_path: &str) -> Result<String, S
 }
 
 /// Compiles the AST into an executable
-pub fn compile_to_executable(ast: Vec<Stmt>, output_path: &str) -> Result<(), String> {
+pub fn compile_to_executable(ast: Program, output_path: &str) -> Result<(), String> {
     // First create an object file
     let obj_path = create_object_file(ast, output_path)?;
 

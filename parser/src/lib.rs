@@ -136,6 +136,8 @@ pub enum Stmt {
 
 /// Parses statements that appear directly after an new line and or indentation
 pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
+    let mut imports = vec![];
+    let mut functions = vec![];
     let mut stmts = vec![];
 
     while let Some((token, _)) = tokens.peek() {
@@ -148,14 +150,27 @@ pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
 
         // Append statements or catch and throw errors
         match statement {
-            Ok(stmt) => stmts.push(stmt),
+            Ok(stmt) => match stmt {
+                Stmt::ImportModule { .. }
+                | Stmt::ImportModules { .. }
+                | Stmt::ImportEverything { .. }
+                | Stmt::ImportCollection { .. } => {
+                    imports.push(stmt);
+                }
+                Stmt::FunctionDeclaration { .. } => {
+                    functions.push(stmt);
+                }
+                _ => {
+                    stmts.push(stmt);
+                }
+            },
             Err(e) => return Err(e),
         }
     }
 
     Ok(Program {
-        imports: vec![],
-        functions: vec![],
+        imports,
+        functions,
         body: stmts,
     })
 }
