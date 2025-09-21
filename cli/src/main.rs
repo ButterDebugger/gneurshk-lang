@@ -1,7 +1,7 @@
 use colored::Colorize;
 use gneurshk_compiler::{compile_to_executable, create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
-use gneurshk_parser::{Program, Stmt, parse};
+use gneurshk_parser::{Program, parse};
 use indicatif::{ProgressBar, ProgressStyle};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use std::{env::args, fs::read_to_string, path::Path, time::Duration};

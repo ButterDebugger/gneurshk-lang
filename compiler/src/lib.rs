@@ -1,5 +1,5 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::{Program, Stmt};
+use gneurshk_parser::Program;
 use inkwell::OptimizationLevel;
 use inkwell::context::Context;
 use inkwell::targets::{
