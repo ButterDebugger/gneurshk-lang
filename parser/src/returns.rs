@@ -50,7 +50,7 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::ReturnStatement {
-                value: Some(Box::new(Stmt::Literal { value: 1 }))
+                value: Some(Box::new(Stmt::Integer { value: 1 }))
             }]
         );
     }
@@ -63,8 +63,8 @@ mod tests {
             stmt,
             vec![Stmt::ReturnStatement {
                 value: Some(Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Literal { value: 1 }),
-                    right: Box::new(Stmt::Literal { value: 2 }),
+                    left: Box::new(Stmt::Integer { value: 1 }),
+                    right: Box::new(Stmt::Integer { value: 2 }),
                     operator: BinaryOperator::Add,
                 }))
             }]
@@ -91,7 +91,7 @@ mod tests {
             stmt,
             vec![Stmt::Block {
                 body: vec![Stmt::ReturnStatement {
-                    value: Some(Box::new(Stmt::Literal { value: 1 }))
+                    value: Some(Box::new(Stmt::Integer { value: 1 }))
                 }]
             }]
         );

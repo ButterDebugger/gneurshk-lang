@@ -18,6 +18,7 @@ mod literal;
 mod return_statement;
 mod scope;
 mod strings;
+mod unary_expression;
 
 pub struct Codegen<'ctx> {
     context: &'ctx Context,
@@ -139,8 +140,12 @@ impl<'ctx> Codegen<'ctx> {
                 right,
                 operator,
             } => self.build_binary_expression(*left, *right, operator),
+            Stmt::UnaryExpression { value, operator } => {
+                self.build_unary_expression(*value, operator)
+            }
             Stmt::Identifier { name } => self.build_identifier(name),
-            Stmt::Literal { value } => self.build_literal(value),
+            Stmt::Integer { value } => self.build_integer(value),
+            Stmt::Float { value } => self.build_float(value),
             Stmt::String { value } => self.build_global_string(value),
             Stmt::ReturnStatement { value } => self.build_return_statement(value),
             _ => {

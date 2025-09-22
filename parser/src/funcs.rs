@@ -145,7 +145,7 @@ mod tests {
                         body: vec![Stmt::Declaration {
                             mutable: true,
                             name: "peas".to_string(),
-                            value: Some(Box::new(Stmt::Literal { value: 2 })),
+                            value: Some(Box::new(Stmt::Integer { value: 2 })),
                         }]
                     }),
                 }],
@@ -170,7 +170,7 @@ mod tests {
                         body: vec![Stmt::Declaration {
                             mutable: false,
                             name: "cucumbers".to_string(),
-                            value: Some(Box::new(Stmt::Literal { value: 8 })),
+                            value: Some(Box::new(Stmt::Integer { value: 8 })),
                         }]
                     }),
                 }],

@@ -44,6 +44,16 @@ impl<'ctx> Codegen<'ctx> {
             if let Some(value) = self.build_stmt(arg.clone()) {
                 // Depending on the type, add the appropriate format specifier
                 match value {
+                    BasicValueEnum::FloatValue(float_val) => {
+                        format_str.push_str("%f");
+                        // Convert f32 to f64 for printf
+                        let f64_type = self.context.f64_type();
+                        let double_val = self
+                            .builder
+                            .build_float_ext(float_val, f64_type, "f64_ext")
+                            .unwrap();
+                        arg_values.push(double_val.into());
+                    }
                     BasicValueEnum::IntValue(_) => {
                         format_str.push_str("%d");
                         arg_values.push(value.into());
@@ -94,6 +104,16 @@ impl<'ctx> Codegen<'ctx> {
             if let Some(value) = self.build_stmt(arg.clone()) {
                 // Depending on the type, add the appropriate format specifier
                 match value {
+                    BasicValueEnum::FloatValue(float_val) => {
+                        format_str.push_str("%f");
+                        // Convert f32 to f64 for printf
+                        let f64_type = self.context.f64_type();
+                        let double_val = self
+                            .builder
+                            .build_float_ext(float_val, f64_type, "f64_ext")
+                            .unwrap();
+                        arg_values.push(double_val.into());
+                    }
                     BasicValueEnum::IntValue(_) => {
                         format_str.push_str("%d");
                         arg_values.push(value.into());

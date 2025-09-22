@@ -56,6 +56,7 @@ pub enum BinaryOperator {
 #[derive(Debug, PartialEq, Clone)]
 pub enum UnaryOperator {
     Not,
+    Negative,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -105,8 +106,11 @@ pub enum Stmt {
     Identifier {
         name: String,
     },
-    Literal {
-        value: isize,
+    Integer {
+        value: u64,
+    },
+    Float {
+        value: f64,
     },
     String {
         value: String,
@@ -186,7 +190,12 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
     let stmt = match token {
         Token::Var | Token::Const => parse_variable_declaration(tokens),
         Token::If => parse_if_statement(tokens),
-        Token::Integer(_) | Token::OpenParen | Token::Word(_) => parse_expression(tokens),
+        Token::Integer(_)
+        | Token::Float(_)
+        | Token::OpenParen
+        | Token::Word(_)
+        | Token::Minus
+        | Token::Not => parse_expression(tokens),
         Token::Func => parse_func_declaration(tokens),
         Token::Import => parse_import(tokens),
         Token::OpenBrace => parse_block(tokens),

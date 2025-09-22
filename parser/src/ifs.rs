@@ -79,8 +79,8 @@ const borg = 5
             vec![
                 Stmt::IfStatement {
                     condition: Box::new(Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Literal { value: 10 }),
-                        right: Box::new(Stmt::Literal { value: 10 }),
+                        left: Box::new(Stmt::Integer { value: 10 }),
+                        right: Box::new(Stmt::Integer { value: 10 }),
                         operator: BinaryOperator::Add,
                     }),
                     block: Box::new(Stmt::Block {
@@ -88,12 +88,12 @@ const borg = 5
                             Stmt::Declaration {
                                 mutable: true,
                                 name: "apple".to_string(),
-                                value: Some(Box::new(Stmt::Literal { value: 1 })),
+                                value: Some(Box::new(Stmt::Integer { value: 1 })),
                             },
                             Stmt::Declaration {
                                 mutable: true,
                                 name: "green".to_string(),
-                                value: Some(Box::new(Stmt::Literal { value: 3 })),
+                                value: Some(Box::new(Stmt::Integer { value: 3 })),
                             },
                         ],
                     }),
@@ -102,7 +102,7 @@ const borg = 5
                 Stmt::Declaration {
                     mutable: false,
                     name: "borg".to_string(),
-                    value: Some(Box::new(Stmt::Literal { value: 5 })),
+                    value: Some(Box::new(Stmt::Integer { value: 5 })),
                 },
             ]
         );
@@ -130,38 +130,38 @@ const borg = 5
             vec![
                 Stmt::IfStatement {
                     condition: Box::new(Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Literal { value: 10 }),
-                        right: Box::new(Stmt::Literal { value: 10 }),
+                        left: Box::new(Stmt::Integer { value: 10 }),
+                        right: Box::new(Stmt::Integer { value: 10 }),
                         operator: BinaryOperator::Add,
                     }),
                     block: Box::new(Stmt::Block {
                         body: vec![
                             Stmt::IfStatement {
                                 condition: Box::new(Stmt::BinaryExpression {
-                                    left: Box::new(Stmt::Literal { value: 20 }),
-                                    right: Box::new(Stmt::Literal { value: 20 }),
+                                    left: Box::new(Stmt::Integer { value: 20 }),
+                                    right: Box::new(Stmt::Integer { value: 20 }),
                                     operator: BinaryOperator::Add,
                                 }),
                                 block: Box::new(Stmt::Block {
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "apple".to_string(),
-                                        value: Some(Box::new(Stmt::Literal { value: 1 })),
+                                        value: Some(Box::new(Stmt::Integer { value: 1 })),
                                     }]
                                 }),
                                 else_block: None,
                             },
                             Stmt::IfStatement {
                                 condition: Box::new(Stmt::BinaryExpression {
-                                    left: Box::new(Stmt::Literal { value: 30 }),
-                                    right: Box::new(Stmt::Literal { value: 30 }),
+                                    left: Box::new(Stmt::Integer { value: 30 }),
+                                    right: Box::new(Stmt::Integer { value: 30 }),
                                     operator: BinaryOperator::Add,
                                 }),
                                 block: Box::new(Stmt::Block {
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "green".to_string(),
-                                        value: Some(Box::new(Stmt::Literal { value: 3 })),
+                                        value: Some(Box::new(Stmt::Integer { value: 3 })),
                                     }]
                                 }),
                                 else_block: None,
@@ -173,7 +173,7 @@ const borg = 5
                 Stmt::Declaration {
                     mutable: false,
                     name: "borg".to_string(),
-                    value: Some(Box::new(Stmt::Literal { value: 5 })),
+                    value: Some(Box::new(Stmt::Integer { value: 5 })),
                 },
             ]
         );
@@ -195,15 +195,15 @@ if 10 + 10 {
             stmt,
             vec![Stmt::IfStatement {
                 condition: Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Literal { value: 10 }),
-                    right: Box::new(Stmt::Literal { value: 10 }),
+                    left: Box::new(Stmt::Integer { value: 10 }),
+                    right: Box::new(Stmt::Integer { value: 10 }),
                     operator: BinaryOperator::Add,
                 }),
                 block: Box::new(Stmt::Block {
-                    body: vec![Stmt::Literal { value: 1 }]
+                    body: vec![Stmt::Integer { value: 1 }]
                 }),
                 else_block: Some(Box::new(Stmt::Block {
-                    body: vec![Stmt::Literal { value: 2 }]
+                    body: vec![Stmt::Integer { value: 2 }]
                 })),
             }]
         );
@@ -226,21 +226,21 @@ if 10 + 10 {
             stmt,
             vec![Stmt::IfStatement {
                 condition: Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Literal { value: 10 }),
-                    right: Box::new(Stmt::Literal { value: 10 }),
+                    left: Box::new(Stmt::Integer { value: 10 }),
+                    right: Box::new(Stmt::Integer { value: 10 }),
                     operator: BinaryOperator::Add,
                 }),
                 block: Box::new(Stmt::Block {
-                    body: vec![Stmt::Literal { value: 1 }]
+                    body: vec![Stmt::Integer { value: 1 }]
                 }),
                 else_block: Some(Box::new(Stmt::IfStatement {
                     condition: Box::new(Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Literal { value: 20 }),
-                        right: Box::new(Stmt::Literal { value: 20 }),
+                        left: Box::new(Stmt::Integer { value: 20 }),
+                        right: Box::new(Stmt::Integer { value: 20 }),
                         operator: BinaryOperator::Add,
                     }),
                     block: Box::new(Stmt::Block {
-                        body: vec![Stmt::Literal { value: 2 }]
+                        body: vec![Stmt::Integer { value: 2 }]
                     }),
                     else_block: None,
                 })),
@@ -267,24 +267,24 @@ if 10 + 10 {
             stmt,
             vec![Stmt::IfStatement {
                 condition: Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Literal { value: 10 }),
-                    right: Box::new(Stmt::Literal { value: 10 }),
+                    left: Box::new(Stmt::Integer { value: 10 }),
+                    right: Box::new(Stmt::Integer { value: 10 }),
                     operator: BinaryOperator::Add,
                 }),
                 block: Box::new(Stmt::Block {
-                    body: vec![Stmt::Literal { value: 1 }]
+                    body: vec![Stmt::Integer { value: 1 }]
                 }),
                 else_block: Some(Box::new(Stmt::IfStatement {
                     condition: Box::new(Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Literal { value: 20 }),
-                        right: Box::new(Stmt::Literal { value: 20 }),
+                        left: Box::new(Stmt::Integer { value: 20 }),
+                        right: Box::new(Stmt::Integer { value: 20 }),
                         operator: BinaryOperator::Add,
                     }),
                     block: Box::new(Stmt::Block {
-                        body: vec![Stmt::Literal { value: 2 }]
+                        body: vec![Stmt::Integer { value: 2 }]
                     }),
                     else_block: Some(Box::new(Stmt::Block {
-                        body: vec![Stmt::Literal { value: 3 }]
+                        body: vec![Stmt::Integer { value: 3 }]
                     })),
                 })),
             }]

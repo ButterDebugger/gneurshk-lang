@@ -1,6 +1,6 @@
 use logos::{Lexer, Logos};
 
-#[derive(Logos, Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Logos, Debug, PartialEq, Clone)]
 #[logos(skip r"[ \r\t\f]+")] // Skip whitespace
 #[logos(skip r"#[^\r\n]*")] // Skip comments
 pub enum Token {
@@ -110,8 +110,10 @@ pub enum Token {
     Word(String),
     #[regex(r#""([^"\\\x00-\x1F]|\\(["\\bnfrt/]|u[a-fA-F0-9]{4}))*""#, string)]
     String(String),
-    #[regex("[0-9]+", integer)]
-    Integer(isize),
+    #[regex(r"[0-9]+", integer)]
+    Integer(u64),
+    #[regex(r"[0-9]+\.[0-9]+", float)]
+    Float(f64),
     #[regex(r"true|false", boolean)]
     Boolean(bool),
 }
@@ -125,8 +127,12 @@ fn string(lexer: &mut Lexer<Token>) -> String {
     slice[1..slice.len() - 1].to_string()
 }
 
-fn integer(lexer: &mut Lexer<Token>) -> isize {
-    lexer.slice().parse::<isize>().unwrap()
+fn integer(lexer: &mut Lexer<Token>) -> u64 {
+    lexer.slice().parse::<u64>().unwrap()
+}
+
+fn float(lexer: &mut Lexer<Token>) -> f64 {
+    lexer.slice().parse::<f64>().unwrap()
 }
 
 fn boolean(lexer: &mut Lexer<Token>) -> bool {

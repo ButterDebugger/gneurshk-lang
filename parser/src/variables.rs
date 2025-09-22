@@ -110,7 +110,7 @@ mod tests {
             vec![Stmt::Declaration {
                 mutable: true,
                 name: "green_beans".to_string(),
-                value: Some(Box::new(Stmt::Literal { value: 2 }))
+                value: Some(Box::new(Stmt::Integer { value: 2 }))
             }]
         );
     }
@@ -125,8 +125,8 @@ mod tests {
                 mutable: true,
                 name: "canned_corn".to_string(),
                 value: Some(Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Literal { value: 2 }),
-                    right: Box::new(Stmt::Literal { value: 5 }),
+                    left: Box::new(Stmt::Integer { value: 2 }),
+                    right: Box::new(Stmt::Integer { value: 5 }),
                     operator: BinaryOperator::Add
                 }))
             }]

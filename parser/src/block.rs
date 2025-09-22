@@ -71,7 +71,7 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::Block {
-                body: vec![Stmt::Literal { value: 1 }]
+                body: vec![Stmt::Integer { value: 1 }]
             }]
         );
     }
@@ -88,7 +88,7 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::Block {
-                body: vec![Stmt::Literal { value: 1 }]
+                body: vec![Stmt::Integer { value: 1 }]
             }]
         );
     }
@@ -103,11 +103,11 @@ mod tests {
                 body: vec![
                     Stmt::Block {
                         body: vec![Stmt::Block {
-                            body: vec![Stmt::Literal { value: 3 }]
+                            body: vec![Stmt::Integer { value: 3 }]
                         }]
                     },
                     Stmt::Block {
-                        body: vec![Stmt::Literal { value: 2 }]
+                        body: vec![Stmt::Integer { value: 2 }]
                     }
                 ]
             }]
