@@ -17,7 +17,6 @@ mod if_statement;
 mod literal;
 mod return_statement;
 mod scope;
-mod strings;
 mod unary_expression;
 
 pub struct Codegen<'ctx> {
@@ -146,6 +145,7 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::Identifier { name } => self.build_identifier(name),
             Stmt::Integer { value } => self.build_integer(value),
             Stmt::Float { value } => self.build_float(value),
+            Stmt::Boolean { value } => self.build_boolean(value),
             Stmt::String { value } => self.build_global_string(value),
             Stmt::ReturnStatement { value } => self.build_return_statement(value),
             _ => {

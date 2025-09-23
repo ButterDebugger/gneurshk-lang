@@ -3,7 +3,6 @@ use crate::expressions::parse_expression;
 use crate::ifs::parse_if_statement;
 use crate::imports::parse_import;
 use crate::returns::parse_return_statement;
-use crate::strings::parse_string;
 use crate::types::DataType;
 use crate::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
@@ -16,7 +15,6 @@ mod funcs;
 mod ifs;
 mod imports;
 mod returns;
-mod strings;
 pub mod types;
 mod variables;
 
@@ -112,6 +110,9 @@ pub enum Stmt {
     Float {
         value: f64,
     },
+    Boolean {
+        value: bool,
+    },
     String {
         value: String,
     },
@@ -192,6 +193,8 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         Token::If => parse_if_statement(tokens),
         Token::Integer(_)
         | Token::Float(_)
+        | Token::Boolean(_)
+        | Token::String(_)
         | Token::OpenParen
         | Token::Word(_)
         | Token::Minus
@@ -200,7 +203,6 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         Token::Import => parse_import(tokens),
         Token::OpenBrace => parse_block(tokens),
         Token::Return => parse_return_statement(tokens),
-        Token::String(_) => parse_string(tokens),
         _ => {
             println!("token: {token:?}");
             return Err("Unexpected token");

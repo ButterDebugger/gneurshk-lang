@@ -1,5 +1,3 @@
-use crate::strings::parse_string;
-
 use super::{BinaryOperator, StatementResult, Stmt, TokenStream, UnaryOperator};
 use gneurshk_lexer::tokens::Token;
 
@@ -166,9 +164,11 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
                 operator: UnaryOperator::Not,
             })
         }
-        Some((Token::Integer(_), _)) | Some((Token::Float(_), _)) => parse_literal(tokens),
+        Some((Token::Integer(_), _))
+        | Some((Token::Float(_), _))
+        | Some((Token::Boolean(_), _))
+        | Some((Token::String(_), _)) => parse_literal(tokens),
         Some((Token::Word(_), _)) => parse_identifier_or_function_call(tokens),
-        Some((Token::String(_), _)) => parse_string(tokens),
         Some(_) => Err("Unexpected token in expression"),
         None => Err("Unexpected end of tokens in expression"),
     }
@@ -178,6 +178,8 @@ fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
     match tokens.next() {
         Some((Token::Integer(value), _)) => Ok(Stmt::Integer { value }),
         Some((Token::Float(value), _)) => Ok(Stmt::Float { value }),
+        Some((Token::Boolean(value), _)) => Ok(Stmt::Boolean { value }),
+        Some((Token::String(value), _)) => Ok(Stmt::String { value }),
         _ => Err("Expected literal"),
     }
 }
