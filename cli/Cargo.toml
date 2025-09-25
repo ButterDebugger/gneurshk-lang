@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 gneurshk_compiler = { path = "../compiler" }
+gneurshk_analyzer = { path = "../analyzer" }
 gneurshk_parser = { path = "../parser" }
 gneurshk_lexer = { path = "../lexer" }
 

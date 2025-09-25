@@ -1,0 +1,11 @@
+[package]
+name = "gneurshk_analyzer"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "gneurshk_analyzer"
+path = "src/lib.rs"
+
+[dependencies]
+gneurshk_parser = { path = "../parser" }

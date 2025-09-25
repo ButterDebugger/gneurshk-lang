@@ -1,4 +1,5 @@
 use colored::Colorize;
+use gneurshk_analyzer::analyze;
 use gneurshk_compiler::{compile_to_executable, create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
 use gneurshk_parser::{Program, parse};
@@ -131,6 +132,7 @@ fn help_cmd() {
 }
 
 fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<(), String> {
+    // TODO: change to analyze_program
     let ast = match create_ast(input, pb.clone()) {
         Ok(ast) => ast,
         Err(e) => {
@@ -159,7 +161,7 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
 
         let pb = create_progress_bar();
 
-        match create_ast(&source, pb.clone()) {
+        match analyze_program(&source, pb.clone()) {
             Ok(_ast) => {
                 pb.finish_and_clear();
 
@@ -245,6 +247,20 @@ fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Program, String> {
         Ok(result) => result,
         Err(e) => return Err(e.to_owned()),
     };
+
+    Ok(ast)
+}
+
+fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<Program, String> {
+    // Create the AST
+    let ast = create_ast(input, pb.clone())?;
+
+    // Analyze the AST
+    pb.set_message("Analyzing...");
+
+    if let Err(e) = analyze(ast.clone()) {
+        return Err(e.to_owned());
+    }
 
     Ok(ast)
 }
