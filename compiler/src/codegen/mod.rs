@@ -119,6 +119,7 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::Declaration {
                 mutable: _,
                 name,
+                data_type: _,
                 value,
             } => self.build_declaration(name, value),
             Stmt::Block { body } => self.build_block(body),

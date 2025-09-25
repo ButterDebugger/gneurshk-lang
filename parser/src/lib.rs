@@ -70,6 +70,7 @@ pub enum Stmt {
     Declaration {
         mutable: bool,
         name: String,
+        data_type: Option<DataType>,
         value: Option<Box<Stmt>>,
     },
     Block {

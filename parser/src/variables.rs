@@ -1,4 +1,5 @@
 use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
+use crate::types::parse_type;
 use gneurshk_lexer::tokens::Token;
 
 pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
@@ -14,35 +15,51 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
         _ => return Err("Expected variable name"),
     };
 
-    // Check if there is an equal sign which indicates a value
-    let has_value = matches!(tokens.peek(), Some((Token::Equal, _)));
+    // Check if there is a type
+    let data_type = match tokens.peek() {
+        Some((Token::Colon, _)) => {
+            tokens.next(); // Consume the token
 
-    // If there is a value, parse it
-    if has_value {
-        tokens.next(); // Consume token
+            Some(parse_type(tokens)?)
+        }
+        _ => None,
+    };
 
-        let value = match parse_expression(tokens) {
-            Ok(e) => e,
-            _ => return Err("Expected a value for the variable"),
-        };
+    // Check if there is a value
+    let init_value = match tokens.peek() {
+        Some((Token::Equal, _)) => {
+            tokens.next(); // Consume the token
 
-        return Ok(Stmt::Declaration {
-            mutable,
-            name: name.to_string(),
-            value: Some(Box::new(value)),
-        });
-    }
+            // Parse the expression
+            let value = parse_expression(tokens)?;
 
+            // TODO: Based on the value, determine the type if it wasn't specified
+
+            Some(Box::new(value))
+        }
+        _ => {
+            // Return an error if there is no type and no value
+            if data_type.is_none() {
+                return Err("Expected a type or value for the variable");
+            }
+
+            // Otherwise, return no value
+            None
+        }
+    };
+
+    // Return the declaration
     Ok(Stmt::Declaration {
         mutable,
         name: name.to_string(),
-        value: None,
+        data_type,
+        value: init_value,
     })
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{BinaryOperator, Program, Stmt, parse};
+    use crate::{BinaryOperator, Program, Stmt, parse, types::DataType};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_variable_declaration function
@@ -74,7 +91,8 @@ mod tests {
     }
 
     #[test]
-    fn blank_variable_declaration() {
+    #[should_panic]
+    fn no_type_or_value() {
         let stmt = lex_then_parse("var apple").body;
 
         assert_eq!(
@@ -82,41 +100,44 @@ mod tests {
             vec![Stmt::Declaration {
                 mutable: true,
                 name: "apple".to_string(),
+                data_type: None,
                 value: None
             }]
         );
     }
 
     #[test]
-    fn blank_constant_declaration() {
-        let stmt = lex_then_parse("const orange").body;
-
-        assert_eq!(
-            stmt,
-            vec![Stmt::Declaration {
-                mutable: false,
-                name: "orange".to_string(),
-                value: None
-            }]
-        );
-    }
-
-    #[test]
-    fn literal_variable_declaration() {
-        let stmt = lex_then_parse("var green_beans = 2").body;
+    fn has_type_no_value() {
+        let stmt = lex_then_parse("var pepper: Int32").body;
 
         assert_eq!(
             stmt,
             vec![Stmt::Declaration {
                 mutable: true,
-                name: "green_beans".to_string(),
-                value: Some(Box::new(Stmt::Integer { value: 2 }))
+                name: "pepper".to_string(),
+                data_type: Some(DataType::Int32),
+                value: None
             }]
         );
     }
 
     #[test]
-    fn expression_variable_declaration() {
+    fn has_type_and_value() {
+        let stmt = lex_then_parse("var potatoes: Int32 = 5").body;
+
+        assert_eq!(
+            stmt,
+            vec![Stmt::Declaration {
+                mutable: true,
+                name: "potatoes".to_string(),
+                data_type: Some(DataType::Int32),
+                value: Some(Box::new(Stmt::Integer { value: 5 }))
+            }]
+        );
+    }
+
+    #[test]
+    fn has_value_no_type() {
         let stmt = lex_then_parse("var canned_corn = 2 + 5").body;
 
         assert_eq!(
@@ -124,6 +145,7 @@ mod tests {
             vec![Stmt::Declaration {
                 mutable: true,
                 name: "canned_corn".to_string(),
+                data_type: None,
                 value: Some(Box::new(Stmt::BinaryExpression {
                     left: Box::new(Stmt::Integer { value: 2 }),
                     right: Box::new(Stmt::Integer { value: 5 }),

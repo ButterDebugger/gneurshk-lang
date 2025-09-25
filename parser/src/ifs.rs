@@ -88,11 +88,13 @@ const borg = 5
                             Stmt::Declaration {
                                 mutable: true,
                                 name: "apple".to_string(),
+                                data_type: None,
                                 value: Some(Box::new(Stmt::Integer { value: 1 })),
                             },
                             Stmt::Declaration {
                                 mutable: true,
                                 name: "green".to_string(),
+                                data_type: None,
                                 value: Some(Box::new(Stmt::Integer { value: 3 })),
                             },
                         ],
@@ -102,6 +104,7 @@ const borg = 5
                 Stmt::Declaration {
                     mutable: false,
                     name: "borg".to_string(),
+                    data_type: None,
                     value: Some(Box::new(Stmt::Integer { value: 5 })),
                 },
             ]
@@ -146,6 +149,7 @@ const borg = 5
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "apple".to_string(),
+                                        data_type: None,
                                         value: Some(Box::new(Stmt::Integer { value: 1 })),
                                     }]
                                 }),
@@ -161,6 +165,7 @@ const borg = 5
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "green".to_string(),
+                                        data_type: None,
                                         value: Some(Box::new(Stmt::Integer { value: 3 })),
                                     }]
                                 }),
@@ -173,6 +178,7 @@ const borg = 5
                 Stmt::Declaration {
                     mutable: false,
                     name: "borg".to_string(),
+                    data_type: None,
                     value: Some(Box::new(Stmt::Integer { value: 5 })),
                 },
             ]

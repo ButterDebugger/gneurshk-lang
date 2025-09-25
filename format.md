@@ -11,6 +11,11 @@ This is a list of every syntax feature in this language. Keep in mind that this 
 ## Variable Declaration
 
 ```julia
+# Uninitialized declaration
+
+var uninitialized_integer: i32
+var uninitialized_float: f32
+
 # Implicit type declaration
 
 var assumed_integer = 2 # i32 is the default integer type
