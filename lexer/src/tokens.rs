@@ -106,6 +106,8 @@ pub enum Token {
     #[token("return")]
     Return,
 
+    #[regex(r"@[a-zA-Z_][a-zA-Z0-9_]*", annotation, priority = 1)]
+    Annotation(String),
     #[regex("[a-zA-Z_][a-zA-Z0-9_]*", word, priority = 1)]
     Word(String),
     #[regex(r#""([^"\\\x00-\x1F]|\\(["\\bnfrt/]|u[a-fA-F0-9]{4}))*""#, string)]
@@ -116,6 +118,10 @@ pub enum Token {
     Float(f64),
     #[regex(r"true|false", boolean)]
     Boolean(bool),
+}
+
+fn annotation(lexer: &mut Lexer<Token>) -> String {
+    lexer.slice()[1..].to_string()
 }
 
 fn word(lexer: &mut Lexer<Token>) -> String {

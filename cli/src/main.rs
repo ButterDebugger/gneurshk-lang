@@ -1,5 +1,5 @@
 use colored::Colorize;
-use gneurshk_analyzer::analyze;
+use gneurshk_analyzer::Analyzer;
 use gneurshk_compiler::{compile_to_executable, create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
 use gneurshk_parser::{Program, parse};
@@ -162,10 +162,16 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
         let pb = create_progress_bar();
 
         match analyze_program(&source, pb.clone()) {
-            Ok(_ast) => {
+            Ok((_ast, analyzer)) => {
                 pb.finish_and_clear();
 
-                println!("✅");
+                if analyzer.errors.is_empty() {
+                    println!("✅");
+                } else {
+                    for error in analyzer.errors {
+                        println!("❗ {error}");
+                    }
+                }
             }
             Err(error) => {
                 pb.finish_and_clear();
@@ -251,18 +257,20 @@ fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Program, String> {
     Ok(ast)
 }
 
-fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<Program, String> {
+fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<(Program, Analyzer), String> {
     // Create the AST
     let ast = create_ast(input, pb.clone())?;
 
     // Analyze the AST
     pb.set_message("Analyzing...");
 
-    if let Err(e) = analyze(ast.clone()) {
+    let mut analyzer = Analyzer::new();
+
+    if let Err(e) = analyzer.analyze(ast.clone()) {
         return Err(e.to_owned());
     }
 
-    Ok(ast)
+    Ok((ast, analyzer))
 }
 
 fn create_progress_bar() -> Box<ProgressBar> {

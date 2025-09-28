@@ -9,3 +9,5 @@ path = "src/lib.rs"
 
 [dependencies]
 gneurshk_parser = { path = "../parser" }
+
+thiserror = "2.0.16"

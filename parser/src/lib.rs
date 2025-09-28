@@ -64,6 +64,12 @@ pub struct FunctionParam {
     pub default_value: Option<Box<Stmt>>,
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct Annotation {
+    pub name: String,
+    pub args: Vec<Stmt>,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
@@ -83,6 +89,7 @@ pub enum Stmt {
         else_block: Option<Box<Stmt>>,
     },
     FunctionDeclaration {
+        annotations: Vec<Annotation>,
         name: String,
         params: Vec<FunctionParam>,
         return_type: DataType,
@@ -200,7 +207,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         | Token::Word(_)
         | Token::Minus
         | Token::Not => parse_expression(tokens),
-        Token::Func => parse_func_declaration(tokens),
+        Token::Annotation(_) | Token::Func => parse_func_declaration(tokens),
         Token::Import => parse_import(tokens),
         Token::OpenBrace => parse_block(tokens),
         Token::Return => parse_return_statement(tokens),

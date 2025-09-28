@@ -1,70 +1,189 @@
-use core::panic;
-use gneurshk_parser::{Program, Stmt, types::DataType};
+use crate::{
+    errors::SematicError,
+    scope::{Function, Scope, Variable},
+};
+use gneurshk_parser::{BinaryOperator, Program, Stmt, types::DataType};
 use std::collections::HashMap;
 
+mod errors;
+mod scope;
+
 #[derive(Debug, Clone)]
-struct State {
-    functions: HashMap<String, DataType>,
+pub struct Analyzer {
+    scope: Box<Scope>,
+
+    functions: HashMap<String, Function>,
+
+    pub errors: Vec<SematicError>,
 }
 
-pub fn analyze(program: Program) -> Result<(), String> {
-    let mut state = Box::new(State {
-        functions: HashMap::new(),
-    });
+impl Analyzer {
+    pub fn new() -> Self {
+        Self {
+            scope: Box::new(Scope::new(None)),
 
-    for function in program.functions {
-        match function {
-            Stmt::FunctionDeclaration {
-                name,
-                params: _,
-                return_type,
-                block: _,
+            functions: HashMap::new(),
+
+            errors: Vec::new(),
+        }
+    }
+
+    pub fn analyze(&mut self, program: Program) -> Result<(), String> {
+        for function in program.functions {
+            match function {
+                Stmt::FunctionDeclaration {
+                    annotations: _,
+                    name,
+                    params,
+                    return_type,
+                    block: _,
+                } => {
+                    self.functions.insert(
+                        name,
+                        Function {
+                            return_type,
+                            params,
+                        },
+                    );
+                }
+                _ => return Err("Expected function declaration".to_string()),
+            }
+        }
+
+        for statement in program.body {
+            self.analyze_statement(statement);
+        }
+
+        Ok(())
+    }
+
+    fn analyze_statement(&mut self, statement: Stmt) -> Option<DataType> {
+        match statement {
+            Stmt::BinaryExpression {
+                left,
+                operator,
+                right,
             } => {
-                state.functions.insert(name, return_type);
+                let left_type = self.analyze_statement(*left)?;
+                let right_type = self.analyze_statement(*right)?;
+
+                match operator {
+                    BinaryOperator::Equal
+                    | BinaryOperator::NotEqual
+                    | BinaryOperator::GreaterThan
+                    | BinaryOperator::GreaterThanEqual
+                    | BinaryOperator::LessThan
+                    | BinaryOperator::LessThanEqual
+                    | BinaryOperator::And
+                    | BinaryOperator::Or => {
+                        return Some(DataType::Boolean);
+                    }
+                    _ => (),
+                }
+
+                match (left_type.clone(), right_type.clone()) {
+                    (DataType::Int32, DataType::Int32) => Some(DataType::Int32),
+                    (DataType::Float32, DataType::Float32) => Some(DataType::Float32),
+                    _ => {
+                        self.errors
+                            .push(SematicError::TypeMismatch(left_type, right_type));
+
+                        None
+                    }
+                }
             }
-            _ => return Err("Expected function declaration".to_string()),
+            Stmt::String { value: _ } => Some(DataType::String),
+            Stmt::Integer { value: _ } => Some(DataType::Int32),
+            Stmt::Float { value: _ } => Some(DataType::Float32),
+            Stmt::Boolean { value: _ } => Some(DataType::Boolean),
+            Stmt::FunctionCall { name, args } => {
+                if let Some(function) = self.functions.get(&name).cloned() {
+                    // Check for correct number of arguments
+                    if args.len() != function.params.len() {
+                        self.errors
+                            .push(SematicError::FunctionCallArgumentCountMismatch(
+                                name.clone(),
+                                function.params.len(),
+                                args.len(),
+                            ));
+                    }
+                    // Check for correct types of arguments
+                    else {
+                        let mut arg_types = Vec::with_capacity(args.len());
+                        for arg in args {
+                            arg_types.push(self.analyze_statement(arg)?);
+                        }
+
+                        let expected_types = function
+                            .params
+                            .iter()
+                            .map(|param| param.data_type.clone())
+                            .collect::<Vec<_>>();
+
+                        for (i, (expected, actual)) in
+                            expected_types.iter().zip(arg_types.iter()).enumerate()
+                        {
+                            if expected != actual {
+                                self.errors.push(SematicError::FunctionCallArgumentMismatch(
+                                    name.clone(),
+                                    i + 1,
+                                    expected.clone(),
+                                    actual.clone(),
+                                ));
+                            }
+                        }
+                    }
+
+                    Some(function.return_type.clone())
+                } else {
+                    self.errors.push(SematicError::FunctionNotFound(name));
+
+                    None
+                }
+            }
+            Stmt::Identifier { name } => {
+                if let Some(variable) = self.scope.get_variable(&name) {
+                    Some(variable.data_type.clone())
+                } else {
+                    self.errors.push(SematicError::VariableNotFound(name));
+
+                    None
+                }
+            }
+            Stmt::Declaration {
+                mutable,
+                name,
+                data_type,
+                value,
+            } => {
+                let var_type = if let Some(dt) = data_type {
+                    dt
+                } else if let Some(val) = value {
+                    self.analyze_statement(*val)?
+                } else {
+                    self.errors.push(SematicError::NoTypeOrValueProvided);
+
+                    return None;
+                };
+
+                let variable = Variable {
+                    data_type: var_type.clone(),
+                };
+
+                self.scope.set_variable(name, variable);
+
+                Some(var_type)
+            }
+            _ => {
+                println!("statement: {statement:?}");
+                todo!();
+            }
         }
     }
-
-    for statement in program.body {
-        match analyze_statement(statement, &mut state) {
-            Ok(_) => (),
-            Err(e) => return Err(e),
-        }
-    }
-
-    Ok(())
 }
 
-fn analyze_statement(statement: Stmt, state: &mut Box<State>) -> Result<DataType, String> {
-    match statement {
-        Stmt::BinaryExpression {
-            left,
-            operator: _,
-            right,
-        } => {
-            let left_type = analyze_statement(*left, state)?;
-            let right_type = analyze_statement(*right, state)?;
-
-            if left_type != right_type {
-                panic!("Type mismatch: {:?} != {:?}", left_type, right_type);
-            }
-
-            Ok(left_type)
-        }
-        Stmt::String { value: _ } => Ok(DataType::String),
-        Stmt::Integer { value: _ } => Ok(DataType::Int32),
-        Stmt::Float { value: _ } => Ok(DataType::Float32),
-        Stmt::Boolean { value: _ } => Ok(DataType::Boolean),
-        Stmt::FunctionCall { name, args: _ } => {
-            if let Some(function_type) = state.functions.get(&name) {
-                Ok(function_type.clone())
-            } else {
-                Err(format!("Function {} not found", name))
-            }
-        }
-        _ => {
-            todo!();
-        }
+impl Default for Analyzer {
+    fn default() -> Self {
+        Self::new()
     }
 }
