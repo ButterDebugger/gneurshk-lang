@@ -1,5 +1,5 @@
 use crate::{
-    errors::SematicError,
+    errors::{SematicError, SematicWarning},
     scope::{Function, Scope, Variable},
 };
 use gneurshk_parser::{BinaryOperator, Program, Stmt, types::DataType};
@@ -15,6 +15,7 @@ pub struct Analyzer {
     functions: HashMap<String, Function>,
 
     pub errors: Vec<SematicError>,
+    pub warnings: Vec<SematicWarning>,
 }
 
 impl Analyzer {
@@ -25,6 +26,7 @@ impl Analyzer {
             functions: HashMap::new(),
 
             errors: Vec::new(),
+            warnings: Vec::new(),
         }
     }
 
@@ -52,6 +54,12 @@ impl Analyzer {
 
         for statement in program.body {
             self.analyze_statement(statement);
+        }
+
+        // Check for unused variables
+        for variable in self.scope.get_unused_variables() {
+            self.warnings
+                .push(SematicWarning::UnusedVariable(variable.name));
         }
 
         Ok(())
@@ -142,7 +150,9 @@ impl Analyzer {
                 }
             }
             Stmt::Identifier { name } => {
-                if let Some(variable) = self.scope.get_variable(&name) {
+                if let Some(variable) = self.scope.get_mut_variable(&name) {
+                    variable.used = true;
+
                     Some(variable.data_type.clone())
                 } else {
                     self.errors.push(SematicError::VariableNotFound(name));
@@ -158,7 +168,7 @@ impl Analyzer {
             } => {
                 let var_type = if let Some(dt) = data_type {
                     dt
-                } else if let Some(val) = value {
+                } else if let Some(val) = value.clone() {
                     self.analyze_statement(*val)?
                 } else {
                     self.errors.push(SematicError::NoTypeOrValueProvided);
@@ -167,7 +177,11 @@ impl Analyzer {
                 };
 
                 let variable = Variable {
+                    name: name.clone(),
                     data_type: var_type.clone(),
+                    mutable,
+                    used: false,
+                    initialized: value.is_some(),
                 };
 
                 self.scope.set_variable(name, variable);

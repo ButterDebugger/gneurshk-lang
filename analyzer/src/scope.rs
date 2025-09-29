@@ -10,7 +10,11 @@ pub struct Scope {
 
 #[derive(Clone, Debug)]
 pub struct Variable {
+    pub(crate) name: String,
     pub(crate) data_type: DataType,
+    pub(crate) mutable: bool,
+    pub(crate) used: bool,
+    pub(crate) initialized: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -38,5 +42,28 @@ impl Scope {
                 .as_ref()
                 .and_then(|parent| parent.get_variable(name))
         })
+    }
+
+    pub fn get_mut_variable(&mut self, name: &String) -> Option<&mut Variable> {
+        self.variables.get_mut(name).or_else(|| {
+            self.parent
+                .as_mut()
+                .and_then(|parent| parent.get_mut_variable(name))
+        })
+    }
+
+    pub fn get_unused_variables(&self) -> Vec<Variable> {
+        let mut unused = self
+            .variables
+            .iter()
+            .filter(|(_, variable)| !variable.used)
+            .map(|(_, var)| var.clone())
+            .collect::<Vec<Variable>>();
+
+        if let Some(parent) = self.parent.as_ref() {
+            unused.extend(parent.get_unused_variables());
+        }
+
+        unused
     }
 }

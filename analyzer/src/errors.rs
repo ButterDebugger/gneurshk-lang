@@ -23,3 +23,9 @@ pub enum SematicError {
     #[error("No type or value provided for variable declaration")]
     NoTypeOrValueProvided,
 }
+
+#[derive(Error, Debug, Clone, PartialEq, Eq, Hash)]
+pub enum SematicWarning {
+    #[error("Variable '{0}' is never used")]
+    UnusedVariable(String),
+}

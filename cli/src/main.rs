@@ -165,11 +165,15 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
             Ok((_ast, analyzer)) => {
                 pb.finish_and_clear();
 
-                if analyzer.errors.is_empty() {
+                if analyzer.errors.is_empty() && analyzer.warnings.is_empty() {
                     println!("✅");
                 } else {
                     for error in analyzer.errors {
                         println!("❗ {error}");
+                    }
+
+                    for warning in analyzer.warnings {
+                        println!("⚠️  {warning}");
                     }
                 }
             }
