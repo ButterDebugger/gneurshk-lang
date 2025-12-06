@@ -146,6 +146,8 @@ impl Analyzer {
                 } else {
                     self.errors.push(SematicError::FunctionNotFound(name));
 
+                    // TODO: analyze arguments anyway
+
                     None
                 }
             }

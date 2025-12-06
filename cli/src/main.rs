@@ -132,9 +132,18 @@ fn help_cmd() {
 }
 
 fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<(), String> {
-    // TODO: change to analyze_program
-    let ast = match create_ast(input, pb.clone()) {
-        Ok(ast) => ast,
+    let ast = match analyze_program(input, pb.clone()) {
+        Ok((ast, analyzer)) => {
+            // Cancel the build if there are any semantic errors
+            if !analyzer.errors.is_empty() {
+                return Err(format!("{:?}", analyzer.errors));
+            }
+
+            // TODO: Print warnings if there are any
+
+            // Return the AST
+            ast
+        }
         Err(e) => {
             return Err(e);
         }
