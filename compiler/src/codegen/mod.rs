@@ -62,6 +62,7 @@ impl<'ctx> Codegen<'ctx> {
 
         for function in program.functions.clone() {
             if let Stmt::FunctionDeclaration {
+                annotations: _,
                 name,
                 params,
                 return_type: _,
@@ -80,6 +81,7 @@ impl<'ctx> Codegen<'ctx> {
         // Build all functions
         for function in program.functions {
             if let Stmt::FunctionDeclaration {
+                annotations: _,
                 name,
                 params,
                 return_type,
@@ -129,6 +131,7 @@ impl<'ctx> Codegen<'ctx> {
                 else_block,
             } => self.build_if_statement(*condition, *block, else_block.map(|b| *b)),
             Stmt::FunctionDeclaration {
+                annotations: _,
                 name,
                 params,
                 return_type,
