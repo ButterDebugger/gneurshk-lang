@@ -131,7 +131,10 @@ mod tests {
                 mutable: true,
                 name: "potatoes".to_string(),
                 data_type: Some(DataType::Int32),
-                value: Some(Box::new(Stmt::Integer { value: 5 }))
+                value: Some(Box::new(Stmt::Integer {
+                    value: 5,
+                    span: 22..23
+                }))
             }]
         );
     }
@@ -147,8 +150,14 @@ mod tests {
                 name: "canned_corn".to_string(),
                 data_type: None,
                 value: Some(Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Integer { value: 2 }),
-                    right: Box::new(Stmt::Integer { value: 5 }),
+                    left: Box::new(Stmt::Integer {
+                        value: 2,
+                        span: 18..19
+                    }),
+                    right: Box::new(Stmt::Integer {
+                        value: 5,
+                        span: 22..23
+                    }),
                     operator: BinaryOperator::Add
                 }))
             }]

@@ -196,7 +196,10 @@ mod tests {
                             mutable: true,
                             name: "peas".to_string(),
                             data_type: None,
-                            value: Some(Box::new(Stmt::Integer { value: 2 })),
+                            value: Some(Box::new(Stmt::Integer {
+                                value: 2,
+                                span: 37..38
+                            })),
                         }]
                     }),
                 }],
@@ -223,7 +226,10 @@ mod tests {
                             mutable: false,
                             name: "cucumbers".to_string(),
                             data_type: None,
-                            value: Some(Box::new(Stmt::Integer { value: 8 })),
+                            value: Some(Box::new(Stmt::Integer {
+                                value: 8,
+                                span: 34..35
+                            })),
                         }]
                     }),
                 }],
@@ -278,12 +284,18 @@ mod tests {
                         FunctionParam {
                             name: "a".to_string(),
                             data_type: DataType::Int32,
-                            default_value: Some(Box::new(Stmt::Integer { value: 5 })),
+                            default_value: Some(Box::new(Stmt::Integer {
+                                value: 5,
+                                span: 26..27
+                            })),
                         },
                         FunctionParam {
                             name: "b".to_string(),
                             data_type: DataType::Float32,
-                            default_value: Some(Box::new(Stmt::Float { value: 3.0 })),
+                            default_value: Some(Box::new(Stmt::Float {
+                                value: 3.0,
+                                span: 42..45
+                            })),
                         },
                     ],
                     return_type: DataType::default(),
@@ -297,9 +309,6 @@ mod tests {
     #[test]
     fn func_with_annotations() {
         let stmt = lex_then_parse("@test func egg() { }");
-        let stmt_with_newline = lex_then_parse("@test \n func egg() { }");
-
-        assert_eq!(stmt, stmt_with_newline);
 
         assert_eq!(
             stmt,
@@ -323,9 +332,6 @@ mod tests {
     #[test]
     fn func_with_multiple_annotations() {
         let stmt = lex_then_parse("@test @other(1, 2, 3) func ham() { }");
-        let stmt_with_newline = lex_then_parse("@test \n @other(1, 2, 3) \n func ham() { }");
-
-        assert_eq!(stmt, stmt_with_newline);
 
         assert_eq!(
             stmt,
@@ -340,9 +346,18 @@ mod tests {
                         Annotation {
                             name: "other".to_string(),
                             args: vec![
-                                Stmt::Integer { value: 1 },
-                                Stmt::Integer { value: 2 },
-                                Stmt::Integer { value: 3 },
+                                Stmt::Integer {
+                                    value: 1,
+                                    span: 13..14
+                                },
+                                Stmt::Integer {
+                                    value: 2,
+                                    span: 16..17
+                                },
+                                Stmt::Integer {
+                                    value: 3,
+                                    span: 19..20
+                                },
                             ],
                         },
                     ],

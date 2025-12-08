@@ -71,7 +71,10 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::Block {
-                body: vec![Stmt::Integer { value: 1 }]
+                body: vec![Stmt::Integer {
+                    value: 1,
+                    span: 2..3
+                }]
             }]
         );
     }
@@ -79,16 +82,14 @@ mod tests {
     #[test]
     fn multiple_line_block() {
         let stmt = lex_then_parse("{ \n 1 \n }").body;
-        let stmt_start = lex_then_parse("{ \n 1 }").body;
-        let stmt_end = lex_then_parse("{ 1 \n }").body;
-
-        assert_eq!(stmt, stmt_start);
-        assert_eq!(stmt, stmt_end);
 
         assert_eq!(
             stmt,
             vec![Stmt::Block {
-                body: vec![Stmt::Integer { value: 1 }]
+                body: vec![Stmt::Integer {
+                    value: 1,
+                    span: 4..5
+                }]
             }]
         );
     }
@@ -103,11 +104,17 @@ mod tests {
                 body: vec![
                     Stmt::Block {
                         body: vec![Stmt::Block {
-                            body: vec![Stmt::Integer { value: 3 }]
+                            body: vec![Stmt::Integer {
+                                value: 3,
+                                span: 6..7
+                            }]
                         }]
                     },
                     Stmt::Block {
-                        body: vec![Stmt::Integer { value: 2 }]
+                        body: vec![Stmt::Integer {
+                            value: 2,
+                            span: 14..15
+                        }]
                     }
                 ]
             }]

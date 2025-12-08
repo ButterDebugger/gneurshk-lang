@@ -100,11 +100,20 @@ impl Analyzer {
                     }
                 }
             }
-            Stmt::String { value: _ } => Some(DataType::String),
-            Stmt::Integer { value: _ } => Some(DataType::Int32),
-            Stmt::Float { value: _ } => Some(DataType::Float32),
-            Stmt::Boolean { value: _ } => Some(DataType::Boolean),
-            Stmt::FunctionCall { name, args } => {
+            Stmt::String { .. } => Some(DataType::String),
+            Stmt::Integer { .. } => Some(DataType::Int32),
+            Stmt::Float { .. } => Some(DataType::Float32),
+            Stmt::Boolean { .. } => Some(DataType::Boolean),
+            Stmt::FunctionCall { name, args, span } => {
+                // Handle built-in functions
+                if matches!(name.as_str(), "println" | "print") {
+                    // Analyze arguments and ignore types for these functions
+                    for arg in args {
+                        self.analyze_statement(arg);
+                    }
+                    return Some(DataType::Void);
+                }
+
                 if let Some(function) = self.functions.get(&name).cloned() {
                     // Check for correct number of arguments
                     if args.len() != function.params.len() {
@@ -151,7 +160,7 @@ impl Analyzer {
                     None
                 }
             }
-            Stmt::Identifier { name } => {
+            Stmt::Identifier { name, .. } => {
                 if let Some(variable) = self.scope.get_mut_variable(&name) {
                     variable.used = true;
 

@@ -8,6 +8,7 @@ use crate::variables::parse_variable_declaration;
 use funcs::parse_func_declaration;
 use gneurshk_lexer::TokenStream;
 use gneurshk_lexer::tokens::Token;
+use std::ops::Range;
 
 mod block;
 mod expressions;
@@ -99,6 +100,7 @@ pub enum Stmt {
     FunctionCall {
         name: String,
         args: Vec<Stmt>,
+        span: Range<usize>,
     },
     BinaryExpression {
         left: Box<Stmt>,
@@ -111,18 +113,23 @@ pub enum Stmt {
     },
     Identifier {
         name: String,
+        span: Range<usize>,
     },
     Integer {
         value: u64,
+        span: Range<usize>,
     },
     Float {
         value: f64,
+        span: Range<usize>,
     },
     Boolean {
         value: bool,
+        span: Range<usize>,
     },
     String {
         value: String,
+        span: Range<usize>,
     },
     ReturnStatement {
         value: Option<Box<Stmt>>,

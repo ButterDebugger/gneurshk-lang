@@ -178,18 +178,18 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
                     println!("✅");
                 } else {
                     for error in analyzer.errors {
-                        println!("❗ {error}");
+                        println!("❗ {}", error);
                     }
 
                     for warning in analyzer.warnings {
-                        println!("⚠️  {warning}");
+                        println!("⚠️  {}", warning);
                     }
                 }
             }
             Err(error) => {
                 pb.finish_and_clear();
 
-                println!("❌ Error: {error:?}");
+                println!("❌ Error: {:?}", error);
             }
         }
     }
