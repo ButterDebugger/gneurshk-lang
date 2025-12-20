@@ -94,6 +94,14 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                     _ => return Err("Expected a colon after the parameter name"),
                 }
 
+                // Check for mutability
+                let mutable = if let Some((Token::Mut, _)) = tokens.peek().cloned() {
+                    tokens.next(); // Consume the token
+                    true
+                } else {
+                    false
+                };
+
                 // Read the parameter type
                 let data_type = parse_type(tokens)?;
 
@@ -118,11 +126,14 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                 // Add the parameter to the list of parameters
                 parameters.push(FunctionParam {
                     name: name.to_string(),
+                    mutable,
                     data_type,
                     default_value,
                 });
             }
-            _ => {}
+            _ => {
+                return Err("Encountered an unexpected token while parsing function parameters");
+            }
         }
     }
 
@@ -252,11 +263,13 @@ mod tests {
                     params: vec![
                         FunctionParam {
                             name: "a".to_string(),
+                            mutable: false,
                             data_type: DataType::Int32,
                             default_value: None,
                         },
                         FunctionParam {
                             name: "b".to_string(),
+                            mutable: false,
                             data_type: DataType::Float32,
                             default_value: None,
                         },
@@ -283,6 +296,7 @@ mod tests {
                     params: vec![
                         FunctionParam {
                             name: "a".to_string(),
+                            mutable: false,
                             data_type: DataType::Int32,
                             default_value: Some(Box::new(Stmt::Integer {
                                 value: 5,
@@ -291,6 +305,7 @@ mod tests {
                         },
                         FunctionParam {
                             name: "b".to_string(),
+                            mutable: false,
                             data_type: DataType::Float32,
                             default_value: Some(Box::new(Stmt::Float {
                                 value: 3.0,
@@ -363,6 +378,39 @@ mod tests {
                     ],
                     name: "ham".to_string(),
                     params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Stmt::Block { body: vec![] }),
+                }],
+                body: vec![],
+            }
+        );
+    }
+
+    #[test]
+    fn func_with_mutable_params() {
+        let stmt = lex_then_parse("func mutable_params(a: mut Int32, b: Float32) { }");
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![Stmt::FunctionDeclaration {
+                    annotations: vec![],
+                    name: "mutable_params".to_string(),
+                    params: vec![
+                        FunctionParam {
+                            name: "a".to_string(),
+                            mutable: true,
+                            data_type: DataType::Int32,
+                            default_value: None,
+                        },
+                        FunctionParam {
+                            name: "b".to_string(),
+                            mutable: false,
+                            data_type: DataType::Float32,
+                            default_value: None,
+                        },
+                    ],
                     return_type: DataType::default(),
                     block: Box::new(Stmt::Block { body: vec![] }),
                 }],

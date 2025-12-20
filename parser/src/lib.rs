@@ -61,6 +61,7 @@ pub enum UnaryOperator {
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionParam {
     pub name: String,
+    pub mutable: bool,
     pub data_type: DataType,
     pub default_value: Option<Box<Stmt>>,
 }

@@ -34,11 +34,10 @@ impl Analyzer {
         for function in program.functions {
             match function {
                 Stmt::FunctionDeclaration {
-                    annotations: _,
                     name,
                     params,
                     return_type,
-                    block: _,
+                    ..
                 } => {
                     self.functions.insert(
                         name,
@@ -104,7 +103,7 @@ impl Analyzer {
             Stmt::Integer { .. } => Some(DataType::Int32),
             Stmt::Float { .. } => Some(DataType::Float32),
             Stmt::Boolean { .. } => Some(DataType::Boolean),
-            Stmt::FunctionCall { name, args, span } => {
+            Stmt::FunctionCall { name, args, .. } => {
                 // Handle built-in functions
                 if matches!(name.as_str(), "println" | "print") {
                     // Analyze arguments and ignore types for these functions

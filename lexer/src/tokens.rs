@@ -105,6 +105,8 @@ pub enum Token {
     From,
     #[token("return")]
     Return,
+    #[token("mut")]
+    Mut,
 
     #[regex(r"@[a-zA-Z_][a-zA-Z0-9_]*", annotation, priority = 1)]
     Annotation(String),
