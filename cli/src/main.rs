@@ -1,3 +1,10 @@
+use clap::{
+    Arg, ArgAction, Command,
+    builder::{
+        Styles,
+        styling::{AnsiColor, Color, Style},
+    },
+};
 use colored::Colorize;
 use gneurshk_analyzer::Analyzer;
 use gneurshk_compiler::{compile_to_executable, create_llvm_ir_file};
@@ -5,130 +12,178 @@ use gneurshk_lexer::{TokenStream, lex};
 use gneurshk_parser::{Program, parse};
 use indicatif::{ProgressBar, ProgressStyle};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{env::args, fs::read_to_string, path::Path, time::Duration};
+use std::{fs::read_to_string, path::Path, time::Duration};
+
+pub const CLAP_STYLING: Styles = Styles::styled()
+    .header(Style::new().bold())
+    .usage(Style::new().bold())
+    .literal(Style::new().fg_color(Some(Color::Ansi(AnsiColor::Blue))))
+    .placeholder(Style::new().dimmed())
+    .error(
+        Style::new()
+            .bold()
+            .fg_color(Some(Color::Ansi(AnsiColor::Red))),
+    )
+    .valid(
+        Style::new()
+            .bold()
+            .fg_color(Some(Color::Ansi(AnsiColor::BrightGreen))),
+    )
+    .invalid(
+        Style::new()
+            .bold()
+            .fg_color(Some(Color::Ansi(AnsiColor::Red))),
+    );
 
 fn main() {
-    // Read the input from the command line
-    match args().nth(1) {
-        Some(input) => match input.to_lowercase().as_str() {
-            "run" => {
-                todo!();
-            }
-            "build" => {
-                let path = args().nth(2).expect("Argument 2 needs to be a path");
-                let path: &Path = path.as_ref();
-                let source = read_to_string(path).expect("Failed to read file");
+    let matches = Command::new("pacman")
+        .about(format!(
+            "{} is an awesome programming language",
+            "Gneurshk".bright_magenta()
+        ))
+        .version("0.1.0")
+        .styles(CLAP_STYLING)
+        .subcommand_required(true)
+        .arg_required_else_help(true)
+        .subcommand(
+            Command::new("run").about("Builds and runs a file").arg(
+                Arg::new("file")
+                    .help("The file to run")
+                    .required(true)
+                    .action(ArgAction::Set)
+                    .num_args(1),
+            ),
+        )
+        .subcommand(
+            Command::new("build")
+                .about("Compiles a file into an executable")
+                .arg(
+                    Arg::new("file")
+                        .help("The file to run")
+                        .required(true)
+                        .action(ArgAction::Set)
+                        .num_args(1),
+                ),
+        )
+        .subcommand(
+            Command::new("lex")
+                .about("Lexes a file and prints the tokens")
+                .arg(
+                    Arg::new("file")
+                        .help("The file to run")
+                        .required(true)
+                        .action(ArgAction::Set)
+                        .num_args(1),
+                ),
+        )
+        .subcommand(
+            Command::new("parse")
+                .about("Parses a file and prints the AST")
+                .arg(
+                    Arg::new("file")
+                        .help("The file to run")
+                        .required(true)
+                        .action(ArgAction::Set)
+                        .num_args(1),
+                ),
+        )
+        .subcommand(
+            Command::new("check")
+                .about("Watches a file for changes and checks code validity")
+                .arg(
+                    Arg::new("file")
+                        .help("The file to run")
+                        .required(true)
+                        .action(ArgAction::Set)
+                        .num_args(1),
+                ),
+        )
+        .get_matches();
 
-                let pb = create_progress_bar();
+    match matches.subcommand() {
+        Some(("run", _query_matches)) => {
+            todo!();
+        }
+        Some(("build", query_matches)) => {
+            let path = query_matches
+                .get_one::<String>("file")
+                .expect("Argument 'file' is required");
+            let path: &Path = path.as_ref();
+            let source = read_to_string(path).expect("Failed to read file");
 
-                match build_cmd(&source, pb.clone()) {
-                    Ok(_) => {
-                        pb.finish_with_message("Successfully built executable");
-                    }
-                    Err(e) => {
-                        pb.finish_and_clear();
+            let pb = create_progress_bar();
 
-                        println!("Error: {e}");
-                    }
-                };
-            }
-            "lex" => {
-                let input = args().nth(2).expect("Argument 2 needs to be a string");
-                let path = Path::new(&input);
-                let source = read_to_string(path).expect("Failed to read file");
+            match build_cmd(&source, pb.clone()) {
+                Ok(_) => {
+                    pb.finish_with_message("Successfully built executable");
+                }
+                Err(e) => {
+                    pb.finish_and_clear();
 
-                let pb = create_progress_bar();
+                    println!("Error: {e}");
+                }
+            };
+        }
 
-                match tokenize(&source, pb.clone()) {
-                    Ok(tokens) => {
-                        pb.finish_with_message("Finished lexing");
+        Some(("lex", query_matches)) => {
+            let path = query_matches
+                .get_one::<String>("file")
+                .expect("Argument 'file' is required");
+            let path: &Path = path.as_ref();
+            let source = read_to_string(path).expect("Failed to read file");
 
-                        for (token, range) in tokens {
-                            println!("{}..{}\t{:?}", range.start, range.end, token);
-                        }
-                    }
-                    Err(e) => {
-                        pb.finish_and_clear();
+            let pb = create_progress_bar();
 
-                        println!("Error: {e}")
+            match tokenize(&source, pb.clone()) {
+                Ok(tokens) => {
+                    pb.finish_with_message("Finished lexing");
+
+                    for (token, range) in tokens {
+                        println!("{}..{}\t{:?}", range.start, range.end, token);
                     }
                 }
-            }
-            "parse" => {
-                let input = args().nth(2).expect("Argument 2 needs to be a string");
-                let path = Path::new(&input);
-                let source = read_to_string(path).expect("Failed to read file");
+                Err(e) => {
+                    pb.finish_and_clear();
 
-                let pb = create_progress_bar();
-
-                match create_ast(&source, pb.clone()) {
-                    Ok(ast) => {
-                        pb.finish_with_message("Finished parsing");
-
-                        println!("AST: {ast:#?}")
-                    }
-                    Err(e) => {
-                        pb.finish_and_clear();
-
-                        println!("Error: {e}")
-                    }
+                    println!("Error: {e}")
                 }
             }
-            "check" => {
-                let path = args().nth(2).expect("Argument 2 needs to be a path");
-                let path: &Path = path.as_ref();
+        }
+        Some(("parse", query_matches)) => {
+            let path = query_matches
+                .get_one::<String>("file")
+                .expect("Argument 'file' is required");
+            let path: &Path = path.as_ref();
+            let source = read_to_string(path).expect("Failed to read file");
 
-                if let Err(error) = check_cmd(path) {
-                    println!("Error: {error:?}");
+            let pb = create_progress_bar();
+
+            match create_ast(&source, pb.clone()) {
+                Ok(ast) => {
+                    pb.finish_with_message("Finished parsing");
+
+                    println!("AST: {ast:#?}")
+                }
+                Err(e) => {
+                    pb.finish_and_clear();
+
+                    println!("Error: {e}")
                 }
             }
-            "help" => help_cmd(),
-            _ => println!("Unknown command: {input}"),
-        },
-        None => help_cmd(),
-    };
-}
+        }
+        Some(("check", query_matches)) => {
+            let path = query_matches
+                .get_one::<String>("file")
+                .expect("Argument 'file' is required");
+            let path: &Path = path.as_ref();
 
-fn help_cmd() {
-    // Print header message
-    println!(
-        "{} is an awesome programming language",
-        "Gneurshk".bright_magenta()
-    );
-    println!();
-
-    // Print command usage
-    println!("Usage: gneurshk [<flags>] <command>");
-    println!();
-
-    // Print list of commands
-    println!("Commands:");
-    println!(
-        "  {}    {}  Builds and runs a file",
-        "run".blue(),
-        "<file path>".dimmed()
-    );
-    println!(
-        "  {}  {}  Compiles a file into an executable",
-        "build".blue(),
-        "<file path>".dimmed()
-    );
-    println!(
-        "  {}    {}  Lexes a file and prints the tokens",
-        "lex".blue(),
-        "<file path>".dimmed()
-    );
-    println!(
-        "  {}  {}  Parses a file and prints the AST",
-        "parse".blue(),
-        "<file path>".dimmed()
-    );
-    println!(
-        "  {}  {}  Watches a file for changes and checks code validity",
-        "check".blue(),
-        "<file path>".dimmed()
-    );
-    println!("  {}                Prints a help message", "help".blue());
+            if let Err(error) = check_cmd(path) {
+                println!("Error: {error:?}");
+            }
+        }
+        // If all subcommands are defined above, anything else is unreachable
+        _ => unreachable!(),
+    }
 }
 
 fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<(), String> {
