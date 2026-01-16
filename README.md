@@ -15,8 +15,9 @@ If you would like to contribute to the project, please follow the steps below to
 
 ### Prerequisites
 
--   Rust
--   LLVM 18.1.x
+- Rust
+- LLVM 21.1.x
+- GCC
 
 > [!IMPORTANT]
 > On Windows, you should install LLVM by building it from its source. The Windows installer unfortunately does not come with `llvm-config` which is required
@@ -25,8 +26,8 @@ If you would like to contribute to the project, please follow the steps below to
 >
 > Lastly two environment variables need to be updated:
 >
-> -   `LLVM_SYS_181_PREFIX` should be set to the path that LLVM is installed at
-> -   `PATH` should include the path to the LLVM's `bin` directory
+> - `LLVM_SYS_211_PREFIX` should be set to the path that LLVM is installed at
+> - `PATH` should include the path to the LLVM's `bin` directory
 
 ### Installation
 

@@ -32,7 +32,7 @@ impl<'ctx> Codegen<'ctx> {
             .build_call(function, &arg_values, &format!("call_{}", name))
             .unwrap();
 
-        call_result.try_as_basic_value().left()
+        Some(call_result.try_as_basic_value().unwrap_basic())
     }
 
     fn build_println(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
