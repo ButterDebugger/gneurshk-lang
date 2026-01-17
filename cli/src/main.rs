@@ -101,8 +101,23 @@ fn main() {
         .get_matches();
 
     match matches.subcommand() {
-        Some(("run", _query_matches)) => {
-            todo!();
+        Some(("run", query_matches)) => {
+            let path = query_matches
+                .get_one::<String>("file")
+                .expect("Argument 'file' is required");
+            let path: &Path = path.as_ref();
+            let source = read_to_string(path).expect("Failed to read file");
+
+            let pb = create_progress_bar();
+
+            match build_cmd(&source, pb.clone(), true) {
+                Ok(_) => {}
+                Err(e) => {
+                    pb.finish_and_clear();
+
+                    println!("Error: {e}");
+                }
+            };
         }
         Some(("build", query_matches)) => {
             let path = query_matches
@@ -113,7 +128,7 @@ fn main() {
 
             let pb = create_progress_bar();
 
-            match build_cmd(&source, pb.clone()) {
+            match build_cmd(&source, pb.clone(), false) {
                 Ok(_) => {
                     pb.finish_with_message("Successfully built executable");
                 }
@@ -186,7 +201,7 @@ fn main() {
     }
 }
 
-fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<(), String> {
+fn build_cmd(input: &str, pb: Box<ProgressBar>, execute_after_finish: bool) -> Result<(), String> {
     let ast = match analyze_program(input, pb.clone()) {
         Ok((ast, analyzer)) => {
             // Cancel the build if there are any semantic errors
@@ -210,9 +225,21 @@ fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<(), String> {
 
     pb.set_message("Compiling to executable...");
 
-    compile_to_executable(ast.clone(), "output")?;
+    let executable_path = compile_to_executable(ast.clone(), "output")?;
 
-    pb.finish_with_message("Done");
+    if execute_after_finish {
+        pb.finish_with_message("Running executable");
+
+        let path = std::path::absolute(executable_path).unwrap();
+
+        let mut child = std::process::Command::new(&path)
+            .stdout(std::process::Stdio::inherit())
+            .stderr(std::process::Stdio::inherit())
+            .spawn()
+            .unwrap();
+
+        child.wait().unwrap();
+    }
 
     Ok(())
 }

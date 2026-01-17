@@ -72,7 +72,10 @@ pub fn create_object_file(ast: Program, output_path: &str) -> Result<String, Str
 }
 
 /// Compiles the AST into an executable
-pub fn compile_to_executable(ast: Program, output_path: &str) -> Result<(), String> {
+///
+/// # Returns
+/// The path to the executable
+pub fn compile_to_executable(ast: Program, output_path: &str) -> Result<String, String> {
     // First create an object file
     let obj_path = create_object_file(ast, output_path)?;
 
@@ -93,5 +96,11 @@ pub fn compile_to_executable(ast: Program, output_path: &str) -> Result<(), Stri
     std::fs::remove_file(&obj_path)
         .map_err(|e| format!("Failed to clean up object file: {}", e))?;
 
-    Ok(())
+    // Return the path to the executable
+    #[cfg(windows)]
+    let executable_path = format!("{}.exe", output_path);
+    #[cfg(not(windows))]
+    let executable_path = output_path.to_string();
+
+    Ok(executable_path)
 }
