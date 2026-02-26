@@ -1,0 +1,55 @@
+{
+	"name": "gneorknof",
+	"displayName": "Gneorknof",
+	"version": "0.1.0",
+	"description": "An awesome language",
+	"categories": [
+		"Programming Languages"
+	],
+	"keywords": [
+		"Gneorknof"
+	],
+	"bugs": {
+		"url": "https://github.com/ButterDebugger/gneurshk-lang/issues"
+	},
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ButterDebugger/gneurshk-lang.git"
+	},
+	"publisher": "ButterDebugger",
+	"main": "./out/extension.js",
+	"scripts": {
+		"package": "tsc -p ./ && vsce package --out .vscode-test/",
+		"compile": "tsc -p ./"
+	},
+	"contributes": {
+		"languages": [
+			{
+				"id": "gneorknof",
+				"aliases": [
+					"gneorknof"
+				],
+				"extensions": [
+					".iv"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "gneorknof",
+				"scopeName": "source.gneorknof",
+				"path": "./syntaxes/gneorknof.tmLanguage.json"
+			}
+		]
+	},
+	"engines": {
+		"vscode": "^1.109.0"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.109.0",
+		"@vscode/vsce": "^3.7.1",
+		"typescript": "^5.9.3"
+	}
+}

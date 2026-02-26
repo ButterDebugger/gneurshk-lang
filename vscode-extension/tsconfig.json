@@ -1,0 +1,38 @@
+{
+	"compilerOptions": {
+		// Module Resolution
+		"module": "nodenext",
+		"target": "ES2022",
+		"moduleDetection": "force",
+
+		// Output Configuration
+		"outDir": "out",
+		"rootDir": "src",
+		"sourceMap": true,
+		"declaration": true,
+		"declarationMap": true,
+
+		// Library and Runtime
+		"lib": ["ES2022"],
+
+		// Type Checking
+		"strict": true,
+		"skipLibCheck": true,
+
+		// JSX Configuration
+		"jsx": "react-jsx",
+
+		// Module Syntax
+		"isolatedModules": true,
+		"noUncheckedSideEffectImports": true,
+
+		// Stricter Typechecking Options
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true
+	},
+	// Source Files
+	"include": ["src"],
+	"exclude": ["node_modules"]
+}
