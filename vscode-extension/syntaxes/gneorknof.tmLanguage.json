@@ -6,7 +6,13 @@
 			"include": "#keywords"
 		},
 		{
+			"include": "#operators"
+		},
+		{
 			"include": "#numbers"
+		},
+		{
+			"include": "#boolean"
 		},
 		{
 			"include": "#comments"
@@ -29,8 +35,28 @@
 					"match": "\\b(if|while|for|return|else|as|do|import|export|from|await|break|continue)\\b"
 				},
 				{
-					"name": "keyword.other.gneorknof",
-					"match": "\\b(func|mut|var|const|struct|trait|impl|true|false|async|type)\\b"
+					"name": "storage.type.gneorknof",
+					"match": "\\b(func|mut|var|const|struct|trait|impl|async|type)\\b"
+				}
+			]
+		},
+		"operators": {
+			"patterns": [
+				{
+					"name": "keyword.operator.arithmetic.gneorknof",
+					"match": "(\\+|-|\\*|\/|%)"
+				},
+				{
+					"name": "keyword.operator.bitwise.gneorknof",
+					"match": "(\\||&|\\^|<<|>>|~)"
+				},
+				{
+					"name": "keyword.operator.comparison.gneorknof",
+					"match": "([<>]=?|==|!=)"
+				},
+				{
+					"name": "keyword.operator.logical.gneorknof",
+					"match": "(\\b(and|or|not)\\b|&&|\\|\\||!)"
 				}
 			]
 		},
@@ -38,21 +64,18 @@
 			"name": "constant.numeric.gneorknof",
 			"match": "\\d+(\\.\\d+)?"
 		},
+		"boolean": {
+			"name": "constant.language.gneorknof",
+			"match": "\\b(true|false)\\b"
+		},
 		"comments": {
-			"patterns": [
-				{
-					"name": "comment.line.number-sign.gneorknof",
-					"match": "#.*$"
-				}
-			]
+			"name": "comment.line.number-sign.gneorknof",
+			"begin": "#",
+			"end": "\n"
 		},
 		"functions": {
-			"patterns": [
-				{
-					"name": "entity.name.function.gneorknof",
-					"match": "\\b[a-z_][a-zA-Z0-9_]*(?=\\()"
-				}
-			]
+			"name": "entity.name.function.gneorknof",
+			"match": "\\b[a-z_][a-zA-Z0-9_]*(?=\\()"
 		},
 		"variables": {
 			"patterns": [

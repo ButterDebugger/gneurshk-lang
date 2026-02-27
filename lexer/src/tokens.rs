@@ -37,7 +37,7 @@ pub enum Token {
     #[token(",")]
     Comma,
 
-    // Math operators
+    // Arithmetic operators
     #[token("+")]
     Plus,
     #[token("-")]
@@ -63,6 +63,7 @@ pub enum Token {
     #[token("~")]
     BitwiseNot,
 
+    // Comparison operators
     #[token(">")]
     GreaterThan,
     #[token("<")]
@@ -76,6 +77,7 @@ pub enum Token {
     #[token("!=")]
     NotEqual,
 
+    // Logical operators
     #[regex(r"and|&&", priority = 20)]
     And,
     #[regex(r"or|\|\|", priority = 20)]
