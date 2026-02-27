@@ -7,7 +7,7 @@ use clap::{
 };
 use colored::Colorize;
 use gneurshk_analyzer::Analyzer;
-use gneurshk_compiler::{compile_to_executable, create_llvm_ir_file};
+use gneurshk_compiler::output::{executable::compile_to_executable, ir::create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
 use gneurshk_parser::{Program, parse};
 use indicatif::{ProgressBar, ProgressStyle};
