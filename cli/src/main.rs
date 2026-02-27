@@ -12,7 +12,11 @@ use gneurshk_lexer::{TokenStream, lex};
 use gneurshk_parser::{Program, parse};
 use indicatif::{ProgressBar, ProgressStyle};
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use std::{fs::read_to_string, path::Path, time::Duration};
+use std::{
+    fs::read_to_string,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 pub const CLAP_STYLING: Styles = Styles::styled()
     .header(Style::new().bold())
@@ -260,7 +264,7 @@ fn main() {
     }
 }
 
-fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<String, String> {
+fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<PathBuf, String> {
     // Analyze the program
     let ast = match analyze_program(input, pb.clone()) {
         Ok((ast, analyzer)) => {
@@ -282,12 +286,12 @@ fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<String, String> {
     // Create the LLVM IR file
     pb.set_message("Creating LLVM IR file...");
 
-    create_llvm_ir_file(ast.clone(), "output")?;
+    create_llvm_ir_file(ast.clone(), "output".as_ref())?;
 
     // Create the executable
     pb.set_message("Compiling to executable...");
 
-    let executable_path = compile_to_executable(ast.clone(), "output")?;
+    let executable_path = compile_to_executable(ast.clone(), "output".as_ref())?;
 
     Ok(executable_path)
 }

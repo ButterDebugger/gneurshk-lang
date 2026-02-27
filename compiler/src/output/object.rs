@@ -5,13 +5,13 @@ use inkwell::context::Context;
 use inkwell::targets::{
     CodeModel, FileType, InitializationConfig, RelocMode, Target, TargetMachine,
 };
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Creates object files (.o) from the AST
 ///
 /// # Returns
 /// The path to the object file
-pub fn create_object_file(ast: Program, output_path: &str) -> Result<String, String> {
+pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf, String> {
     let context = Context::create();
     let mut codegen = Codegen::new(&context, "main");
 
@@ -39,11 +39,12 @@ pub fn create_object_file(ast: Program, output_path: &str) -> Result<String, Str
 
     // Write object file
     let module = codegen.get_module();
-    let obj_path = format!("{}.o", output_path);
+    let obj_path = output_path.with_extension("o");
 
     target_machine
-        .write_to_file(module, FileType::Object, Path::new(&obj_path))
+        .write_to_file(module, FileType::Object, &obj_path)
         .map_err(|e| format!("Failed to write object file: {}", e))?;
 
+    // Return the path to the object file
     Ok(obj_path)
 }
