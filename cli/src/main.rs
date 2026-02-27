@@ -102,53 +102,99 @@ fn main() {
 
     match matches.subcommand() {
         Some(("run", query_matches)) => {
+            // Get the path from the arguments
             let path = query_matches
                 .get_one::<String>("file")
                 .expect("Argument 'file' is required");
             let path: &Path = path.as_ref();
-            let source = read_to_string(path).expect("Failed to read file");
 
+            // Read the file
+            let source = match read_to_string(path) {
+                Ok(source) => source,
+                Err(e) => {
+                    eprintln!("Error: {e}");
+                    return;
+                }
+            };
+
+            // Create the progress bar
             let pb = create_progress_bar();
 
-            match build_cmd(&source, pb.clone(), true) {
-                Ok(_) => {}
+            // Build the source code
+            match build_cmd(&source, pb.clone()) {
+                Ok(executable_path) => {
+                    pb.finish_with_message("Running executable");
+
+                    // Run the executable
+                    let path = std::path::absolute(executable_path).unwrap();
+
+                    let mut child = std::process::Command::new(&path)
+                        .stdout(std::process::Stdio::inherit())
+                        .stderr(std::process::Stdio::inherit())
+                        .spawn()
+                        .unwrap();
+
+                    child.wait().unwrap();
+                }
                 Err(e) => {
                     pb.finish_and_clear();
 
-                    println!("Error: {e}");
+                    eprintln!("Error: {e}");
                 }
             };
         }
         Some(("build", query_matches)) => {
+            // Get the path from the arguments
             let path = query_matches
                 .get_one::<String>("file")
                 .expect("Argument 'file' is required");
             let path: &Path = path.as_ref();
-            let source = read_to_string(path).expect("Failed to read file");
 
+            // Read the file
+            let source = match read_to_string(path) {
+                Ok(source) => source,
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    return;
+                }
+            };
+
+            // Create the progress bar
             let pb = create_progress_bar();
 
-            match build_cmd(&source, pb.clone(), false) {
+            // Build the source code
+            match build_cmd(&source, pb.clone()) {
                 Ok(_) => {
                     pb.finish_with_message("Successfully built executable");
                 }
                 Err(e) => {
                     pb.finish_and_clear();
 
-                    println!("Error: {e}");
+                    eprintln!("Error: {e}");
                 }
             };
         }
 
         Some(("lex", query_matches)) => {
+            // Get the path from the arguments
             let path = query_matches
                 .get_one::<String>("file")
                 .expect("Argument 'file' is required");
             let path: &Path = path.as_ref();
-            let source = read_to_string(path).expect("Failed to read file");
 
+            // Read the file
+            let source = match read_to_string(path) {
+                Ok(source) => source,
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    return;
+                }
+            };
+
+            // Create the progress bar
             let pb = create_progress_bar();
 
+            // Tokenize the source code
             match tokenize(&source, pb.clone()) {
                 Ok(tokens) => {
                     pb.finish_with_message("Finished lexing");
@@ -160,19 +206,30 @@ fn main() {
                 Err(e) => {
                     pb.finish_and_clear();
 
-                    println!("Error: {e}")
+                    eprintln!("Error: {e}")
                 }
             }
         }
         Some(("parse", query_matches)) => {
+            // Get the path from the arguments
             let path = query_matches
                 .get_one::<String>("file")
                 .expect("Argument 'file' is required");
             let path: &Path = path.as_ref();
-            let source = read_to_string(path).expect("Failed to read file");
 
+            // Read the file
+            let source = match read_to_string(path) {
+                Ok(source) => source,
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                    return;
+                }
+            };
+
+            // Create the progress bar
             let pb = create_progress_bar();
 
+            // Parse the source code
             match create_ast(&source, pb.clone()) {
                 Ok(ast) => {
                     pb.finish_with_message("Finished parsing");
@@ -182,18 +239,20 @@ fn main() {
                 Err(e) => {
                     pb.finish_and_clear();
 
-                    println!("Error: {e}")
+                    eprintln!("Error: {e}")
                 }
             }
         }
         Some(("check", query_matches)) => {
+            // Get the path from the arguments
             let path = query_matches
                 .get_one::<String>("file")
                 .expect("Argument 'file' is required");
             let path: &Path = path.as_ref();
 
+            // Check the source code for errors
             if let Err(error) = check_cmd(path) {
-                println!("Error: {error:?}");
+                eprintln!("Error: {error:?}");
             }
         }
         // If all subcommands are defined above, anything else is unreachable
@@ -201,7 +260,8 @@ fn main() {
     }
 }
 
-fn build_cmd(input: &str, pb: Box<ProgressBar>, execute_after_finish: bool) -> Result<(), String> {
+fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<String, String> {
+    // Analyze the program
     let ast = match analyze_program(input, pb.clone()) {
         Ok((ast, analyzer)) => {
             // Cancel the build if there are any semantic errors
@@ -219,59 +279,57 @@ fn build_cmd(input: &str, pb: Box<ProgressBar>, execute_after_finish: bool) -> R
         }
     };
 
+    // Create the LLVM IR file
     pb.set_message("Creating LLVM IR file...");
 
     create_llvm_ir_file(ast.clone(), "output")?;
 
+    // Create the executable
     pb.set_message("Compiling to executable...");
 
     let executable_path = compile_to_executable(ast.clone(), "output")?;
 
-    if execute_after_finish {
-        pb.finish_with_message("Running executable");
-
-        let path = std::path::absolute(executable_path).unwrap();
-
-        let mut child = std::process::Command::new(&path)
-            .stdout(std::process::Stdio::inherit())
-            .stderr(std::process::Stdio::inherit())
-            .spawn()
-            .unwrap();
-
-        child.wait().unwrap();
-    }
-
-    Ok(())
+    Ok(executable_path)
 }
 
 fn check_cmd(path: &Path) -> notify::Result<()> {
     let (tx, rx) = std::sync::mpsc::channel();
 
     fn check(path: &Path) {
-        let source = read_to_string(path).expect("Failed to read file");
+        // Read the file
+        let source = match read_to_string(path) {
+            Ok(source) => source,
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                return;
+            }
+        };
 
+        // Create the progress bar
         let pb = create_progress_bar();
 
+        // Analyze the program
         match analyze_program(&source, pb.clone()) {
             Ok((_ast, analyzer)) => {
                 pb.finish_and_clear();
 
+                // Print the errors and warnings
                 if analyzer.errors.is_empty() && analyzer.warnings.is_empty() {
                     println!("✅");
                 } else {
                     for error in analyzer.errors {
-                        println!("❗ {}", error);
+                        eprintln!("❗ {}", error);
                     }
 
                     for warning in analyzer.warnings {
-                        println!("⚠️  {}", warning);
+                        eprintln!("⚠️  {}", warning);
                     }
                 }
             }
             Err(error) => {
                 pb.finish_and_clear();
 
-                println!("❌ Error: {:?}", error);
+                eprintln!("❌ Error: {:?}", error);
             }
         }
     }
@@ -313,7 +371,7 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
                     "Watcher".bright_green()
                 );
             }
-            Err(error) => println!(
+            Err(error) => eprintln!(
                 "{} Encountered an error: {}",
                 "Watcher".bright_green(),
                 error
