@@ -105,4 +105,26 @@ mod tests {
 
         assert_eq!(output.trim(), "5");
     }
+
+    #[test]
+    fn multiple_println_statements() {
+        let source = r#"
+            println(1)
+            println(2)
+            println(3)
+        "#;
+
+        let output = compile_and_run(source, "multiple_println_statements").unwrap();
+
+        assert_eq!(output.trim(), "1\r\n2\r\n3");
+    }
+
+    #[test]
+    fn print_multiple_values() {
+        let source = r#"println(1, 2, 3)"#;
+
+        let output = compile_and_run(source, "print_multiple_values").unwrap();
+
+        assert_eq!(output.trim(), "1 2 3");
+    }
 }
