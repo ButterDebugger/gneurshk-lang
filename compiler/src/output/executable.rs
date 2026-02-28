@@ -127,4 +127,117 @@ mod tests {
 
         assert_eq!(output.trim(), "1 2 3");
     }
+
+    #[test]
+    fn if_statement() {
+        let source = r#"
+            if true {
+                println("if")
+            }
+        "#;
+
+        let output = compile_and_run(source, "if_statement").unwrap();
+
+        assert_eq!(output.trim(), "if");
+    }
+
+    #[test]
+    fn if_else_statement() {
+        let source = r#"
+            if true {
+                println("if")
+            } else {
+                println("else")
+            }
+        "#;
+
+        let output = compile_and_run(source, "if_else_statement").unwrap();
+
+        assert_eq!(output.trim(), "if");
+    }
+
+    #[test]
+    fn pass_if_finally_statement() {
+        let source = r#"
+            if false {
+                println("if")
+            }
+
+            println("finally")
+        "#;
+
+        let output = compile_and_run(source, "pass_if_finally_statement").unwrap();
+
+        assert_eq!(output.trim(), "finally");
+    }
+
+    #[test]
+    fn if_finally_statement() {
+        let source = r#"
+            if true {
+                println("if")
+            }
+
+            println("finally")
+        "#;
+
+        let output = compile_and_run(source, "if_finally_statement").unwrap();
+
+        assert_eq!(output.trim(), "if\r\nfinally");
+    }
+
+    #[test]
+    fn if_else_finally_statement() {
+        let source = r#"
+            if false {
+                println("if")
+            } else {
+                println("else")
+            }
+
+            println("finally")
+        "#;
+
+        let output = compile_and_run(source, "if_else_finally_statement").unwrap();
+
+        assert_eq!(output.trim(), "else\r\nfinally");
+    }
+
+    #[test]
+    fn fibonacci() {
+        let source = r#"
+            func fib(n: Int32) -> Int32 {
+                if n <= 1 {
+                    return n
+                }
+
+                return fib(n - 1) + fib(n - 2)
+            }
+
+            println(fib(42))
+        "#;
+
+        let output = compile_and_run(source, "fibonacci").unwrap();
+
+        assert_eq!(output.trim(), "267914296");
+    }
+
+    #[test]
+    fn factorial() {
+        let source = r#"
+            func factorial(n: Int32) -> Int32 {
+                if n == 0 {
+                    return 1
+                }
+
+                return n * factorial(n - 1)
+            }
+
+            println(factorial(12))
+        "#;
+
+        let output = compile_and_run(source, "factorial").unwrap();
+
+        assert_eq!(output.trim(), "479001600");
+    }
 }
