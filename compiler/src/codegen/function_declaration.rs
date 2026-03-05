@@ -1,6 +1,6 @@
 use crate::codegen::Codegen;
 use gneurshk_parser::types::DataType;
-use gneurshk_parser::{FunctionParam, Stmt};
+use gneurshk_parser::{Block, FunctionParam, Stmt};
 use inkwell::values::{BasicValueEnum, FunctionValue};
 
 impl<'ctx> Codegen<'ctx> {
@@ -9,7 +9,7 @@ impl<'ctx> Codegen<'ctx> {
         name: String,
         params: Vec<FunctionParam>,
         return_type: DataType,
-        block: Stmt,
+        block: Block,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Build function declaration
         let function = self.build_function_declaration(name.clone(), params.clone());
@@ -23,7 +23,7 @@ impl<'ctx> Codegen<'ctx> {
         function: FunctionValue<'ctx>,
         params: Vec<FunctionParam>,
         _return_type: DataType,
-        block: Stmt,
+        block: Block,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Get i32 type since functions only support that type TODO: Support other types
         let i32_type = self.context.i32_type();
@@ -47,7 +47,7 @@ impl<'ctx> Codegen<'ctx> {
         }
 
         // Compile function body
-        let return_value = self.build_stmt(block);
+        let return_value = self.build_block(block);
 
         // Only add default return if the current basic block doesn't already have a terminator
         let current_block = self.builder.get_insert_block().unwrap();

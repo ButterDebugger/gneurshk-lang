@@ -13,7 +13,7 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
     let condition = parse_expression(tokens)?;
 
     // Parse the body of the if statement
-    let body = parse_block(tokens)?;
+    let if_block = parse_block(tokens)?;
 
     // Parse the else block if it exists
     let else_block = if let Some((Token::Else, _)) = tokens.peek() {
@@ -22,7 +22,7 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
         // Determine what type of statement follows
         match tokens.peek() {
             Some((Token::If, _)) => Some(Box::new(parse_if_statement(tokens)?)),
-            Some((Token::OpenBrace, _)) => Some(Box::new(parse_block(tokens)?)),
+            Some((Token::OpenBrace, _)) => Some(Box::new(Stmt::Block(parse_block(tokens)?))),
             _ => None,
         }
     } else {
@@ -31,14 +31,14 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
 
     Ok(Stmt::IfStatement {
         condition: Box::new(condition),
-        block: Box::new(body),
-        else_block,
+        if_block: Box::new(if_block),
+        else_statement: else_block,
     })
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{BinaryOperator, Program, Stmt, parse};
+    use crate::{BinaryOperator, Block, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -89,7 +89,7 @@ const borg = 5
                         }),
                         operator: BinaryOperator::Add,
                     }),
-                    block: Box::new(Stmt::Block {
+                    if_block: Box::new(Block {
                         body: vec![
                             Stmt::Declaration {
                                 mutable: true,
@@ -111,7 +111,7 @@ const borg = 5
                             },
                         ],
                     }),
-                    else_block: None,
+                    else_statement: None,
                 },
                 Stmt::Declaration {
                     mutable: false,
@@ -158,7 +158,7 @@ const borg = 5
                         }),
                         operator: BinaryOperator::Add,
                     }),
-                    block: Box::new(Stmt::Block {
+                    if_block: Box::new(Block {
                         body: vec![
                             Stmt::IfStatement {
                                 condition: Box::new(Stmt::BinaryExpression {
@@ -172,7 +172,7 @@ const borg = 5
                                     }),
                                     operator: BinaryOperator::Add,
                                 }),
-                                block: Box::new(Stmt::Block {
+                                if_block: Box::new(Block {
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "apple".to_string(),
@@ -183,7 +183,7 @@ const borg = 5
                                         })),
                                     }]
                                 }),
-                                else_block: None,
+                                else_statement: None,
                             },
                             Stmt::IfStatement {
                                 condition: Box::new(Stmt::BinaryExpression {
@@ -197,7 +197,7 @@ const borg = 5
                                     }),
                                     operator: BinaryOperator::Add,
                                 }),
-                                block: Box::new(Stmt::Block {
+                                if_block: Box::new(Block {
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "green".to_string(),
@@ -208,11 +208,11 @@ const borg = 5
                                         })),
                                     }]
                                 }),
-                                else_block: None,
+                                else_statement: None,
                             }
                         ]
                     }),
-                    else_block: None,
+                    else_statement: None,
                 },
                 Stmt::Declaration {
                     mutable: false,
@@ -253,18 +253,18 @@ if 10 + 10 {
                     }),
                     operator: BinaryOperator::Add,
                 }),
-                block: Box::new(Stmt::Block {
+                if_block: Box::new(Block {
                     body: vec![Stmt::Integer {
                         value: 1,
                         span: 18..19
                     }]
                 }),
-                else_block: Some(Box::new(Stmt::Block {
+                else_statement: Some(Box::new(Stmt::Block(Block {
                     body: vec![Stmt::Integer {
                         value: 2,
                         span: 33..34
                     }]
-                })),
+                }))),
             }]
         );
     }
@@ -296,13 +296,13 @@ if 10 + 10 {
                     }),
                     operator: BinaryOperator::Add,
                 }),
-                block: Box::new(Stmt::Block {
+                if_block: Box::new(Block {
                     body: vec![Stmt::Integer {
                         value: 1,
                         span: 18..19
                     }]
                 }),
-                else_block: Some(Box::new(Stmt::IfStatement {
+                else_statement: Some(Box::new(Stmt::IfStatement {
                     condition: Box::new(Stmt::BinaryExpression {
                         left: Box::new(Stmt::Integer {
                             value: 20,
@@ -314,13 +314,13 @@ if 10 + 10 {
                         }),
                         operator: BinaryOperator::Add,
                     }),
-                    block: Box::new(Stmt::Block {
+                    if_block: Box::new(Block {
                         body: vec![Stmt::Integer {
                             value: 2,
                             span: 44..45
                         }]
                     }),
-                    else_block: None,
+                    else_statement: None,
                 })),
             }]
         );
@@ -355,13 +355,13 @@ if 10 + 10 {
                     }),
                     operator: BinaryOperator::Add,
                 }),
-                block: Box::new(Stmt::Block {
+                if_block: Box::new(Block {
                     body: vec![Stmt::Integer {
                         value: 1,
                         span: 18..19
                     }]
                 }),
-                else_block: Some(Box::new(Stmt::IfStatement {
+                else_statement: Some(Box::new(Stmt::IfStatement {
                     condition: Box::new(Stmt::BinaryExpression {
                         left: Box::new(Stmt::Integer {
                             value: 20,
@@ -373,18 +373,18 @@ if 10 + 10 {
                         }),
                         operator: BinaryOperator::Add,
                     }),
-                    block: Box::new(Stmt::Block {
+                    if_block: Box::new(Block {
                         body: vec![Stmt::Integer {
                             value: 2,
                             span: 44..45
                         }]
                     }),
-                    else_block: Some(Box::new(Stmt::Block {
+                    else_statement: Some(Box::new(Stmt::Block(Block {
                         body: vec![Stmt::Integer {
                             value: 3,
                             span: 59..60
                         }]
-                    })),
+                    }))),
                 })),
             }]
         );

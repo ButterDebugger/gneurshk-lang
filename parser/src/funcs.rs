@@ -150,21 +150,21 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
     };
 
     // Parse the body of the function
-    let body = parse_block(tokens)?;
+    let block = parse_block(tokens)?;
 
     Ok(Stmt::FunctionDeclaration {
         annotations,
         name: name.to_string(),
         params: parameters,
         return_type,
-        block: Box::new(body),
+        block: Box::new(block),
     })
 }
 
 #[cfg(test)]
 mod tests {
     use crate::types::DataType;
-    use crate::{Annotation, FunctionParam, Program, Stmt, parse};
+    use crate::{Annotation, Block, FunctionParam, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_func_declaration function
@@ -202,7 +202,7 @@ mod tests {
                     name: "apple".to_string(),
                     params: vec![],
                     return_type: DataType::Int32,
-                    block: Box::new(Stmt::Block {
+                    block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: true,
                             name: "peas".to_string(),
@@ -232,7 +232,7 @@ mod tests {
                     name: "pear".to_string(),
                     params: vec![],
                     return_type: DataType::default(),
-                    block: Box::new(Stmt::Block {
+                    block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: false,
                             name: "cucumbers".to_string(),
@@ -275,7 +275,7 @@ mod tests {
                         },
                     ],
                     return_type: DataType::default(),
-                    block: Box::new(Stmt::Block { body: vec![] }),
+                    block: Box::new(Block { body: vec![] }),
                 }],
                 body: vec![],
             }
@@ -314,7 +314,7 @@ mod tests {
                         },
                     ],
                     return_type: DataType::default(),
-                    block: Box::new(Stmt::Block { body: vec![] }),
+                    block: Box::new(Block { body: vec![] }),
                 }],
                 body: vec![],
             }
@@ -337,7 +337,7 @@ mod tests {
                     name: "egg".to_string(),
                     params: vec![],
                     return_type: DataType::default(),
-                    block: Box::new(Stmt::Block { body: vec![] }),
+                    block: Box::new(Block { body: vec![] }),
                 }],
                 body: vec![],
             }
@@ -379,7 +379,7 @@ mod tests {
                     name: "ham".to_string(),
                     params: vec![],
                     return_type: DataType::default(),
-                    block: Box::new(Stmt::Block { body: vec![] }),
+                    block: Box::new(Block { body: vec![] }),
                 }],
                 body: vec![],
             }
@@ -412,7 +412,7 @@ mod tests {
                         },
                     ],
                     return_type: DataType::default(),
-                    block: Box::new(Stmt::Block { body: vec![] }),
+                    block: Box::new(Block { body: vec![] }),
                 }],
                 body: vec![],
             }

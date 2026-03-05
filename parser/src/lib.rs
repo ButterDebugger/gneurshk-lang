@@ -13,6 +13,7 @@ use std::ops::Range;
 mod block;
 mod expressions;
 mod funcs;
+mod identifiers;
 mod ifs;
 mod imports;
 mod returns;
@@ -72,6 +73,11 @@ pub struct Annotation {
     pub args: Vec<Stmt>,
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct Block {
+    pub body: Vec<Stmt>,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
@@ -81,22 +87,18 @@ pub enum Stmt {
         data_type: Option<DataType>,
         value: Option<Box<Stmt>>,
     },
-    Block {
-        body: Vec<Stmt>,
-    },
+    Block(Block),
     IfStatement {
         condition: Box<Stmt>,
-        /// Should always be a block statement
-        block: Box<Stmt>,
-        else_block: Option<Box<Stmt>>,
+        if_block: Box<Block>,
+        else_statement: Option<Box<Stmt>>,
     },
     FunctionDeclaration {
         annotations: Vec<Annotation>,
         name: String,
         params: Vec<FunctionParam>,
         return_type: DataType,
-        /// Should always be a block statement
-        block: Box<Stmt>,
+        block: Box<Block>,
     },
     FunctionCall {
         name: String,
@@ -217,7 +219,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         | Token::Not => parse_expression(tokens),
         Token::Annotation(_) | Token::Func => parse_func_declaration(tokens),
         Token::Import => parse_import(tokens),
-        Token::OpenBrace => parse_block(tokens),
+        Token::OpenBrace => Ok(Stmt::Block(parse_block(tokens)?)),
         Token::Return => parse_return_statement(tokens),
         _ => {
             println!("token: {token:?}");

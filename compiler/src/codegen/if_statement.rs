@@ -1,12 +1,12 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::Stmt;
+use gneurshk_parser::{Block, Stmt};
 use inkwell::{IntPredicate, values::BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_if_statement(
         &mut self,
         condition: Stmt,
-        block: Stmt,
+        block: Block,
         else_block: Option<Stmt>,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Compile the condition
@@ -59,7 +59,7 @@ impl<'ctx> Codegen<'ctx> {
 
         // Build the then block
         self.builder.position_at_end(then_branch);
-        self.build_stmt(block);
+        self.build_block(block);
 
         // Only add the merge branch if the current block doesn't have a terminator
         let current_block = self.builder.get_insert_block().unwrap();

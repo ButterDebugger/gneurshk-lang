@@ -124,11 +124,11 @@ impl<'ctx> Codegen<'ctx> {
                 data_type: _,
                 value,
             } => self.build_declaration(name, value),
-            Stmt::Block { body } => self.build_block(body),
+            Stmt::Block(block) => self.build_block(block),
             Stmt::IfStatement {
                 condition,
-                block,
-                else_block,
+                if_block: block,
+                else_statement: else_block,
             } => self.build_if_statement(*condition, *block, else_block.map(|b| *b)),
             Stmt::FunctionDeclaration {
                 annotations: _,

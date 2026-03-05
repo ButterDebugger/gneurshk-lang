@@ -1,7 +1,8 @@
-use crate::{StatementResult, Stmt, TokenStream, parse_statement};
+use crate::{Block, TokenStream, parse_statement};
 use gneurshk_lexer::tokens::Token;
 
-pub fn parse_block(tokens: &mut TokenStream) -> StatementResult {
+// TODO: Make this return statement consistent with the rest of the parser
+pub fn parse_block(tokens: &mut TokenStream) -> Result<Block, &'static str> {
     // Consume an optional NewLine token if its present
     if let Some((Token::NewLine, _)) = tokens.peek() {
         tokens.next(); // Consume the new line token
@@ -39,12 +40,12 @@ pub fn parse_block(tokens: &mut TokenStream) -> StatementResult {
         body.push(statement);
     }
 
-    Ok(Stmt::Block { body })
+    Ok(Block { body })
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{Program, Stmt, parse};
+    use crate::{Block, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_func_declaration function
@@ -61,7 +62,7 @@ mod tests {
     fn empty_block() {
         let stmt = lex_then_parse("{}").body;
 
-        assert_eq!(stmt, vec![Stmt::Block { body: vec![] }]);
+        assert_eq!(stmt, vec![Stmt::Block(Block { body: vec![] })]);
     }
 
     #[test]
@@ -70,12 +71,12 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block {
+            vec![Stmt::Block(Block {
                 body: vec![Stmt::Integer {
                     value: 1,
                     span: 2..3
                 }]
-            }]
+            })]
         );
     }
 
@@ -85,12 +86,12 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block {
+            vec![Stmt::Block(Block {
                 body: vec![Stmt::Integer {
                     value: 1,
                     span: 4..5
                 }]
-            }]
+            })]
         );
     }
 
@@ -100,24 +101,24 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block {
+            vec![Stmt::Block(Block {
                 body: vec![
-                    Stmt::Block {
-                        body: vec![Stmt::Block {
+                    Stmt::Block(Block {
+                        body: vec![Stmt::Block(Block {
                             body: vec![Stmt::Integer {
                                 value: 3,
                                 span: 6..7
                             }]
-                        }]
-                    },
-                    Stmt::Block {
+                        })]
+                    }),
+                    Stmt::Block(Block {
                         body: vec![Stmt::Integer {
                             value: 2,
                             span: 14..15
                         }]
-                    }
+                    })
                 ]
-            }]
+            })]
         );
     }
 }

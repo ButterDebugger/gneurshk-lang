@@ -21,7 +21,7 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::{BinaryOperator, Program, Stmt, parse};
+    use crate::{BinaryOperator, Block, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -50,7 +50,10 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::ReturnStatement {
-                value: Some(Box::new(Stmt::Integer { value: 1, span: 7..8 }))
+                value: Some(Box::new(Stmt::Integer {
+                    value: 1,
+                    span: 7..8
+                }))
             }]
         );
     }
@@ -63,8 +66,14 @@ mod tests {
             stmt,
             vec![Stmt::ReturnStatement {
                 value: Some(Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Integer { value: 1, span: 7..8 }),
-                    right: Box::new(Stmt::Integer { value: 2, span: 11..12 }),
+                    left: Box::new(Stmt::Integer {
+                        value: 1,
+                        span: 7..8
+                    }),
+                    right: Box::new(Stmt::Integer {
+                        value: 2,
+                        span: 11..12
+                    }),
                     operator: BinaryOperator::Add,
                 }))
             }]
@@ -77,9 +86,9 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block {
+            vec![Stmt::Block(Block {
                 body: vec![Stmt::ReturnStatement { value: None }]
-            }]
+            })]
         );
     }
 
@@ -89,11 +98,14 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block {
+            vec![Stmt::Block(Block {
                 body: vec![Stmt::ReturnStatement {
-                    value: Some(Box::new(Stmt::Integer { value: 1, span: 9..10 }))
+                    value: Some(Box::new(Stmt::Integer {
+                        value: 1,
+                        span: 9..10
+                    }))
                 }]
-            }]
+            })]
         );
     }
 }
