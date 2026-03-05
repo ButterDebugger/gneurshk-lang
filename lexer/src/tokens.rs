@@ -30,12 +30,24 @@ pub enum Token {
     DoubleColon,
     #[token("->")]
     Arrow,
-    #[token("=")]
-    Equal,
     #[token(":")]
     Colon,
     #[token(",")]
     Comma,
+
+    // Assignment operators
+    #[token("=")]
+    Equal,
+    #[token("+=")]
+    PlusEqual,
+    #[token("-=")]
+    MinusEqual,
+    #[token("*=")]
+    MultiplyEqual,
+    #[token("/=")]
+    DivideEqual,
+    #[token("%=")]
+    ModulusEqual,
 
     // Arithmetic operators
     #[token("+")]

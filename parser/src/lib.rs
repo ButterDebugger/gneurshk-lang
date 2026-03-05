@@ -159,7 +159,7 @@ pub enum Stmt {
 pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
     let mut imports = vec![];
     let mut functions = vec![];
-    let mut stmts = vec![];
+    let mut body = vec![];
 
     while let Some((token, _)) = tokens.peek() {
         if token == &Token::NewLine {
@@ -182,7 +182,7 @@ pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
                     functions.push(stmt);
                 }
                 _ => {
-                    stmts.push(stmt);
+                    body.push(stmt);
                 }
             },
             Err(e) => return Err(e),
@@ -192,7 +192,7 @@ pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
     Ok(Program {
         imports,
         functions,
-        body: stmts,
+        body,
     })
 }
 

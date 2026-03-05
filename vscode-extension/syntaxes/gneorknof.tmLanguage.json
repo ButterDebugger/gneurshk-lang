@@ -43,6 +43,10 @@
 		"operators": {
 			"patterns": [
 				{
+					"name": "keyword.operator.assignment.gneorknof",
+					"match": "([+\\-*\\/%]?=)"
+				},
+				{
 					"name": "keyword.operator.arithmetic.gneorknof",
 					"match": "(\\+|-|\\*|\/|%)"
 				},
