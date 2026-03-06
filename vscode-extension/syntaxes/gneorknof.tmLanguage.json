@@ -36,7 +36,7 @@
 				},
 				{
 					"name": "storage.type.gneorknof",
-					"match": "\\b(func|mut|var|const|struct|trait|impl|async|type)\\b"
+					"match": "\\b(func|mut|var|const|struct|trait|impl|async|type|enum|static)\\b"
 				}
 			]
 		},
