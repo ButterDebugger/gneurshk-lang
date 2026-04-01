@@ -13,18 +13,18 @@ This is a list of every syntax feature in this language. Keep in mind that this 
 ```julia
 # Uninitialized declaration
 
-var uninitialized_integer: i32
-var uninitialized_float: f32
+var uninitialized_integer: Int32
+var uninitialized_float: Float32
 
 # Implicit type declaration
 
-var assumed_integer = 2 # i32 is the default integer type
-var assumed_float = 3.0 # f32 is the default float type
+var assumed_integer = 2 # Int32 is the default integer type
+var assumed_float = 3.0 # Float32 is the default float type
 
 # Explicit type declaration
 
-var explicit_integer: u8 = 5
-var explicit_float: f16 = 6.0
+var explicit_integer: UInt8 = 5
+var explicit_float: Float16 = 6.0
 ```
 
 ## Strings
@@ -57,7 +57,7 @@ var letter =
 ## Functions
 
 ```julia
-func square(x: f32) -> f32 {
+func square(x: Float32) -> Float32 {
     return x * x
 }
 ```
@@ -69,10 +69,10 @@ func square(x: f32) -> f32 {
 
 ```julia
 struct Point {
-    x: f32
-    y: f32
+    x: Float32
+    y: Float32
 
-    func __init__(self, x: f32, y: f32) {
+    func __init__(self, x: Float32, y: Float32) {
         self.x = x
         self.y = y
     }
@@ -121,16 +121,16 @@ println(factorial(6))
 
 ```julia
 struct Circle {
-    radius: f32
-    x: f32
-    y: f32
+    radius: Float32
+    x: Float32
+    y: Float32
 }
 
 struct Rectangle {
-    width: f32
-    height: f32
-    x: f32
-    y: f32
+    width: Float32
+    height: Float32
+    x: Float32
+    y: Float32
 }
 
 type Shape = Circle | Rectangle
