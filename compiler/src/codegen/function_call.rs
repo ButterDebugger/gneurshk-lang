@@ -1,13 +1,15 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::Stmt;
+use gneurshk_parser::{FunctionCall, Stmt};
 use inkwell::values::{BasicMetadataValueEnum, BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_function_call(
         &mut self,
-        name: String,
-        args: Vec<Stmt>,
+        function_call: FunctionCall,
     ) -> Option<BasicValueEnum<'ctx>> {
+        let name = function_call.name;
+        let args = function_call.args;
+
         // Handle built-in functions
         match name.as_str() {
             "println" => return self.build_println(args),

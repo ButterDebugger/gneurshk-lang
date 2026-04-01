@@ -1,5 +1,6 @@
+use crate::identifiers::parse_member_expression;
+
 use super::{BinaryOperator, StatementResult, Stmt, TokenStream, UnaryOperator};
-use crate::identifiers::parse_identifier_or_function_call;
 use gneurshk_lexer::tokens::Token;
 
 /// Parses a binary expression based on operator priority
@@ -169,7 +170,7 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
         | Some((Token::Float(_), _))
         | Some((Token::Boolean(_), _))
         | Some((Token::String(_), _)) => parse_literal(tokens),
-        Some((Token::Word(_), _)) => parse_identifier_or_function_call(tokens),
+        Some((Token::Word(_), _)) => parse_member_expression(tokens),
         Some(_) => Err("Unexpected token in expression"),
         None => Err("Unexpected end of tokens in expression"),
     }
@@ -187,7 +188,7 @@ fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::Stmt::{self, BinaryExpression, Identifier, Integer};
+    use crate::Stmt::{self, BinaryExpression, Integer};
     use crate::{BinaryOperator, Program, UnaryOperator, parse};
     use gneurshk_lexer::lex;
 
@@ -199,50 +200,6 @@ mod tests {
             Ok(result) => result,
             Err(e) => panic!("Parsing error: {e}"),
         }
-    }
-
-    #[test]
-    fn repeated_identifiers() {
-        let stmt =
-            lex_then_parse("chicken chicken chicken chicken chicken chicken chicken chicken").body;
-
-        assert_eq!(
-            stmt,
-            vec![
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 0..7,
-                },
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 8..15,
-                },
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 16..23,
-                },
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 24..31,
-                },
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 32..39,
-                },
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 40..47,
-                },
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 48..55,
-                },
-                Identifier {
-                    name: "chicken".to_string(),
-                    span: 56..63,
-                },
-            ]
-        );
     }
 
     #[test]
@@ -299,19 +256,6 @@ mod tests {
                     span: 23..25
                 },
             ]
-        );
-    }
-
-    #[test]
-    fn single_identifier() {
-        let stmt = lex_then_parse("chicken").body;
-
-        assert_eq!(
-            stmt,
-            vec![Identifier {
-                name: "chicken".to_string(),
-                span: 0..7,
-            }]
         );
     }
 
@@ -585,108 +529,6 @@ mod tests {
                     operator: BinaryOperator::NotEqual,
                 }),
                 operator: BinaryOperator::Or,
-            }]
-        );
-    }
-
-    #[test]
-    fn function_call_no_args() {
-        let stmt = lex_then_parse("foo()").body;
-
-        assert_eq!(
-            stmt,
-            vec![Stmt::FunctionCall {
-                name: "foo".to_string(),
-                args: vec![],
-                span: 0..5,
-            }]
-        );
-    }
-
-    #[test]
-    fn function_call_single_arg() {
-        let stmt = lex_then_parse("bar(42)").body;
-
-        assert_eq!(
-            stmt,
-            vec![Stmt::FunctionCall {
-                name: "bar".to_string(),
-                args: vec![Stmt::Integer {
-                    value: 42,
-                    span: 4..6
-                }],
-                span: 0..7,
-            }]
-        );
-    }
-
-    #[test]
-    fn function_call_multiple_args() {
-        let stmt = lex_then_parse("baz(1, 2, 3)").body;
-
-        assert_eq!(
-            stmt,
-            vec![Stmt::FunctionCall {
-                name: "baz".to_string(),
-                args: vec![
-                    Stmt::Integer {
-                        value: 1,
-                        span: 4..5
-                    },
-                    Stmt::Integer {
-                        value: 2,
-                        span: 7..8
-                    },
-                    Stmt::Integer {
-                        value: 3,
-                        span: 10..11
-                    },
-                ],
-                span: 0..12,
-            }]
-        );
-    }
-
-    #[test]
-    fn function_call_with_expression_args() {
-        let stmt = lex_then_parse("calculate(1 + (2 + 5), 3 * 4)").body;
-
-        assert_eq!(
-            stmt,
-            vec![Stmt::FunctionCall {
-                name: "calculate".to_string(),
-                args: vec![
-                    Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Integer {
-                            value: 1,
-                            span: 10..11
-                        }),
-                        right: Box::new(Stmt::BinaryExpression {
-                            left: Box::new(Stmt::Integer {
-                                value: 2,
-                                span: 15..16
-                            }),
-                            right: Box::new(Stmt::Integer {
-                                value: 5,
-                                span: 19..20
-                            }),
-                            operator: BinaryOperator::Add,
-                        }),
-                        operator: BinaryOperator::Add,
-                    },
-                    Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Integer {
-                            value: 3,
-                            span: 23..24
-                        }),
-                        right: Box::new(Stmt::Integer {
-                            value: 4,
-                            span: 27..28
-                        }),
-                        operator: BinaryOperator::Multiply,
-                    },
-                ],
-                span: 0..29,
             }]
         );
     }

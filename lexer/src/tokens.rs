@@ -26,6 +26,8 @@ pub enum Token {
     #[token("]")]
     CloseBracket,
 
+    #[token(".")]
+    Dot,
     #[token("::")]
     DoubleColon,
     #[token("->")]

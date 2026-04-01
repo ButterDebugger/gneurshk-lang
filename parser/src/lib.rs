@@ -78,6 +78,39 @@ pub struct Block {
     pub body: Vec<Stmt>,
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum MemberExpressionMember {
+    Identifier(Identifier),
+    FunctionCall(FunctionCall)
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum MemberExpressionBase {
+    Identifier(Identifier),
+    FunctionCall(FunctionCall),
+    MemberAccess(MemberAccess),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct FunctionCall {
+    pub name: String,
+    pub args: Vec<Stmt>,
+    pub span: Range<usize>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct MemberAccess {
+    pub base: Box<MemberExpressionBase>,
+    pub member: MemberExpressionMember,
+    pub is_static: bool,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Identifier {
+    pub name: String,
+    pub span: Range<usize>,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
@@ -100,11 +133,6 @@ pub enum Stmt {
         return_type: DataType,
         block: Box<Block>,
     },
-    FunctionCall {
-        name: String,
-        args: Vec<Stmt>,
-        span: Range<usize>,
-    },
     BinaryExpression {
         left: Box<Stmt>,
         right: Box<Stmt>,
@@ -114,10 +142,9 @@ pub enum Stmt {
         value: Box<Stmt>,
         operator: UnaryOperator,
     },
-    Identifier {
-        name: String,
-        span: Range<usize>,
-    },
+    Identifier(Identifier),
+    FunctionCall(FunctionCall),
+    MemberAccess(MemberAccess),
     Integer {
         value: u64,
         span: Range<usize>,

@@ -2,7 +2,7 @@ use crate::{
     errors::{SematicError, SematicWarning},
     scope::{Function, Scope, Variable},
 };
-use gneurshk_parser::{BinaryOperator, Program, Stmt, types::DataType};
+use gneurshk_parser::{BinaryOperator, FunctionCall, Identifier, Program, Stmt, types::DataType};
 use std::collections::HashMap;
 
 mod errors;
@@ -103,7 +103,18 @@ impl Analyzer {
             Stmt::Integer { .. } => Some(DataType::Int32),
             Stmt::Float { .. } => Some(DataType::Float32),
             Stmt::Boolean { .. } => Some(DataType::Boolean),
-            Stmt::FunctionCall { name, args, .. } => {
+            Stmt::Identifier(Identifier { name, .. }) => {
+                if let Some(variable) = self.scope.get_mut_variable(&name) {
+                    variable.used = true;
+
+                    Some(variable.data_type.clone())
+                } else {
+                    self.errors.push(SematicError::VariableNotFound(name));
+
+                    None
+                }
+            }
+            Stmt::FunctionCall(FunctionCall { name, args, .. }) => {
                 // Handle built-in functions
                 if matches!(name.as_str(), "println" | "print") {
                     // Analyze arguments and ignore types for these functions
@@ -159,17 +170,7 @@ impl Analyzer {
                     None
                 }
             }
-            Stmt::Identifier { name, .. } => {
-                if let Some(variable) = self.scope.get_mut_variable(&name) {
-                    variable.used = true;
-
-                    Some(variable.data_type.clone())
-                } else {
-                    self.errors.push(SematicError::VariableNotFound(name));
-
-                    None
-                }
-            }
+            Stmt::MemberAccess { .. } => todo!(),
             Stmt::Declaration {
                 mutable,
                 name,

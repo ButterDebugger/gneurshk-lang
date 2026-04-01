@@ -137,7 +137,9 @@ impl<'ctx> Codegen<'ctx> {
                 return_type,
                 block,
             } => self.build_function(name, params, return_type, *block),
-            Stmt::FunctionCall { name, args, .. } => self.build_function_call(name, args),
+            Stmt::Identifier(identifier) => self.build_identifier(identifier),
+            Stmt::FunctionCall(function_call) => self.build_function_call(function_call),
+            Stmt::MemberAccess(_) => todo!(),
             Stmt::BinaryExpression {
                 left,
                 right,
@@ -146,7 +148,6 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::UnaryExpression { value, operator } => {
                 self.build_unary_expression(*value, operator)
             }
-            Stmt::Identifier { name, .. } => self.build_identifier(name),
             Stmt::Integer { value, .. } => self.build_integer(value),
             Stmt::Float { value, .. } => self.build_float(value),
             Stmt::Boolean { value, .. } => self.build_boolean(value),
