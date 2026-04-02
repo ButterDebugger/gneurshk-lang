@@ -2,7 +2,10 @@ use crate::{
     errors::{SematicError, SematicWarning},
     scope::{Function, Scope, Variable},
 };
-use gneurshk_parser::{BinaryOperator, FunctionCall, Identifier, Program, Stmt, types::DataType};
+use gneurshk_parser::{
+    BinaryExpression, BinaryOperator, FunctionCall, Identifier, Literal, Program, Stmt,
+    types::DataType,
+};
 use std::collections::HashMap;
 
 mod errors;
@@ -66,11 +69,11 @@ impl Analyzer {
 
     fn analyze_statement(&mut self, statement: Stmt) -> Option<DataType> {
         match statement {
-            Stmt::BinaryExpression {
+            Stmt::BinaryExpression(BinaryExpression {
                 left,
                 operator,
                 right,
-            } => {
+            }) => {
                 let left_type = self.analyze_statement(*left)?;
                 let right_type = self.analyze_statement(*right)?;
 
@@ -99,10 +102,12 @@ impl Analyzer {
                     }
                 }
             }
-            Stmt::String { .. } => Some(DataType::String),
-            Stmt::Integer { .. } => Some(DataType::Int32),
-            Stmt::Float { .. } => Some(DataType::Float32),
-            Stmt::Boolean { .. } => Some(DataType::Boolean),
+            Stmt::Literal(literal) => match literal {
+                Literal::String(_) => Some(DataType::String),
+                Literal::Integer(_) => Some(DataType::Int32),
+                Literal::Float(_) => Some(DataType::Float32),
+                Literal::Boolean(_) => Some(DataType::Boolean),
+            },
             Stmt::Identifier(Identifier { name, .. }) => {
                 if let Some(variable) = self.scope.get_mut_variable(&name) {
                     variable.used = true;

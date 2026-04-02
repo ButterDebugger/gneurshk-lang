@@ -164,7 +164,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
 #[cfg(test)]
 mod tests {
     use crate::types::DataType;
-    use crate::{Annotation, Block, FunctionParam, Program, Stmt, parse};
+    use crate::{Annotation, Block, Float, FunctionParam, Integer, Literal, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_func_declaration function
@@ -207,10 +207,10 @@ mod tests {
                             mutable: true,
                             name: "peas".to_string(),
                             data_type: None,
-                            value: Some(Box::new(Stmt::Integer {
+                            value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 2,
                                 span: 37..38
-                            })),
+                            })))),
                         }]
                     }),
                 }],
@@ -237,10 +237,10 @@ mod tests {
                             mutable: false,
                             name: "cucumbers".to_string(),
                             data_type: None,
-                            value: Some(Box::new(Stmt::Integer {
+                            value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 8,
                                 span: 34..35
-                            })),
+                            })))),
                         }]
                     }),
                 }],
@@ -298,19 +298,21 @@ mod tests {
                             name: "a".to_string(),
                             mutable: false,
                             data_type: DataType::Int32,
-                            default_value: Some(Box::new(Stmt::Integer {
-                                value: 5,
-                                span: 26..27
-                            })),
+                            default_value: Some(Box::new(Stmt::Literal(Literal::Integer(
+                                Integer {
+                                    value: 5,
+                                    span: 26..27
+                                }
+                            )))),
                         },
                         FunctionParam {
                             name: "b".to_string(),
                             mutable: false,
                             data_type: DataType::Float32,
-                            default_value: Some(Box::new(Stmt::Float {
+                            default_value: Some(Box::new(Stmt::Literal(Literal::Float(Float {
                                 value: 3.0,
                                 span: 42..45
-                            })),
+                            })))),
                         },
                     ],
                     return_type: DataType::default(),
@@ -361,18 +363,18 @@ mod tests {
                         Annotation {
                             name: "other".to_string(),
                             args: vec![
-                                Stmt::Integer {
+                                Stmt::Literal(Literal::Integer(Integer {
                                     value: 1,
                                     span: 13..14
-                                },
-                                Stmt::Integer {
+                                })),
+                                Stmt::Literal(Literal::Integer(Integer {
                                     value: 2,
                                     span: 16..17
-                                },
-                                Stmt::Integer {
+                                })),
+                                Stmt::Literal(Literal::Integer(Integer {
                                     value: 3,
                                     span: 19..20
-                                },
+                                })),
                             ],
                         },
                     ],

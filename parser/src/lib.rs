@@ -29,7 +29,7 @@ pub type ProgramResult = Result<Program, &'static str>;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Program {
-    pub imports: Vec<Stmt>,
+    pub imports: Vec<ImportStmt>,
     pub functions: Vec<Stmt>,
     pub body: Vec<Stmt>,
 }
@@ -81,7 +81,7 @@ pub struct Block {
 #[derive(Debug, PartialEq, Clone)]
 pub enum MemberExpressionMember {
     Identifier(Identifier),
-    FunctionCall(FunctionCall)
+    FunctionCall(FunctionCall),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -89,6 +89,16 @@ pub enum MemberExpressionBase {
     Identifier(Identifier),
     FunctionCall(FunctionCall),
     MemberAccess(MemberAccess),
+}
+
+impl From<MemberExpressionBase> for Stmt {
+    fn from(val: MemberExpressionBase) -> Self {
+        match val {
+            MemberExpressionBase::Identifier(identifier) => Stmt::Identifier(identifier),
+            MemberExpressionBase::FunctionCall(function_call) => Stmt::FunctionCall(function_call),
+            MemberExpressionBase::MemberAccess(member_access) => Stmt::MemberAccess(member_access),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -111,6 +121,101 @@ pub struct Identifier {
     pub span: Range<usize>,
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub enum ImportStmt {
+    Module(ImportModule),
+    Modules(ImportModules),
+    Everything(ImportEverything),
+    Collection(ImportCollection),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ImportModule {
+    module: String,
+    alias: Option<String>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ImportModules {
+    modules: Vec<(String, Option<String>)>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ImportEverything {
+    module: String,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ImportCollection {
+    module: String,
+    items: Vec<(String, Option<String>)>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+/// Represents anything that can be evaluated to a value
+pub enum Expression {
+    Block(Block),
+    BinaryExpression(BinaryExpression),
+    UnaryExpression(UnaryExpression),
+    IfStatement(IfStatement),
+    Literal(Literal),
+    Identifier(Identifier),
+    FunctionCall(FunctionCall),
+    MemberAccess(MemberAccess),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct IfStatement {
+    pub condition: Box<Stmt>,
+    pub if_block: Box<Block>,
+    pub else_statement: Option<Box<Stmt>>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum Literal {
+    Integer(Integer),
+    Float(Float),
+    Boolean(Boolean),
+    String(StringLiteral),
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Integer {
+    pub value: u64,
+    pub span: Range<usize>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Float {
+    pub value: f64,
+    pub span: Range<usize>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Boolean {
+    pub value: bool,
+    pub span: Range<usize>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct StringLiteral {
+    pub value: String,
+    pub span: Range<usize>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct BinaryExpression {
+    pub left: Box<Stmt>,
+    pub right: Box<Stmt>,
+    pub operator: BinaryOperator,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct UnaryExpression {
+    pub value: Box<Stmt>,
+    pub operator: UnaryOperator,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
@@ -121,11 +226,7 @@ pub enum Stmt {
         value: Option<Box<Stmt>>,
     },
     Block(Block),
-    IfStatement {
-        condition: Box<Stmt>,
-        if_block: Box<Block>,
-        else_statement: Option<Box<Stmt>>,
-    },
+    IfStatement(IfStatement),
     FunctionDeclaration {
         annotations: Vec<Annotation>,
         name: String,
@@ -133,34 +234,12 @@ pub enum Stmt {
         return_type: DataType,
         block: Box<Block>,
     },
-    BinaryExpression {
-        left: Box<Stmt>,
-        right: Box<Stmt>,
-        operator: BinaryOperator,
-    },
-    UnaryExpression {
-        value: Box<Stmt>,
-        operator: UnaryOperator,
-    },
+    BinaryExpression(BinaryExpression),
+    UnaryExpression(UnaryExpression),
     Identifier(Identifier),
     FunctionCall(FunctionCall),
     MemberAccess(MemberAccess),
-    Integer {
-        value: u64,
-        span: Range<usize>,
-    },
-    Float {
-        value: f64,
-        span: Range<usize>,
-    },
-    Boolean {
-        value: bool,
-        span: Range<usize>,
-    },
-    String {
-        value: String,
-        span: Range<usize>,
-    },
+    Literal(Literal),
     ReturnStatement {
         value: Option<Box<Stmt>>,
     },
@@ -168,20 +247,7 @@ pub enum Stmt {
     //     name: String,
     //     types: Vec<String>,
     // },
-    ImportModule {
-        module: String,
-        alias: Option<String>,
-    },
-    ImportModules {
-        modules: Vec<(String, Option<String>)>,
-    },
-    ImportEverything {
-        module: String,
-    },
-    ImportCollection {
-        module: String,
-        items: Vec<(String, Option<String>)>,
-    },
+    Import(ImportStmt),
 }
 
 /// Parses statements that appear directly after an new line and or indentation
@@ -201,11 +267,8 @@ pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
         // Append statements or catch and throw errors
         match statement {
             Ok(stmt) => match stmt {
-                Stmt::ImportModule { .. }
-                | Stmt::ImportModules { .. }
-                | Stmt::ImportEverything { .. }
-                | Stmt::ImportCollection { .. } => {
-                    imports.push(stmt);
+                Stmt::Import(import) => {
+                    imports.push(import);
                 }
                 Stmt::FunctionDeclaration { .. } => {
                     functions.push(stmt);

@@ -1,13 +1,15 @@
 use crate::{
     FunctionCall, Identifier, MemberAccess, MemberExpressionBase, MemberExpressionMember,
-    StatementResult, Stmt, expressions::parse_expression,
+    expressions::parse_expression,
 };
 use gneurshk_lexer::{TokenStream, tokens::Token};
 
 // TODO: handle indexing
 
 /// Parses function calls, identifiers, and member accessing
-pub fn parse_member_expression(tokens: &mut TokenStream) -> StatementResult {
+pub fn parse_member_expression_base(
+    tokens: &mut TokenStream,
+) -> Result<MemberExpressionBase, &'static str> {
     // Capture the initial word
     let (name, word_span) = match tokens.next() {
         Some((Token::Word(name), span)) => (name, span),
@@ -146,20 +148,15 @@ pub fn parse_member_expression(tokens: &mut TokenStream) -> StatementResult {
         });
     }
 
-    // Convert base expression to a regular statement
-    match base {
-        MemberExpressionBase::Identifier(identifier) => Ok(Stmt::Identifier(identifier)),
-        MemberExpressionBase::FunctionCall(function_call) => Ok(Stmt::FunctionCall(function_call)),
-        MemberExpressionBase::MemberAccess(member_access) => Ok(Stmt::MemberAccess(member_access)),
-    }
+    Ok(base)
 }
 
 #[cfg(test)]
 mod tests {
     use crate::Stmt::{self};
     use crate::{
-        BinaryOperator, FunctionCall, Identifier, MemberAccess, MemberExpressionBase,
-        MemberExpressionMember, Program, parse,
+        BinaryExpression, BinaryOperator, FunctionCall, Identifier, Integer, Literal, MemberAccess,
+        MemberExpressionBase, MemberExpressionMember, Program, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -252,10 +249,10 @@ mod tests {
             stmt,
             vec![Stmt::FunctionCall(FunctionCall {
                 name: "bar".to_string(),
-                args: vec![Stmt::Integer {
+                args: vec![Stmt::Literal(Literal::Integer(Integer {
                     value: 42,
                     span: 4..6
-                }],
+                }))],
                 span: 0..7,
             })]
         );
@@ -270,18 +267,18 @@ mod tests {
             vec![Stmt::FunctionCall(FunctionCall {
                 name: "baz".to_string(),
                 args: vec![
-                    Stmt::Integer {
+                    Stmt::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 4..5
-                    },
-                    Stmt::Integer {
+                    })),
+                    Stmt::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 7..8
-                    },
-                    Stmt::Integer {
+                    })),
+                    Stmt::Literal(Literal::Integer(Integer {
                         value: 3,
                         span: 10..11
-                    },
+                    })),
                 ],
                 span: 0..12,
             })]
@@ -297,35 +294,35 @@ mod tests {
             vec![Stmt::FunctionCall(FunctionCall {
                 name: "calculate".to_string(),
                 args: vec![
-                    Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Integer {
+                    Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 1,
                             span: 10..11
-                        }),
-                        right: Box::new(Stmt::BinaryExpression {
-                            left: Box::new(Stmt::Integer {
+                        }))),
+                        right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                            left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 2,
                                 span: 15..16
-                            }),
-                            right: Box::new(Stmt::Integer {
+                            }))),
+                            right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 5,
                                 span: 19..20
-                            }),
+                            }))),
                             operator: BinaryOperator::Add,
-                        }),
+                        })),
                         operator: BinaryOperator::Add,
-                    },
-                    Stmt::BinaryExpression {
-                        left: Box::new(Stmt::Integer {
+                    }),
+                    Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 3,
                             span: 23..24
-                        }),
-                        right: Box::new(Stmt::Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 4,
                             span: 27..28
-                        }),
+                        }))),
                         operator: BinaryOperator::Multiply,
-                    },
+                    }),
                 ],
                 span: 0..29,
             })]

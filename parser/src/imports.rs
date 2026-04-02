@@ -1,4 +1,5 @@
 use super::{StatementResult, Stmt, TokenStream};
+use crate::{ImportCollection, ImportEverything, ImportModules, ImportStmt};
 use gneurshk_lexer::tokens::Token;
 
 pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
@@ -20,7 +21,9 @@ pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
                 // Get the module name
                 match tokens.next() {
                     Some((Token::Word(module), _)) => {
-                        return Ok(Stmt::ImportEverything { module });
+                        return Ok(Stmt::Import(ImportStmt::Everything(ImportEverything {
+                            module,
+                        })));
                     }
                     _ => return Err("Expected a module name after the 'from' keyword"),
                 }
@@ -44,9 +47,9 @@ pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
                 // Get the module name
                 match tokens.next() {
                     Some((Token::Word(module), _)) => {
-                        return Ok(Stmt::ImportModules {
+                        return Ok(Stmt::Import(ImportStmt::Modules(ImportModules {
                             modules: vec![(module, Some(alias))],
-                        });
+                        })));
                     }
                     _ => return Err("Expected a module name after the 'from' keyword"),
                 }
@@ -65,12 +68,19 @@ pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
 
         // Get the module name
         match tokens.next() {
-            Some((Token::Word(module), _)) => Ok(Stmt::ImportCollection { module, items }),
+            Some((Token::Word(module), _)) => {
+                Ok(Stmt::Import(ImportStmt::Collection(ImportCollection {
+                    module,
+                    items,
+                })))
+            }
             _ => Err("Expected a module name after the 'from' keyword"),
         }
     } else {
         // Otherwise import multiple modules
-        Ok(Stmt::ImportModules { modules: items })
+        Ok(Stmt::Import(ImportStmt::Modules(ImportModules {
+            modules: items,
+        })))
     }
 }
 
@@ -124,7 +134,7 @@ fn read_import_items(
 
 #[cfg(test)]
 mod tests {
-    use crate::{Program, Stmt, parse};
+    use crate::{ImportCollection, ImportEverything, ImportModules, ImportStmt, Program, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_import function
@@ -144,14 +154,14 @@ mod tests {
         assert_eq!(
             stmt,
             Program {
-                imports: vec![Stmt::ImportCollection {
+                imports: vec![ImportStmt::Collection(ImportCollection {
                     module: "math".to_string(),
                     items: vec![
                         ("sin".to_string(), None),
                         ("cos".to_string(), None),
                         ("sqrt".to_string(), Some("square_root".to_string())),
                     ],
-                }],
+                })],
                 functions: vec![],
                 body: vec![],
             }
@@ -166,15 +176,15 @@ mod tests {
             stmt,
             Program {
                 imports: vec![
-                    Stmt::ImportModules {
+                    ImportStmt::Modules(ImportModules {
                         modules: vec![("os".to_string(), None)],
-                    },
-                    Stmt::ImportModules {
+                    }),
+                    ImportStmt::Modules(ImportModules {
                         modules: vec![("time".to_string(), Some("t".to_string()))],
-                    },
-                    Stmt::ImportModules {
+                    }),
+                    ImportStmt::Modules(ImportModules {
                         modules: vec![("random".to_string(), Some("rng".to_string()))],
-                    },
+                    }),
                 ],
                 functions: vec![],
                 body: vec![],
@@ -189,13 +199,13 @@ mod tests {
         assert_eq!(
             stmt,
             Program {
-                imports: vec![Stmt::ImportModules {
+                imports: vec![ImportStmt::Modules(ImportModules {
                     modules: vec![
                         ("os".to_string(), None),
                         ("time".to_string(), Some("t".to_string())),
                         ("random".to_string(), Some("rng".to_string())),
                     ],
-                }],
+                })],
                 functions: vec![],
                 body: vec![],
             }
@@ -209,9 +219,9 @@ mod tests {
         assert_eq!(
             stmt,
             Program {
-                imports: vec![Stmt::ImportEverything {
+                imports: vec![ImportStmt::Everything(ImportEverything {
                     module: "math".to_string(),
-                }],
+                })],
                 functions: vec![],
                 body: vec![],
             }

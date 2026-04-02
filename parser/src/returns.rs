@@ -21,7 +21,7 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::{BinaryOperator, Block, Program, Stmt, parse};
+    use crate::{BinaryExpression, BinaryOperator, Block, Integer, Literal, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -50,10 +50,10 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::ReturnStatement {
-                value: Some(Box::new(Stmt::Integer {
+                value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
                     value: 1,
                     span: 7..8
-                }))
+                }))))
             }]
         );
     }
@@ -65,17 +65,17 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::ReturnStatement {
-                value: Some(Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Integer {
+                value: Some(Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 7..8
-                    }),
-                    right: Box::new(Stmt::Integer {
+                    }))),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 11..12
-                    }),
+                    }))),
                     operator: BinaryOperator::Add,
-                }))
+                })))
             }]
         );
     }
@@ -100,10 +100,10 @@ mod tests {
             stmt,
             vec![Stmt::Block(Block {
                 body: vec![Stmt::ReturnStatement {
-                    value: Some(Box::new(Stmt::Integer {
+                    value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 9..10
-                    }))
+                    }))))
                 }]
             })]
         );

@@ -1,6 +1,6 @@
 use crate::codegen::Codegen;
 use gneurshk_parser::types::DataType;
-use gneurshk_parser::{Block, FunctionParam, Stmt};
+use gneurshk_parser::{Block, FunctionParam};
 use inkwell::values::{BasicValueEnum, FunctionValue};
 
 impl<'ctx> Codegen<'ctx> {

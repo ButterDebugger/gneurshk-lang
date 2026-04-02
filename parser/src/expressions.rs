@@ -1,6 +1,9 @@
-use crate::identifiers::parse_member_expression;
+use crate::identifiers::parse_member_expression_base;
 
-use super::{BinaryOperator, StatementResult, Stmt, TokenStream, UnaryOperator};
+use super::{
+    BinaryExpression, BinaryOperator, Boolean, Float, Integer, Literal, StatementResult, Stmt,
+    StringLiteral, TokenStream, UnaryExpression, UnaryOperator,
+};
 use gneurshk_lexer::tokens::Token;
 
 /// Parses a binary expression based on operator priority
@@ -21,11 +24,11 @@ fn parse_logical_or(tokens: &mut TokenStream) -> StatementResult {
 
         // With the next lowest priority, parse the right operand
         let right = parse_logical_and(tokens)?;
-        left = Stmt::BinaryExpression {
+        left = Stmt::BinaryExpression(BinaryExpression {
             left: Box::new(left),
             right: Box::new(right),
             operator,
-        };
+        });
     }
 
     Ok(left)
@@ -44,11 +47,11 @@ fn parse_logical_and(tokens: &mut TokenStream) -> StatementResult {
 
         // With the next lowest priority, parse the right operand
         let right = parse_comparison(tokens)?;
-        left = Stmt::BinaryExpression {
+        left = Stmt::BinaryExpression(BinaryExpression {
             left: Box::new(left),
             right: Box::new(right),
             operator,
-        };
+        });
     }
 
     Ok(left)
@@ -72,11 +75,11 @@ fn parse_comparison(tokens: &mut TokenStream) -> StatementResult {
 
         // With the next lowest priority, parse the right operand
         let right = parse_addition_subtraction(tokens)?;
-        left = Stmt::BinaryExpression {
+        left = Stmt::BinaryExpression(BinaryExpression {
             left: Box::new(left),
             right: Box::new(right),
             operator,
-        };
+        });
     }
 
     Ok(left)
@@ -96,11 +99,11 @@ fn parse_addition_subtraction(tokens: &mut TokenStream) -> StatementResult {
 
         // With the next lowest priority, parse the right operand
         let right = parse_multiplication_division(tokens)?;
-        left = Stmt::BinaryExpression {
+        left = Stmt::BinaryExpression(BinaryExpression {
             left: Box::new(left),
             right: Box::new(right),
             operator,
-        };
+        });
     }
     Ok(left)
 }
@@ -120,11 +123,11 @@ fn parse_multiplication_division(tokens: &mut TokenStream) -> StatementResult {
 
         // With the next lowest priority, parse the right operand
         let right = parse_term(tokens)?;
-        left = Stmt::BinaryExpression {
+        left = Stmt::BinaryExpression(BinaryExpression {
             left: Box::new(left),
             right: Box::new(right),
             operator,
-        };
+        });
     }
     Ok(left)
 }
@@ -150,10 +153,10 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
             // Parse the operand
             let operand = parse_term(tokens)?;
 
-            Ok(Stmt::UnaryExpression {
+            Ok(Stmt::UnaryExpression(UnaryExpression {
                 value: Box::new(operand),
                 operator: UnaryOperator::Negative,
-            })
+            }))
         }
         Some((Token::Not, _)) => {
             tokens.next(); // Consume the 'not' token
@@ -161,16 +164,16 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
             // Parse the operand
             let operand = parse_term(tokens)?;
 
-            Ok(Stmt::UnaryExpression {
+            Ok(Stmt::UnaryExpression(UnaryExpression {
                 value: Box::new(operand),
                 operator: UnaryOperator::Not,
-            })
+            }))
         }
         Some((Token::Integer(_), _))
         | Some((Token::Float(_), _))
         | Some((Token::Boolean(_), _))
         | Some((Token::String(_), _)) => parse_literal(tokens),
-        Some((Token::Word(_), _)) => parse_member_expression(tokens),
+        Some((Token::Word(_), _)) => Ok(parse_member_expression_base(tokens)?.into()),
         Some(_) => Err("Unexpected token in expression"),
         None => Err("Unexpected end of tokens in expression"),
     }
@@ -178,17 +181,26 @@ fn parse_term(tokens: &mut TokenStream) -> StatementResult {
 
 fn parse_literal(tokens: &mut TokenStream) -> StatementResult {
     match tokens.next() {
-        Some((Token::Integer(value), span)) => Ok(Stmt::Integer { value, span }),
-        Some((Token::Float(value), span)) => Ok(Stmt::Float { value, span }),
-        Some((Token::Boolean(value), span)) => Ok(Stmt::Boolean { value, span }),
-        Some((Token::String(value), span)) => Ok(Stmt::String { value, span }),
+        Some((Token::Integer(value), span)) => {
+            Ok(Stmt::Literal(Literal::Integer(Integer { value, span })))
+        }
+        Some((Token::Float(value), span)) => {
+            Ok(Stmt::Literal(Literal::Float(Float { value, span })))
+        }
+        Some((Token::Boolean(value), span)) => {
+            Ok(Stmt::Literal(Literal::Boolean(Boolean { value, span })))
+        }
+        Some((Token::String(value), span)) => Ok(Stmt::Literal(Literal::String(StringLiteral {
+            value,
+            span,
+        }))),
         _ => Err("Expected literal"),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::Stmt::{self, BinaryExpression, Integer};
+    use super::*;
     use crate::{BinaryOperator, Program, UnaryOperator, parse};
     use gneurshk_lexer::lex;
 
@@ -209,52 +221,52 @@ mod tests {
         assert_eq!(
             stmt,
             vec![
-                Integer {
+                Stmt::Literal(Literal::Integer(Integer {
                     value: 1,
                     span: 0..1
-                },
-                Integer {
+                })),
+                Stmt::Literal(Literal::Integer(Integer {
                     value: 2,
                     span: 2..3
-                },
-                BinaryExpression {
-                    left: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                })),
+                Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 3,
                             span: 4..5
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 4,
                             span: 8..9
-                        }),
+                        }))),
                         operator: BinaryOperator::Add,
-                    }),
-                    right: Box::new(Integer {
+                    })),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 5,
                         span: 13..14
-                    }),
+                    }))),
                     operator: BinaryOperator::Equal,
-                },
-                Integer {
+                }),
+                Stmt::Literal(Literal::Integer(Integer {
                     value: 6,
                     span: 15..16
-                },
-                Integer {
+                })),
+                Stmt::Literal(Literal::Integer(Integer {
                     value: 7,
                     span: 17..18
-                },
-                Integer {
+                })),
+                Stmt::Literal(Literal::Integer(Integer {
                     value: 8,
                     span: 19..20
-                },
-                Integer {
+                })),
+                Stmt::Literal(Literal::Integer(Integer {
                     value: 9,
                     span: 21..22
-                },
-                Integer {
+                })),
+                Stmt::Literal(Literal::Integer(Integer {
                     value: 10,
                     span: 23..25
-                },
+                })),
             ]
         );
     }
@@ -265,10 +277,10 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::Integer {
+            vec![Stmt::Literal(Literal::Integer(Integer {
                 value: 42,
                 span: 0..2
-            }]
+            }))]
         );
     }
 
@@ -278,38 +290,38 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![BinaryExpression {
-                left: Box::new(Integer {
+            vec![Stmt::BinaryExpression(BinaryExpression {
+                left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                     value: 1,
                     span: 0..1
-                }),
-                right: Box::new(BinaryExpression {
-                    left: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                }))),
+                right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 7,
                             span: 4..5
-                        }),
-                        right: Box::new(BinaryExpression {
-                            left: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                            left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 3,
                                 span: 9..10
-                            }),
-                            right: Box::new(Integer {
+                            }))),
+                            right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 4,
                                 span: 13..14
-                            }),
+                            }))),
                             operator: BinaryOperator::Subtract,
-                        }),
+                        })),
                         operator: BinaryOperator::Multiply,
-                    }),
-                    right: Box::new(Integer {
+                    })),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 5,
                         span: 18..19
-                    }),
+                    }))),
                     operator: BinaryOperator::Divide,
-                }),
+                })),
                 operator: BinaryOperator::Add
-            }]
+            })]
         )
     }
 
@@ -319,45 +331,45 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![BinaryExpression {
-                left: Box::new(BinaryExpression {
-                    left: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+            vec![Stmt::BinaryExpression(BinaryExpression {
+                left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 1,
                             span: 0..1
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 2,
                             span: 4..5
-                        }),
+                        }))),
                         operator: BinaryOperator::LessThan,
-                    }),
-                    right: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                    })),
+                    right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 3,
                             span: 9..10
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 4,
                             span: 13..14
-                        }),
+                        }))),
                         operator: BinaryOperator::GreaterThan,
-                    }),
+                    })),
                     operator: BinaryOperator::And,
-                }),
-                right: Box::new(BinaryExpression {
-                    left: Box::new(Integer {
+                })),
+                right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 5,
                         span: 18..19
-                    }),
-                    right: Box::new(Integer {
+                    }))),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 6,
                         span: 23..24
-                    }),
+                    }))),
                     operator: BinaryOperator::Equal,
-                }),
+                })),
                 operator: BinaryOperator::Or,
-            }]
+            })]
         );
     }
 
@@ -367,45 +379,45 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![BinaryExpression {
-                left: Box::new(BinaryExpression {
-                    left: Box::new(Integer {
+            vec![Stmt::BinaryExpression(BinaryExpression {
+                left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 0..1
-                    }),
-                    right: Box::new(Integer {
+                    }))),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 4..5
-                    }),
+                    }))),
                     operator: BinaryOperator::LessThan,
-                }),
-                right: Box::new(BinaryExpression {
-                    left: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                })),
+                right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 3,
                             span: 9..10
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 4,
                             span: 13..14
-                        }),
+                        }))),
                         operator: BinaryOperator::GreaterThan,
-                    }),
-                    right: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                    })),
+                    right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 5,
                             span: 18..19
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 6,
                             span: 23..24
-                        }),
+                        }))),
                         operator: BinaryOperator::Equal,
-                    }),
+                    })),
                     operator: BinaryOperator::And,
-                }),
+                })),
                 operator: BinaryOperator::Or,
-            }]
+            })]
         );
     }
 
@@ -415,59 +427,59 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![BinaryExpression {
-                left: Box::new(BinaryExpression {
-                    left: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+            vec![Stmt::BinaryExpression(BinaryExpression {
+                left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 1,
                             span: 0..1
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 2,
                             span: 4..5
-                        }),
+                        }))),
                         operator: BinaryOperator::LessThan,
-                    }),
-                    right: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                    })),
+                    right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 3,
                             span: 9..10
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 4,
                             span: 13..14
-                        }),
+                        }))),
                         operator: BinaryOperator::GreaterThan,
-                    }),
+                    })),
                     operator: BinaryOperator::And,
-                }),
-                right: Box::new(BinaryExpression {
-                    left: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                })),
+                right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 5,
                             span: 18..19
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 6,
                             span: 23..24
-                        }),
+                        }))),
                         operator: BinaryOperator::Equal,
-                    }),
-                    right: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+                    })),
+                    right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 7,
                             span: 28..29
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 8,
                             span: 33..34
-                        }),
+                        }))),
                         operator: BinaryOperator::NotEqual,
-                    }),
+                    })),
                     operator: BinaryOperator::And,
-                }),
+                })),
                 operator: BinaryOperator::Or,
-            }]
+            })]
         );
     }
 
@@ -477,59 +489,59 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![BinaryExpression {
-                left: Box::new(BinaryExpression {
-                    left: Box::new(BinaryExpression {
-                        left: Box::new(Integer {
+            vec![Stmt::BinaryExpression(BinaryExpression {
+                left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 1,
                             span: 0..1
-                        }),
-                        right: Box::new(Integer {
+                        }))),
+                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                             value: 2,
                             span: 4..5
-                        }),
+                        }))),
                         operator: BinaryOperator::LessThan,
-                    }),
-                    right: Box::new(BinaryExpression {
-                        left: Box::new(BinaryExpression {
-                            left: Box::new(Integer {
+                    })),
+                    right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                        left: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                            left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 3,
                                 span: 9..10
-                            }),
-                            right: Box::new(Integer {
+                            }))),
+                            right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 4,
                                 span: 13..14
-                            }),
+                            }))),
                             operator: BinaryOperator::GreaterThan,
-                        }),
-                        right: Box::new(BinaryExpression {
-                            left: Box::new(Integer {
+                        })),
+                        right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                            left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 5,
                                 span: 18..19
-                            }),
-                            right: Box::new(Integer {
+                            }))),
+                            right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                                 value: 6,
                                 span: 23..24
-                            }),
+                            }))),
                             operator: BinaryOperator::Equal,
-                        }),
+                        })),
                         operator: BinaryOperator::And,
-                    }),
+                    })),
                     operator: BinaryOperator::Or,
-                }),
-                right: Box::new(BinaryExpression {
-                    left: Box::new(Integer {
+                })),
+                right: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 7,
                         span: 28..29
-                    }),
-                    right: Box::new(Integer {
+                    }))),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 8,
                         span: 33..34
-                    }),
+                    }))),
                     operator: BinaryOperator::NotEqual,
-                }),
+                })),
                 operator: BinaryOperator::Or,
-            }]
+            })]
         );
     }
 
@@ -539,13 +551,13 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::UnaryExpression {
-                value: Box::new(Stmt::Integer {
+            vec![Stmt::UnaryExpression(UnaryExpression {
+                value: Box::new(Stmt::Literal(Literal::Integer(Integer {
                     value: 1,
                     span: 1..2
-                }),
+                }))),
                 operator: UnaryOperator::Negative,
-            }]
+            })]
         );
     }
 
@@ -555,20 +567,20 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::UnaryExpression {
-                value: Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Integer {
+            vec![Stmt::UnaryExpression(UnaryExpression {
+                value: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 2..3
-                    }),
-                    right: Box::new(Stmt::Integer {
+                    }))),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 6..7
-                    }),
+                    }))),
                     operator: BinaryOperator::Add,
-                }),
+                })),
                 operator: UnaryOperator::Negative,
-            }]
+            })]
         );
     }
 
@@ -578,20 +590,20 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::UnaryExpression {
-                value: Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Integer {
+            vec![Stmt::UnaryExpression(UnaryExpression {
+                value: Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 5..6
-                    }),
-                    right: Box::new(Stmt::Integer {
+                    }))),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 10..11
-                    }),
+                    }))),
                     operator: BinaryOperator::Equal,
-                }),
+                })),
                 operator: UnaryOperator::Not,
-            }]
+            })]
         );
     }
 
@@ -601,10 +613,10 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::Float {
+            vec![Stmt::Literal(Literal::Float(Float {
                 value: 1.0,
                 span: 0..3
-            }]
+            }))]
         );
     }
 
@@ -614,17 +626,17 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::BinaryExpression {
-                left: Box::new(Stmt::Integer {
+            vec![Stmt::BinaryExpression(BinaryExpression {
+                left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                     value: 1,
                     span: 0..1
-                }),
-                right: Box::new(Stmt::Float {
+                }))),
+                right: Box::new(Stmt::Literal(Literal::Float(Float {
                     value: 2.0,
                     span: 4..7
-                }),
+                }))),
                 operator: BinaryOperator::Add,
-            }]
+            })]
         );
     }
 
@@ -634,17 +646,17 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::BinaryExpression {
-                left: Box::new(Stmt::Float {
+            vec![Stmt::BinaryExpression(BinaryExpression {
+                left: Box::new(Stmt::Literal(Literal::Float(Float {
                     value: 1.0,
                     span: 0..3
-                }),
-                right: Box::new(Stmt::Float {
+                }))),
+                right: Box::new(Stmt::Literal(Literal::Float(Float {
                     value: 2.0,
                     span: 6..9
-                }),
+                }))),
                 operator: BinaryOperator::Add,
-            }]
+            })]
         );
     }
 
@@ -654,10 +666,10 @@ mod tests {
 
         assert_eq!(
             stmt,
-            vec![Stmt::String {
+            vec![Stmt::Literal(Literal::String(StringLiteral {
                 value: "i love you".to_string(),
                 span: 0..12,
-            }]
+            }))]
         );
     }
 }

@@ -1,5 +1,5 @@
 use crate::codegen::scope::Scope;
-use gneurshk_parser::{Program, Stmt};
+use gneurshk_parser::{BinaryExpression, IfStatement, Program, Stmt, UnaryExpression};
 use inkwell::AddressSpace;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
@@ -125,11 +125,11 @@ impl<'ctx> Codegen<'ctx> {
                 value,
             } => self.build_declaration(name, value),
             Stmt::Block(block) => self.build_block(block),
-            Stmt::IfStatement {
+            Stmt::IfStatement(IfStatement {
                 condition,
                 if_block: block,
                 else_statement: else_block,
-            } => self.build_if_statement(*condition, *block, else_block.map(|b| *b)),
+            }) => self.build_if_statement(*condition, *block, else_block.map(|b| *b)),
             Stmt::FunctionDeclaration {
                 annotations: _,
                 name,
@@ -140,18 +140,15 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::Identifier(identifier) => self.build_identifier(identifier),
             Stmt::FunctionCall(function_call) => self.build_function_call(function_call),
             Stmt::MemberAccess(_) => todo!(),
-            Stmt::BinaryExpression {
+            Stmt::BinaryExpression(BinaryExpression {
                 left,
                 right,
                 operator,
-            } => self.build_binary_expression(*left, *right, operator),
-            Stmt::UnaryExpression { value, operator } => {
+            }) => self.build_binary_expression(*left, *right, operator),
+            Stmt::UnaryExpression(UnaryExpression { value, operator }) => {
                 self.build_unary_expression(*value, operator)
             }
-            Stmt::Integer { value, .. } => self.build_integer(value),
-            Stmt::Float { value, .. } => self.build_float(value),
-            Stmt::Boolean { value, .. } => self.build_boolean(value),
-            Stmt::String { value, .. } => self.build_global_string(value),
+            Stmt::Literal(literal) => self.build_literal(literal),
             Stmt::ReturnStatement { value } => self.build_return_statement(value),
             _ => {
                 // TODO: Handle other statements

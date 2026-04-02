@@ -59,7 +59,9 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::{BinaryOperator, Program, Stmt, parse, types::DataType};
+    use crate::{
+        BinaryExpression, BinaryOperator, Integer, Literal, Program, Stmt, parse, types::DataType,
+    };
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_variable_declaration function
@@ -131,10 +133,10 @@ mod tests {
                 mutable: true,
                 name: "potatoes".to_string(),
                 data_type: Some(DataType::Int32),
-                value: Some(Box::new(Stmt::Integer {
+                value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
                     value: 5,
                     span: 22..23
-                }))
+                }))))
             }]
         );
     }
@@ -149,17 +151,17 @@ mod tests {
                 mutable: true,
                 name: "canned_corn".to_string(),
                 data_type: None,
-                value: Some(Box::new(Stmt::BinaryExpression {
-                    left: Box::new(Stmt::Integer {
+                value: Some(Box::new(Stmt::BinaryExpression(BinaryExpression {
+                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 18..19
-                    }),
-                    right: Box::new(Stmt::Integer {
+                    }))),
+                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
                         value: 5,
                         span: 22..23
-                    }),
+                    }))),
                     operator: BinaryOperator::Add
-                }))
+                })))
             }]
         );
     }
