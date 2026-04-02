@@ -110,10 +110,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                     Some((Token::Equal, _)) => {
                         tokens.next(); // Consume the token
 
-                        match parse_expression(tokens) {
-                            Ok(e) => Some(e),
-                            _ => None,
-                        }
+                        parse_expression(tokens).ok()
                     }
                     _ => None,
                 };
