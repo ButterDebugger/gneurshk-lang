@@ -4,12 +4,12 @@ use gneurshk_parser::{BinaryOperator, Expression, types::DataType};
 impl Analyzer {
     pub(crate) fn analyze_binary_expression(
         &mut self,
-        left: Box<Expression>,
-        right: Box<Expression>,
+        left: Expression,
+        right: Expression,
         operator: BinaryOperator,
     ) -> Option<DataType> {
-        let left_type = self.analyze_expression(*left)?;
-        let right_type = self.analyze_expression(*right)?;
+        let left_type = self.analyze_expression(left)?;
+        let right_type = self.analyze_expression(right)?;
 
         match operator {
             BinaryOperator::Equal

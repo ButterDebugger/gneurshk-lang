@@ -75,9 +75,9 @@ impl Analyzer {
         match statement {
             Stmt::BinaryExpression(BinaryExpression {
                 left,
-                operator,
                 right,
-            }) => self.analyze_binary_expression(left, right, operator),
+                operator,
+            }) => self.analyze_binary_expression(*left, *right, operator),
             Stmt::String(..) => self.analyze_string(),
             Stmt::Integer(..) => self.analyze_integer(),
             Stmt::Float(..) => self.analyze_float(),
@@ -106,7 +106,7 @@ impl Analyzer {
                 left,
                 right,
                 operator,
-            }) => self.analyze_binary_expression(left, right, operator),
+            }) => self.analyze_binary_expression(*left, *right, operator),
             Expression::String(..) => self.analyze_string(),
             Expression::Integer(..) => self.analyze_integer(),
             Expression::Float(..) => self.analyze_float(),
