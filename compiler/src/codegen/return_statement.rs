@@ -1,14 +1,14 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::Stmt;
+use gneurshk_parser::Expression;
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_return_statement(
         &mut self,
-        value: Option<Box<Stmt>>,
+        value: Option<Expression>,
     ) -> Option<BasicValueEnum<'ctx>> {
         if let Some(value) = value {
-            let return_value = self.build_stmt(*value)?;
+            let return_value = self.build_expression(value)?;
             self.builder
                 .build_return(Some(&return_value.into_int_value()))
                 .unwrap();

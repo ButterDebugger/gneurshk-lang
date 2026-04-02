@@ -1,5 +1,5 @@
 use crate::codegen::scope::Scope;
-use gneurshk_parser::{BinaryExpression, IfStatement, Program, Stmt, UnaryExpression};
+use gneurshk_parser::{BinaryExpression, Expression, IfStatement, Program, Stmt, UnaryExpression};
 use inkwell::AddressSpace;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
@@ -152,6 +152,27 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::ReturnStatement { value } => self.build_return_statement(value),
             _ => {
                 // TODO: Handle other statements
+                None
+            }
+        }
+    }
+
+    fn build_expression(&mut self, expr: Expression) -> Option<BasicValueEnum<'ctx>> {
+        match expr {
+            Expression::Identifier(identifier) => self.build_identifier(identifier),
+            Expression::FunctionCall(function_call) => self.build_function_call(function_call),
+            Expression::MemberAccess(_) => todo!(),
+            Expression::BinaryExpression(BinaryExpression {
+                left,
+                right,
+                operator,
+            }) => self.build_binary_expression(*left, *right, operator),
+            Expression::UnaryExpression(UnaryExpression { value, operator }) => {
+                self.build_unary_expression(*value, operator)
+            }
+            Expression::Literal(literal) => self.build_literal(literal),
+            _ => {
+                // TODO: Handle other expressions
                 None
             }
         }

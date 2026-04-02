@@ -1,17 +1,17 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::{BinaryOperator, Stmt};
+use gneurshk_parser::{BinaryOperator, Expression};
 use inkwell::IntPredicate;
 use inkwell::values::{BasicValueEnum, IntValue};
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_binary_expression(
         &mut self,
-        left: Stmt,
-        right: Stmt,
+        left: Expression,
+        right: Expression,
         operator: BinaryOperator,
     ) -> Option<BasicValueEnum<'ctx>> {
-        let left_value = self.build_stmt(left)?;
-        let right_value = self.build_stmt(right)?;
+        let left_value = self.build_expression(left)?;
+        let right_value = self.build_expression(right)?;
 
         match (left_value, right_value) {
             (BasicValueEnum::IntValue(left_value), BasicValueEnum::IntValue(right_value)) => {

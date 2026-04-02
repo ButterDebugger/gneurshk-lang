@@ -1,14 +1,14 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::{Stmt, UnaryOperator};
+use gneurshk_parser::{Expression, UnaryOperator};
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_unary_expression(
         &mut self,
-        value: Stmt,
+        value: Expression,
         operator: UnaryOperator,
     ) -> Option<BasicValueEnum<'ctx>> {
-        let operand = self.build_stmt(value)?;
+        let operand = self.build_expression(value)?;
 
         match operator {
             UnaryOperator::Not => self.build_not_expression(operand),

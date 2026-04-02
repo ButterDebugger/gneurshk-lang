@@ -1,16 +1,16 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::{Block, Stmt};
+use gneurshk_parser::{Block, Expression, Stmt};
 use inkwell::{IntPredicate, values::BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_if_statement(
         &mut self,
-        condition: Stmt,
+        condition: Expression,
         block: Block,
         else_block: Option<Stmt>,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Compile the condition
-        let condition_value = self.build_stmt(condition)?;
+        let condition_value = self.build_expression(condition)?;
 
         // Convert to boolean (non-zero is true)
         let zero = self.context.i32_type().const_int(0, false);

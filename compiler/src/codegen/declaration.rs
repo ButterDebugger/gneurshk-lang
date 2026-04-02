@@ -1,12 +1,12 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::Stmt;
+use gneurshk_parser::Expression;
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_declaration(
         &mut self,
         name: String,
-        value: Option<Box<Stmt>>,
+        value: Option<Expression>,
     ) -> Option<BasicValueEnum<'ctx>> {
         let i32_type = self.context.i32_type();
 
@@ -15,7 +15,7 @@ impl<'ctx> Codegen<'ctx> {
 
         // If its initial value is provided, compile and store it
         if let Some(val) = value {
-            if let Some(init_value) = self.build_stmt(*val) {
+            if let Some(init_value) = self.build_expression(val) {
                 self.builder.build_store(alloca, init_value).unwrap();
             } else {
                 // Default to 0 if no value provided

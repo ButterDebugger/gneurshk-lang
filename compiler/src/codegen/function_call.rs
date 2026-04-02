@@ -1,5 +1,5 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::{FunctionCall, Stmt};
+use gneurshk_parser::{Expression, FunctionCall};
 use inkwell::values::{BasicMetadataValueEnum, BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
@@ -23,7 +23,7 @@ impl<'ctx> Codegen<'ctx> {
         // Compile the arguments
         let mut arg_values = Vec::new();
         for arg in args {
-            if let Some(value) = self.build_stmt(arg) {
+            if let Some(value) = self.build_expression(arg) {
                 arg_values.push(value.into());
             }
         }
@@ -37,13 +37,13 @@ impl<'ctx> Codegen<'ctx> {
         Some(call_result.try_as_basic_value().unwrap_basic())
     }
 
-    fn build_println(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
+    fn build_println(&mut self, args: Vec<Expression>) -> Option<BasicValueEnum<'ctx>> {
         // Compile the arguments and create format string
         let mut arg_values: Vec<BasicMetadataValueEnum<'ctx>> = Vec::new();
         let mut format_str = String::new();
 
         for (i, arg) in args.iter().enumerate() {
-            if let Some(value) = self.build_stmt(arg.clone()) {
+            if let Some(value) = self.build_expression(arg.clone()) {
                 // Depending on the type, add the appropriate format specifier
                 match value {
                     BasicValueEnum::FloatValue(float_val) => {
@@ -99,13 +99,13 @@ impl<'ctx> Codegen<'ctx> {
         None
     }
 
-    fn build_print(&mut self, args: Vec<Stmt>) -> Option<BasicValueEnum<'ctx>> {
+    fn build_print(&mut self, args: Vec<Expression>) -> Option<BasicValueEnum<'ctx>> {
         // Compile the arguments and create format string
         let mut arg_values: Vec<BasicMetadataValueEnum<'ctx>> = Vec::new();
         let mut format_str = String::new();
 
         for (i, arg) in args.iter().enumerate() {
-            if let Some(value) = self.build_stmt(arg.clone()) {
+            if let Some(value) = self.build_expression(arg.clone()) {
                 // Depending on the type, add the appropriate format specifier
                 match value {
                     BasicValueEnum::FloatValue(float_val) => {

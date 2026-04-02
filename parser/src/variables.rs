@@ -35,7 +35,7 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 
             // TODO: Based on the value, determine the type if it wasn't specified
 
-            Some(Box::new(value))
+            Some(value)
         }
         _ => {
             // Return an error if there is no type and no value
@@ -60,7 +60,8 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> StatementResult {
 #[cfg(test)]
 mod tests {
     use crate::{
-        BinaryExpression, BinaryOperator, Integer, Literal, Program, Stmt, parse, types::DataType,
+        BinaryExpression, BinaryOperator, Expression, Integer, Literal, Program, Stmt, parse,
+        types::DataType,
     };
     use gneurshk_lexer::lex;
 
@@ -133,10 +134,10 @@ mod tests {
                 mutable: true,
                 name: "potatoes".to_string(),
                 data_type: Some(DataType::Int32),
-                value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
+                value: Some(Expression::Literal(Literal::Integer(Integer {
                     value: 5,
                     span: 22..23
-                }))))
+                })))
             }]
         );
     }
@@ -151,17 +152,17 @@ mod tests {
                 mutable: true,
                 name: "canned_corn".to_string(),
                 data_type: None,
-                value: Some(Box::new(Stmt::BinaryExpression(BinaryExpression {
-                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                value: Some(Expression::BinaryExpression(BinaryExpression {
+                    left: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 18..19
                     }))),
-                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    right: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 5,
                         span: 22..23
                     }))),
                     operator: BinaryOperator::Add
-                })))
+                }))
             }]
         );
     }

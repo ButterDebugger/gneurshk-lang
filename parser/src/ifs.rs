@@ -39,8 +39,8 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
 #[cfg(test)]
 mod tests {
     use crate::{
-        BinaryExpression, BinaryOperator, Block, IfStatement, Integer, Literal, Program, Stmt,
-        parse,
+        BinaryExpression, BinaryOperator, Block, Expression, IfStatement, Integer, Literal,
+        Program, Stmt, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -81,12 +81,12 @@ const borg = 5
             stmt,
             vec![
                 Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                        left: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 10,
                             span: 4..6
                         }))),
-                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                        right: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 10,
                             span: 9..11
                         }))),
@@ -98,19 +98,19 @@ const borg = 5
                                 mutable: true,
                                 name: "apple".to_string(),
                                 data_type: None,
-                                value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
+                                value: Some(Expression::Literal(Literal::Integer(Integer {
                                     value: 1,
                                     span: 30..31
-                                })))),
+                                }))),
                             },
                             Stmt::Declaration {
                                 mutable: true,
                                 name: "green".to_string(),
                                 data_type: None,
-                                value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
+                                value: Some(Expression::Literal(Literal::Integer(Integer {
                                     value: 3,
                                     span: 56..57
-                                })))),
+                                }))),
                             },
                         ],
                     }),
@@ -120,10 +120,10 @@ const borg = 5
                     mutable: false,
                     name: "borg".to_string(),
                     data_type: None,
-                    value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    value: Some(Expression::Literal(Literal::Integer(Integer {
                         value: 5,
                         span: 73..74
-                    })))),
+                    }))),
                 },
             ]
         );
@@ -150,12 +150,12 @@ const borg = 5
             stmt,
             vec![
                 Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                        left: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 10,
                             span: 4..6
                         }))),
-                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                        right: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 10,
                             span: 9..11
                         }))),
@@ -164,55 +164,67 @@ const borg = 5
                     if_block: Box::new(Block {
                         body: vec![
                             Stmt::IfStatement(IfStatement {
-                                condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
-                                        value: 20,
-                                        span: 21..23
-                                    }))),
-                                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
-                                        value: 20,
-                                        span: 26..28
-                                    }))),
-                                    operator: BinaryOperator::Add,
-                                })),
+                                condition: Box::new(Expression::BinaryExpression(
+                                    BinaryExpression {
+                                        left: Box::new(Expression::Literal(Literal::Integer(
+                                            Integer {
+                                                value: 20,
+                                                span: 21..23
+                                            }
+                                        ))),
+                                        right: Box::new(Expression::Literal(Literal::Integer(
+                                            Integer {
+                                                value: 20,
+                                                span: 26..28
+                                            }
+                                        ))),
+                                        operator: BinaryOperator::Add,
+                                    }
+                                )),
                                 if_block: Box::new(Block {
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "apple".to_string(),
                                         data_type: None,
-                                        value: Some(Box::new(Stmt::Literal(Literal::Integer(
+                                        value: Some(Expression::Literal(Literal::Integer(
                                             Integer {
                                                 value: 1,
                                                 span: 51..52
                                             }
-                                        )))),
+                                        ))),
                                     }]
                                 }),
                                 else_statement: None,
                             }),
                             Stmt::IfStatement(IfStatement {
-                                condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
-                                        value: 30,
-                                        span: 66..68
-                                    }))),
-                                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
-                                        value: 30,
-                                        span: 71..73
-                                    }))),
-                                    operator: BinaryOperator::Add,
-                                })),
+                                condition: Box::new(Expression::BinaryExpression(
+                                    BinaryExpression {
+                                        left: Box::new(Expression::Literal(Literal::Integer(
+                                            Integer {
+                                                value: 30,
+                                                span: 66..68
+                                            }
+                                        ))),
+                                        right: Box::new(Expression::Literal(Literal::Integer(
+                                            Integer {
+                                                value: 30,
+                                                span: 71..73
+                                            }
+                                        ))),
+                                        operator: BinaryOperator::Add,
+                                    }
+                                )),
                                 if_block: Box::new(Block {
                                     body: vec![Stmt::Declaration {
                                         mutable: true,
                                         name: "green".to_string(),
                                         data_type: None,
-                                        value: Some(Box::new(Stmt::Literal(Literal::Integer(
+                                        value: Some(Expression::Literal(Literal::Integer(
                                             Integer {
                                                 value: 3,
                                                 span: 96..97
                                             }
-                                        )))),
+                                        ))),
                                     }]
                                 }),
                                 else_statement: None,
@@ -225,10 +237,10 @@ const borg = 5
                     mutable: false,
                     name: "borg".to_string(),
                     data_type: None,
-                    value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    value: Some(Expression::Literal(Literal::Integer(Integer {
                         value: 5,
                         span: 119..120
-                    })))),
+                    }))),
                 },
             ]
         );
@@ -249,12 +261,12 @@ if 10 + 10 {
         assert_eq!(
             stmt,
             vec![Stmt::IfStatement(IfStatement {
-                condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                    left: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 10,
                         span: 4..6
                     }))),
-                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    right: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 10,
                         span: 9..11
                     }))),
@@ -292,12 +304,12 @@ if 10 + 10 {
         assert_eq!(
             stmt,
             vec![Stmt::IfStatement(IfStatement {
-                condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                    left: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 10,
                         span: 4..6
                     }))),
-                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    right: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 10,
                         span: 9..11
                     }))),
@@ -310,12 +322,12 @@ if 10 + 10 {
                     }))]
                 }),
                 else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                        left: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 20,
                             span: 30..32
                         }))),
-                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                        right: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 20,
                             span: 35..37
                         }))),
@@ -351,12 +363,12 @@ if 10 + 10 {
         assert_eq!(
             stmt,
             vec![Stmt::IfStatement(IfStatement {
-                condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                    left: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 10,
                         span: 4..6
                     }))),
-                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    right: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 10,
                         span: 9..11
                     }))),
@@ -369,12 +381,12 @@ if 10 + 10 {
                     }))]
                 }),
                 else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Stmt::BinaryExpression(BinaryExpression {
-                        left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                        left: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 20,
                             span: 30..32
                         }))),
-                        right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                        right: Box::new(Expression::Literal(Literal::Integer(Integer {
                             value: 20,
                             span: 35..37
                         }))),

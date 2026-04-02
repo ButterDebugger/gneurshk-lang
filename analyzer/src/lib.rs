@@ -1,14 +1,18 @@
 use crate::{
     errors::{SematicError, SematicWarning},
-    scope::{Function, Scope, Variable},
+    scope::{Function, Scope},
 };
 use gneurshk_parser::{
-    BinaryExpression, BinaryOperator, FunctionCall, Identifier, Literal, Program, Stmt,
-    types::DataType,
+    BinaryExpression, Expression, FunctionCall, Identifier, Program, Stmt, types::DataType,
 };
 use std::collections::HashMap;
 
+mod binary_expression;
+mod declaration;
 mod errors;
+mod function_call;
+mod identifier;
+mod literal;
 mod scope;
 
 #[derive(Debug, Clone)]
@@ -73,139 +77,41 @@ impl Analyzer {
                 left,
                 operator,
                 right,
-            }) => {
-                let left_type = self.analyze_statement(*left)?;
-                let right_type = self.analyze_statement(*right)?;
-
-                match operator {
-                    BinaryOperator::Equal
-                    | BinaryOperator::NotEqual
-                    | BinaryOperator::GreaterThan
-                    | BinaryOperator::GreaterThanEqual
-                    | BinaryOperator::LessThan
-                    | BinaryOperator::LessThanEqual
-                    | BinaryOperator::And
-                    | BinaryOperator::Or => {
-                        return Some(DataType::Boolean);
-                    }
-                    _ => (),
-                }
-
-                match (left_type.clone(), right_type.clone()) {
-                    (DataType::Int32, DataType::Int32) => Some(DataType::Int32),
-                    (DataType::Float32, DataType::Float32) => Some(DataType::Float32),
-                    _ => {
-                        self.errors
-                            .push(SematicError::TypeMismatch(left_type, right_type));
-
-                        None
-                    }
-                }
-            }
-            Stmt::Literal(literal) => match literal {
-                Literal::String(_) => Some(DataType::String),
-                Literal::Integer(_) => Some(DataType::Int32),
-                Literal::Float(_) => Some(DataType::Float32),
-                Literal::Boolean(_) => Some(DataType::Boolean),
-            },
-            Stmt::Identifier(Identifier { name, .. }) => {
-                if let Some(variable) = self.scope.get_mut_variable(&name) {
-                    variable.used = true;
-
-                    Some(variable.data_type.clone())
-                } else {
-                    self.errors.push(SematicError::VariableNotFound(name));
-
-                    None
-                }
-            }
+            }) => self.analyze_binary_expression(left, right, operator),
+            Stmt::Literal(literal) => self.analyze_literal(literal),
+            Stmt::Identifier(Identifier { name, .. }) => self.analyze_identifier(name),
             Stmt::FunctionCall(FunctionCall { name, args, .. }) => {
-                // Handle built-in functions
-                if matches!(name.as_str(), "println" | "print") {
-                    // Analyze arguments and ignore types for these functions
-                    for arg in args {
-                        self.analyze_statement(arg);
-                    }
-                    return Some(DataType::Void);
-                }
-
-                if let Some(function) = self.functions.get(&name).cloned() {
-                    // Check for correct number of arguments
-                    if args.len() != function.params.len() {
-                        self.errors
-                            .push(SematicError::FunctionCallArgumentCountMismatch(
-                                name.clone(),
-                                function.params.len(),
-                                args.len(),
-                            ));
-                    }
-                    // Check for correct types of arguments
-                    else {
-                        let mut arg_types = Vec::with_capacity(args.len());
-                        for arg in args {
-                            arg_types.push(self.analyze_statement(arg)?);
-                        }
-
-                        let expected_types = function
-                            .params
-                            .iter()
-                            .map(|param| param.data_type.clone())
-                            .collect::<Vec<_>>();
-
-                        for (i, (expected, actual)) in
-                            expected_types.iter().zip(arg_types.iter()).enumerate()
-                        {
-                            if expected != actual {
-                                self.errors.push(SematicError::FunctionCallArgumentMismatch(
-                                    name.clone(),
-                                    i + 1,
-                                    expected.clone(),
-                                    actual.clone(),
-                                ));
-                            }
-                        }
-                    }
-
-                    Some(function.return_type.clone())
-                } else {
-                    self.errors.push(SematicError::FunctionNotFound(name));
-
-                    // TODO: analyze arguments anyway
-
-                    None
-                }
+                self.analyze_function_call(name, args)
             }
-            Stmt::MemberAccess { .. } => todo!(),
             Stmt::Declaration {
                 mutable,
                 name,
                 data_type,
                 value,
-            } => {
-                let var_type = if let Some(dt) = data_type {
-                    dt
-                } else if let Some(val) = value.clone() {
-                    self.analyze_statement(*val)?
-                } else {
-                    self.errors.push(SematicError::NoTypeOrValueProvided);
-
-                    return None;
-                };
-
-                let variable = Variable {
-                    name: name.clone(),
-                    data_type: var_type.clone(),
-                    mutable,
-                    used: false,
-                    initialized: value.is_some(),
-                };
-
-                self.scope.set_variable(name, variable);
-
-                Some(var_type)
-            }
+            } => self.analyze_declaration(mutable, name, data_type, value),
             _ => {
                 println!("statement: {statement:?}");
+
+                todo!();
+            }
+        }
+    }
+
+    fn analyze_expression(&mut self, expr: Expression) -> Option<DataType> {
+        match expr {
+            Expression::BinaryExpression(BinaryExpression {
+                left,
+                right,
+                operator,
+            }) => self.analyze_binary_expression(left, right, operator),
+            Expression::Literal(literal) => self.analyze_literal(literal),
+            Expression::Identifier(Identifier { name, .. }) => self.analyze_identifier(name),
+            Expression::FunctionCall(FunctionCall { name, args, .. }) => {
+                self.analyze_function_call(name, args)
+            }
+            _ => {
+                println!("expression: {expr:?}");
+
                 todo!();
             }
         }

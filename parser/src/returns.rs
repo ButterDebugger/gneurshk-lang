@@ -11,7 +11,7 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
     // Check if the next token is something that can be parsed as an expression
     let value = match tokens.peek() {
         Some((Token::Integer(_), _)) | Some((Token::OpenParen, _)) | Some((Token::Word(_), _)) => {
-            Some(Box::new(parse_expression(tokens)?))
+            Some(parse_expression(tokens)?)
         }
         _ => None,
     };
@@ -21,7 +21,9 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::{BinaryExpression, BinaryOperator, Block, Integer, Literal, Program, Stmt, parse};
+    use crate::{
+        BinaryExpression, BinaryOperator, Block, Expression, Integer, Literal, Program, Stmt, parse,
+    };
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -50,10 +52,10 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::ReturnStatement {
-                value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
+                value: Some(Expression::Literal(Literal::Integer(Integer {
                     value: 1,
                     span: 7..8
-                }))))
+                })))
             }]
         );
     }
@@ -65,17 +67,17 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::ReturnStatement {
-                value: Some(Box::new(Stmt::BinaryExpression(BinaryExpression {
-                    left: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                value: Some(Expression::BinaryExpression(BinaryExpression {
+                    left: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 7..8
                     }))),
-                    right: Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    right: Box::new(Expression::Literal(Literal::Integer(Integer {
                         value: 2,
                         span: 11..12
                     }))),
                     operator: BinaryOperator::Add,
-                })))
+                }))
             }]
         );
     }
@@ -100,10 +102,10 @@ mod tests {
             stmt,
             vec![Stmt::Block(Block {
                 body: vec![Stmt::ReturnStatement {
-                    value: Some(Box::new(Stmt::Literal(Literal::Integer(Integer {
+                    value: Some(Expression::Literal(Literal::Integer(Integer {
                         value: 1,
                         span: 9..10
-                    }))))
+                    })))
                 }]
             })]
         );

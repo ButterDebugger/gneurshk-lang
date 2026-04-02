@@ -64,13 +64,13 @@ pub struct FunctionParam {
     pub name: String,
     pub mutable: bool,
     pub data_type: DataType,
-    pub default_value: Option<Box<Stmt>>,
+    pub default_value: Option<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Annotation {
     pub name: String,
-    pub args: Vec<Stmt>,
+    pub args: Vec<Expression>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -91,12 +91,16 @@ pub enum MemberExpressionBase {
     MemberAccess(MemberAccess),
 }
 
-impl From<MemberExpressionBase> for Stmt {
+impl From<MemberExpressionBase> for Expression {
     fn from(val: MemberExpressionBase) -> Self {
         match val {
-            MemberExpressionBase::Identifier(identifier) => Stmt::Identifier(identifier),
-            MemberExpressionBase::FunctionCall(function_call) => Stmt::FunctionCall(function_call),
-            MemberExpressionBase::MemberAccess(member_access) => Stmt::MemberAccess(member_access),
+            MemberExpressionBase::Identifier(identifier) => Expression::Identifier(identifier),
+            MemberExpressionBase::FunctionCall(function_call) => {
+                Expression::FunctionCall(function_call)
+            }
+            MemberExpressionBase::MemberAccess(member_access) => {
+                Expression::MemberAccess(member_access)
+            }
         }
     }
 }
@@ -104,7 +108,7 @@ impl From<MemberExpressionBase> for Stmt {
 #[derive(Debug, PartialEq, Clone)]
 pub struct FunctionCall {
     pub name: String,
-    pub args: Vec<Stmt>,
+    pub args: Vec<Expression>,
     pub span: Range<usize>,
 }
 
@@ -164,9 +168,28 @@ pub enum Expression {
     MemberAccess(MemberAccess),
 }
 
+impl From<Expression> for Stmt {
+    fn from(val: Expression) -> Self {
+        match val {
+            Expression::Block(block) => Stmt::Block(block),
+            Expression::BinaryExpression(binary_expression) => {
+                Stmt::BinaryExpression(binary_expression)
+            }
+            Expression::UnaryExpression(unary_expression) => {
+                Stmt::UnaryExpression(unary_expression)
+            }
+            Expression::IfStatement(if_statement) => Stmt::IfStatement(if_statement),
+            Expression::Literal(literal) => Stmt::Literal(literal),
+            Expression::Identifier(identifier) => Stmt::Identifier(identifier),
+            Expression::FunctionCall(function_call) => Stmt::FunctionCall(function_call),
+            Expression::MemberAccess(member_access) => Stmt::MemberAccess(member_access),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct IfStatement {
-    pub condition: Box<Stmt>,
+    pub condition: Box<Expression>,
     pub if_block: Box<Block>,
     pub else_statement: Option<Box<Stmt>>,
 }
@@ -205,14 +228,14 @@ pub struct StringLiteral {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct BinaryExpression {
-    pub left: Box<Stmt>,
-    pub right: Box<Stmt>,
+    pub left: Box<Expression>,
+    pub right: Box<Expression>,
     pub operator: BinaryOperator,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct UnaryExpression {
-    pub value: Box<Stmt>,
+    pub value: Box<Expression>,
     pub operator: UnaryOperator,
 }
 
@@ -223,7 +246,7 @@ pub enum Stmt {
         mutable: bool,
         name: String,
         data_type: Option<DataType>,
-        value: Option<Box<Stmt>>,
+        value: Option<Expression>,
     },
     Block(Block),
     IfStatement(IfStatement),
@@ -241,7 +264,7 @@ pub enum Stmt {
     MemberAccess(MemberAccess),
     Literal(Literal),
     ReturnStatement {
-        value: Option<Box<Stmt>>,
+        value: Option<Expression>,
     },
     // TypeAlias {
     //     name: String,
@@ -306,7 +329,7 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         | Token::OpenParen
         | Token::Word(_)
         | Token::Minus
-        | Token::Not => parse_expression(tokens),
+        | Token::Not => Ok(parse_expression(tokens)?.into()),
         Token::Annotation(_) | Token::Func => parse_func_declaration(tokens),
         Token::Import => parse_import(tokens),
         Token::OpenBrace => Ok(Stmt::Block(parse_block(tokens)?)),
