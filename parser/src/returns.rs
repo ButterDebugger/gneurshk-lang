@@ -22,7 +22,7 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
 #[cfg(test)]
 mod tests {
     use crate::{
-        BinaryExpression, BinaryOperator, Block, Expression, Integer, Literal, Program, Stmt, parse,
+        BinaryExpression, BinaryOperator, Block, Expression, IntegerLit, Program, Stmt, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -52,10 +52,10 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::ReturnStatement {
-                value: Some(Expression::Literal(Literal::Integer(Integer {
+                value: Some(Expression::Integer(IntegerLit {
                     value: 1,
                     span: 7..8
-                })))
+                }))
             }]
         );
     }
@@ -68,14 +68,14 @@ mod tests {
             stmt,
             vec![Stmt::ReturnStatement {
                 value: Some(Expression::BinaryExpression(BinaryExpression {
-                    left: Box::new(Expression::Literal(Literal::Integer(Integer {
+                    left: Box::new(Expression::Integer(IntegerLit {
                         value: 1,
                         span: 7..8
-                    }))),
-                    right: Box::new(Expression::Literal(Literal::Integer(Integer {
+                    })),
+                    right: Box::new(Expression::Integer(IntegerLit {
                         value: 2,
                         span: 11..12
-                    }))),
+                    })),
                     operator: BinaryOperator::Add,
                 }))
             }]
@@ -102,10 +102,10 @@ mod tests {
             stmt,
             vec![Stmt::Block(Block {
                 body: vec![Stmt::ReturnStatement {
-                    value: Some(Expression::Literal(Literal::Integer(Integer {
+                    value: Some(Expression::Integer(IntegerLit {
                         value: 1,
                         span: 9..10
-                    })))
+                    }))
                 }]
             })]
         );

@@ -162,7 +162,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
 mod tests {
     use crate::types::DataType;
     use crate::{
-        Annotation, Block, Expression, Float, FunctionParam, Integer, Literal, Program, Stmt, parse,
+        Annotation, Block, Expression, FloatLit, FunctionParam, IntegerLit, Program, Stmt, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -206,10 +206,10 @@ mod tests {
                             mutable: true,
                             name: "peas".to_string(),
                             data_type: None,
-                            value: Some(Expression::Literal(Literal::Integer(Integer {
+                            value: Some(Expression::Integer(IntegerLit {
                                 value: 2,
                                 span: 37..38
-                            }))),
+                            })),
                         }]
                     }),
                 }],
@@ -236,10 +236,10 @@ mod tests {
                             mutable: false,
                             name: "cucumbers".to_string(),
                             data_type: None,
-                            value: Some(Expression::Literal(Literal::Integer(Integer {
+                            value: Some(Expression::Integer(IntegerLit {
                                 value: 8,
                                 span: 34..35
-                            }))),
+                            })),
                         }]
                     }),
                 }],
@@ -297,19 +297,19 @@ mod tests {
                             name: "a".to_string(),
                             mutable: false,
                             data_type: DataType::Int32,
-                            default_value: Some(Expression::Literal(Literal::Integer(Integer {
+                            default_value: Some(Expression::Integer(IntegerLit {
                                 value: 5,
                                 span: 26..27
-                            }))),
+                            })),
                         },
                         FunctionParam {
                             name: "b".to_string(),
                             mutable: false,
                             data_type: DataType::Float32,
-                            default_value: Some(Expression::Literal(Literal::Float(Float {
+                            default_value: Some(Expression::Float(FloatLit {
                                 value: 3.0,
                                 span: 42..45
-                            }))),
+                            })),
                         },
                     ],
                     return_type: DataType::default(),
@@ -360,18 +360,18 @@ mod tests {
                         Annotation {
                             name: "other".to_string(),
                             args: vec![
-                                Expression::Literal(Literal::Integer(Integer {
+                                Expression::Integer(IntegerLit {
                                     value: 1,
                                     span: 13..14
-                                })),
-                                Expression::Literal(Literal::Integer(Integer {
+                                }),
+                                Expression::Integer(IntegerLit {
                                     value: 2,
                                     span: 16..17
-                                })),
-                                Expression::Literal(Literal::Integer(Integer {
+                                }),
+                                Expression::Integer(IntegerLit {
                                     value: 3,
                                     span: 19..20
-                                })),
+                                }),
                             ],
                         },
                     ],

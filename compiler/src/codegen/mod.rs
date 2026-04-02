@@ -1,5 +1,8 @@
 use crate::codegen::scope::Scope;
-use gneurshk_parser::{BinaryExpression, Expression, IfStatement, Program, Stmt, UnaryExpression};
+use gneurshk_parser::{
+    BinaryExpression, BooleanLit, Expression, FloatLit, IfStatement, IntegerLit, Program, Stmt,
+    StringLit, UnaryExpression,
+};
 use inkwell::AddressSpace;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
@@ -148,7 +151,10 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::UnaryExpression(UnaryExpression { value, operator }) => {
                 self.build_unary_expression(*value, operator)
             }
-            Stmt::Literal(literal) => self.build_literal(literal),
+            Stmt::Integer(IntegerLit { value, .. }) => self.build_integer(value),
+            Stmt::Float(FloatLit { value, .. }) => self.build_float(value),
+            Stmt::String(StringLit { value, .. }) => self.build_global_string(value),
+            Stmt::Boolean(BooleanLit { value, .. }) => self.build_boolean(value),
             Stmt::ReturnStatement { value } => self.build_return_statement(value),
             _ => {
                 // TODO: Handle other statements
@@ -170,7 +176,10 @@ impl<'ctx> Codegen<'ctx> {
             Expression::UnaryExpression(UnaryExpression { value, operator }) => {
                 self.build_unary_expression(*value, operator)
             }
-            Expression::Literal(literal) => self.build_literal(literal),
+            Expression::Integer(IntegerLit { value, .. }) => self.build_integer(value),
+            Expression::Float(FloatLit { value, .. }) => self.build_float(value),
+            Expression::String(StringLit { value, .. }) => self.build_global_string(value),
+            Expression::Boolean(BooleanLit { value, .. }) => self.build_boolean(value),
             _ => {
                 // TODO: Handle other expressions
                 None

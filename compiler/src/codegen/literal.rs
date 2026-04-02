@@ -1,36 +1,26 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::{Boolean, Float, Integer, Literal, StringLiteral};
 use inkwell::values::{BasicValue, BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn build_literal(&mut self, literal: Literal) -> Option<BasicValueEnum<'ctx>> {
-        match literal {
-            Literal::Integer(Integer { value, .. }) => self.build_integer(value),
-            Literal::Float(Float { value, .. }) => self.build_float(value),
-            Literal::Boolean(Boolean { value, .. }) => self.build_boolean(value),
-            Literal::String(StringLiteral { value, .. }) => self.build_global_string(value),
-        }
-    }
-
-    fn build_integer(&mut self, value: u64) -> Option<BasicValueEnum<'ctx>> {
+    pub(crate) fn build_integer(&mut self, value: u64) -> Option<BasicValueEnum<'ctx>> {
         let i32_type = self.context.i32_type();
 
         Some(i32_type.const_int(value, true).as_basic_value_enum())
     }
 
-    fn build_float(&mut self, value: f64) -> Option<BasicValueEnum<'ctx>> {
+    pub(crate) fn build_float(&mut self, value: f64) -> Option<BasicValueEnum<'ctx>> {
         let f32_type = self.context.f32_type();
 
         Some(f32_type.const_float(value).as_basic_value_enum())
     }
 
-    fn build_boolean(&mut self, value: bool) -> Option<BasicValueEnum<'ctx>> {
+    pub(crate) fn build_boolean(&mut self, value: bool) -> Option<BasicValueEnum<'ctx>> {
         let i1_type = self.context.bool_type();
 
         Some(i1_type.const_int(value as u64, false).as_basic_value_enum())
     }
 
-    fn build_global_string(&mut self, value: String) -> Option<BasicValueEnum<'ctx>> {
+    pub(crate) fn build_global_string(&mut self, value: String) -> Option<BasicValueEnum<'ctx>> {
         // Create global string
         let global_value = self
             .builder

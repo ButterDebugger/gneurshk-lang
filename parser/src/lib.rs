@@ -162,7 +162,10 @@ pub enum Expression {
     BinaryExpression(BinaryExpression),
     UnaryExpression(UnaryExpression),
     IfStatement(IfStatement),
-    Literal(Literal),
+    Integer(IntegerLit),
+    Float(FloatLit),
+    Boolean(BooleanLit),
+    String(StringLit),
     Identifier(Identifier),
     FunctionCall(FunctionCall),
     MemberAccess(MemberAccess),
@@ -179,7 +182,10 @@ impl From<Expression> for Stmt {
                 Stmt::UnaryExpression(unary_expression)
             }
             Expression::IfStatement(if_statement) => Stmt::IfStatement(if_statement),
-            Expression::Literal(literal) => Stmt::Literal(literal),
+            Expression::Integer(integer_lit) => Stmt::Integer(integer_lit),
+            Expression::Float(float_lit) => Stmt::Float(float_lit),
+            Expression::Boolean(boolean_lit) => Stmt::Boolean(boolean_lit),
+            Expression::String(string_lit) => Stmt::String(string_lit),
             Expression::Identifier(identifier) => Stmt::Identifier(identifier),
             Expression::FunctionCall(function_call) => Stmt::FunctionCall(function_call),
             Expression::MemberAccess(member_access) => Stmt::MemberAccess(member_access),
@@ -195,33 +201,25 @@ pub struct IfStatement {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum Literal {
-    Integer(Integer),
-    Float(Float),
-    Boolean(Boolean),
-    String(StringLiteral),
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct Integer {
+pub struct IntegerLit {
     pub value: u64,
     pub span: Range<usize>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Float {
+pub struct FloatLit {
     pub value: f64,
     pub span: Range<usize>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct Boolean {
+pub struct BooleanLit {
     pub value: bool,
     pub span: Range<usize>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct StringLiteral {
+pub struct StringLit {
     pub value: String,
     pub span: Range<usize>,
 }
@@ -239,9 +237,16 @@ pub struct UnaryExpression {
     pub operator: UnaryOperator,
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct Assignment {
+    pub name: String,
+    pub value: Expression,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
+    Assignment(Assignment),
     Declaration {
         mutable: bool,
         name: String,
@@ -262,7 +267,10 @@ pub enum Stmt {
     Identifier(Identifier),
     FunctionCall(FunctionCall),
     MemberAccess(MemberAccess),
-    Literal(Literal),
+    Integer(IntegerLit),
+    Float(FloatLit),
+    Boolean(BooleanLit),
+    String(StringLit),
     ReturnStatement {
         value: Option<Expression>,
     },

@@ -78,7 +78,10 @@ impl Analyzer {
                 operator,
                 right,
             }) => self.analyze_binary_expression(left, right, operator),
-            Stmt::Literal(literal) => self.analyze_literal(literal),
+            Stmt::String(..) => self.analyze_string(),
+            Stmt::Integer(..) => self.analyze_integer(),
+            Stmt::Float(..) => self.analyze_float(),
+            Stmt::Boolean(..) => self.analyze_boolean(),
             Stmt::Identifier(Identifier { name, .. }) => self.analyze_identifier(name),
             Stmt::FunctionCall(FunctionCall { name, args, .. }) => {
                 self.analyze_function_call(name, args)
@@ -104,7 +107,10 @@ impl Analyzer {
                 right,
                 operator,
             }) => self.analyze_binary_expression(left, right, operator),
-            Expression::Literal(literal) => self.analyze_literal(literal),
+            Expression::String(..) => self.analyze_string(),
+            Expression::Integer(..) => self.analyze_integer(),
+            Expression::Float(..) => self.analyze_float(),
+            Expression::Boolean(..) => self.analyze_boolean(),
             Expression::Identifier(Identifier { name, .. }) => self.analyze_identifier(name),
             Expression::FunctionCall(FunctionCall { name, args, .. }) => {
                 self.analyze_function_call(name, args)

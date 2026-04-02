@@ -1,13 +1,20 @@
 use crate::Analyzer;
-use gneurshk_parser::{Literal, types::DataType};
+use gneurshk_parser::types::DataType;
 
 impl Analyzer {
-    pub(crate) fn analyze_literal(&mut self, literal: Literal) -> Option<DataType> {
-        match literal {
-            Literal::String(_) => Some(DataType::String),
-            Literal::Integer(_) => Some(DataType::Int32),
-            Literal::Float(_) => Some(DataType::Float32),
-            Literal::Boolean(_) => Some(DataType::Boolean),
-        }
+    pub(crate) fn analyze_string(&mut self) -> Option<DataType> {
+        Some(DataType::String)
+    }
+
+    pub(crate) fn analyze_integer(&mut self) -> Option<DataType> {
+        Some(DataType::Int32)
+    }
+
+    pub(crate) fn analyze_float(&mut self) -> Option<DataType> {
+        Some(DataType::Float32)
+    }
+
+    pub(crate) fn analyze_boolean(&mut self) -> Option<DataType> {
+        Some(DataType::Boolean)
     }
 }

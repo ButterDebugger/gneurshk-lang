@@ -45,7 +45,7 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block, &'static str> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Block, Integer, Literal, Program, Stmt, parse};
+    use crate::{Block, IntegerLit, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse_func_declaration function
@@ -72,10 +72,10 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::Block(Block {
-                body: vec![Stmt::Literal(Literal::Integer(Integer {
+                body: vec![Stmt::Integer(IntegerLit {
                     value: 1,
                     span: 2..3
-                }))]
+                })]
             })]
         );
     }
@@ -87,10 +87,10 @@ mod tests {
         assert_eq!(
             stmt,
             vec![Stmt::Block(Block {
-                body: vec![Stmt::Literal(Literal::Integer(Integer {
+                body: vec![Stmt::Integer(IntegerLit {
                     value: 1,
                     span: 4..5
-                }))]
+                })]
             })]
         );
     }
@@ -105,17 +105,17 @@ mod tests {
                 body: vec![
                     Stmt::Block(Block {
                         body: vec![Stmt::Block(Block {
-                            body: vec![Stmt::Literal(Literal::Integer(Integer {
+                            body: vec![Stmt::Integer(IntegerLit {
                                 value: 3,
                                 span: 6..7
-                            }))]
+                            })]
                         })]
                     }),
                     Stmt::Block(Block {
-                        body: vec![Stmt::Literal(Literal::Integer(Integer {
+                        body: vec![Stmt::Integer(IntegerLit {
                             value: 2,
                             span: 14..15
-                        }))]
+                        })]
                     })
                 ]
             })]
