@@ -1,13 +1,13 @@
 {
-	"name": "gneorknof",
-	"displayName": "Gneorknof",
-	"version": "0.1.2",
+	"name": "gneurshk",
+	"displayName": "Gneurshk",
+	"version": "0.1.3",
 	"description": "An awesome language",
 	"categories": [
 		"Programming Languages"
 	],
 	"keywords": [
-		"Gneorknof"
+		"Gneurshk"
 	],
 	"bugs": {
 		"url": "https://github.com/ButterDebugger/gneurshk-lang/issues"
@@ -26,9 +26,9 @@
 	"contributes": {
 		"languages": [
 			{
-				"id": "gneorknof",
+				"id": "gneurshk",
 				"aliases": [
-					"gneorknof"
+					"gneurshk"
 				],
 				"extensions": [
 					".iv"
@@ -38,9 +38,9 @@
 		],
 		"grammars": [
 			{
-				"language": "gneorknof",
-				"scopeName": "source.gneorknof",
-				"path": "./syntaxes/gneorknof.tmLanguage.json"
+				"language": "gneurshk",
+				"scopeName": "source.gneurshk",
+				"path": "./syntaxes/gneurshk.tmLanguage.json"
 			}
 		]
 	},
