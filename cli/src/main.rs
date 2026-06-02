@@ -40,7 +40,7 @@ pub const CLAP_STYLING: Styles = Styles::styled()
     );
 
 fn main() {
-    let matches = Command::new("pacman")
+    let matches = Command::new("gneurshk")
         .about(format!(
             "{} is an awesome programming language",
             "Gneurshk".bright_magenta()
