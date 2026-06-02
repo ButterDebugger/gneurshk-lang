@@ -22,6 +22,9 @@ pub enum SematicError {
 
     #[error("No type or value provided for variable declaration")]
     NoTypeOrValueProvided,
+
+    #[error("Variable '{0}' is not able to be modified")]
+    VariableUnmodifiable(String),
 }
 
 #[derive(Error, Debug, Clone, PartialEq, Eq, Hash)]

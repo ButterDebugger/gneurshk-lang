@@ -51,7 +51,7 @@ impl<'ctx> Codegen<'ctx> {
         let parent = self.scope.to_owned();
         let new_scope = Scope::new(Some(parent));
 
-        self.scope = Box::new(new_scope);
+        *self.scope = new_scope;
     }
 
     pub fn exit_scope(&mut self) {

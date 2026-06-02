@@ -1,8 +1,6 @@
 use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
 use crate::{
-    Annotation, FunctionParam,
-    block::parse_block,
-    types::{DataType, parse_type},
+    Annotation, FunctionDeclaration, FunctionParam, block::parse_block, types::{DataType, parse_type}
 };
 use gneurshk_lexer::tokens::Token;
 
@@ -149,20 +147,21 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
     // Parse the body of the function
     let block = parse_block(tokens)?;
 
-    Ok(Stmt::FunctionDeclaration {
+    Ok(Stmt::FunctionDeclaration(FunctionDeclaration {
         annotations,
         name: name.to_string(),
         params: parameters,
         return_type,
         block: Box::new(block),
-    })
+    }))
 }
 
 #[cfg(test)]
 mod tests {
     use crate::types::DataType;
     use crate::{
-        Annotation, Block, Expression, FloatLit, FunctionParam, IntegerLit, Program, Stmt, parse,
+        Annotation, Block, Expression, FloatLit, FunctionDeclaration, FunctionParam, IntegerLit,
+        Program, Stmt, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -196,7 +195,7 @@ mod tests {
             stmt,
             Program {
                 imports: vec![],
-                functions: vec![Stmt::FunctionDeclaration {
+                functions: vec![FunctionDeclaration {
                     annotations: vec![],
                     name: "apple".to_string(),
                     params: vec![],
@@ -226,7 +225,7 @@ mod tests {
             stmt,
             Program {
                 imports: vec![],
-                functions: vec![Stmt::FunctionDeclaration {
+                functions: vec![FunctionDeclaration {
                     annotations: vec![],
                     name: "pear".to_string(),
                     params: vec![],
@@ -256,7 +255,7 @@ mod tests {
             stmt,
             Program {
                 imports: vec![],
-                functions: vec![Stmt::FunctionDeclaration {
+                functions: vec![FunctionDeclaration {
                     annotations: vec![],
                     name: "potato".to_string(),
                     params: vec![
@@ -289,7 +288,7 @@ mod tests {
             stmt,
             Program {
                 imports: vec![],
-                functions: vec![Stmt::FunctionDeclaration {
+                functions: vec![FunctionDeclaration {
                     annotations: vec![],
                     name: "vegetable".to_string(),
                     params: vec![
@@ -328,7 +327,7 @@ mod tests {
             stmt,
             Program {
                 imports: vec![],
-                functions: vec![Stmt::FunctionDeclaration {
+                functions: vec![FunctionDeclaration {
                     annotations: vec![Annotation {
                         name: "test".to_string(),
                         args: vec![],
@@ -351,7 +350,7 @@ mod tests {
             stmt,
             Program {
                 imports: vec![],
-                functions: vec![Stmt::FunctionDeclaration {
+                functions: vec![FunctionDeclaration {
                     annotations: vec![
                         Annotation {
                             name: "test".to_string(),
@@ -393,7 +392,7 @@ mod tests {
             stmt,
             Program {
                 imports: vec![],
-                functions: vec![Stmt::FunctionDeclaration {
+                functions: vec![FunctionDeclaration {
                     annotations: vec![],
                     name: "mutable_params".to_string(),
                     params: vec![

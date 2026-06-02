@@ -1,7 +1,7 @@
 use crate::codegen::scope::Scope;
 use gneurshk_parser::{
-    BinaryExpression, BooleanLit, Expression, FloatLit, IfStatement, IntegerLit, Program, Stmt,
-    StringLit, UnaryExpression,
+    Assignment, BinaryExpression, BooleanLit, Expression, FloatLit, FunctionDeclaration,
+    IfStatement, IntegerLit, Program, Stmt, StringLit, UnaryExpression,
 };
 use inkwell::AddressSpace;
 use inkwell::builder::Builder;
@@ -10,6 +10,7 @@ use inkwell::module::Module;
 use inkwell::values::BasicValueEnum;
 use std::collections::HashMap;
 
+mod assignment;
 mod binary_expression;
 mod block;
 mod declaration;
@@ -64,18 +65,9 @@ impl<'ctx> Codegen<'ctx> {
         let mut functions = HashMap::new();
 
         for function in program.functions.clone() {
-            if let Stmt::FunctionDeclaration {
-                annotations: _,
-                name,
-                params,
-                return_type: _,
-                block: _,
-            } = function
-            {
-                functions.insert(name.clone(), self.build_function_declaration(name, params));
-            } else {
-                panic!("Expected function statement");
-            }
+            let FunctionDeclaration { name, params, .. } = function;
+
+            functions.insert(name.clone(), self.build_function_declaration(name, params));
         }
 
         // Build main function
@@ -83,20 +75,17 @@ impl<'ctx> Codegen<'ctx> {
 
         // Build all functions
         for function in program.functions {
-            if let Stmt::FunctionDeclaration {
-                annotations: _,
+            let FunctionDeclaration {
                 name,
                 params,
                 return_type,
                 block,
-            } = function
-            {
-                let function = functions.remove(&name).unwrap();
+                ..
+            } = function;
 
-                self.build_function_body(function, params, return_type, *block);
-            } else {
-                panic!("Expected function statement");
-            }
+            let function = functions.remove(&name).unwrap();
+
+            self.build_function_body(function, params, return_type, *block);
         }
     }
 
@@ -121,25 +110,21 @@ impl<'ctx> Codegen<'ctx> {
 
     fn build_stmt(&mut self, stmt: Stmt) -> Option<BasicValueEnum<'ctx>> {
         match stmt {
-            Stmt::Declaration {
-                mutable: _,
-                name,
-                data_type: _,
-                value,
-            } => self.build_declaration(name, value),
+            Stmt::Declaration { name, value, .. } => self.build_declaration(name, value),
+            Stmt::Assignment(Assignment { member, value }) => self.build_assignment(member, value),
             Stmt::Block(block) => self.build_block(block),
             Stmt::IfStatement(IfStatement {
                 condition,
                 if_block: block,
                 else_statement: else_block,
             }) => self.build_if_statement(*condition, *block, else_block.map(|b| *b)),
-            Stmt::FunctionDeclaration {
-                annotations: _,
+            Stmt::FunctionDeclaration(FunctionDeclaration {
                 name,
                 params,
                 return_type,
                 block,
-            } => self.build_function(name, params, return_type, *block),
+                ..
+            }) => self.build_function(name, params, return_type, *block),
             Stmt::Identifier(identifier) => self.build_identifier(identifier),
             Stmt::FunctionCall(function_call) => self.build_function_call(function_call),
             Stmt::MemberAccess(_) => todo!(),

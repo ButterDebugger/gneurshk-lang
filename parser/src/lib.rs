@@ -1,3 +1,4 @@
+use crate::assignments::parse_assignment;
 use crate::block::parse_block;
 use crate::expressions::parse_expression;
 use crate::ifs::parse_if_statement;
@@ -10,6 +11,7 @@ use gneurshk_lexer::TokenStream;
 use gneurshk_lexer::tokens::Token;
 use std::ops::Range;
 
+mod assignments;
 mod block;
 mod expressions;
 mod funcs;
@@ -30,7 +32,7 @@ pub type ProgramResult = Result<Program, &'static str>;
 #[derive(Debug, PartialEq, Clone)]
 pub struct Program {
     pub imports: Vec<ImportStmt>,
-    pub functions: Vec<Stmt>,
+    pub functions: Vec<FunctionDeclaration>,
     pub body: Vec<Stmt>,
 }
 
@@ -239,8 +241,17 @@ pub struct UnaryExpression {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Assignment {
-    pub name: String,
+    pub member: MemberExpressionBase,
     pub value: Expression,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct FunctionDeclaration {
+    pub annotations: Vec<Annotation>,
+    pub name: String,
+    pub params: Vec<FunctionParam>,
+    pub return_type: DataType,
+    pub block: Box<Block>,
 }
 
 #[allow(dead_code)]
@@ -255,13 +266,7 @@ pub enum Stmt {
     },
     Block(Block),
     IfStatement(IfStatement),
-    FunctionDeclaration {
-        annotations: Vec<Annotation>,
-        name: String,
-        params: Vec<FunctionParam>,
-        return_type: DataType,
-        block: Box<Block>,
-    },
+    FunctionDeclaration(FunctionDeclaration),
     BinaryExpression(BinaryExpression),
     UnaryExpression(UnaryExpression),
     Identifier(Identifier),
@@ -301,8 +306,8 @@ pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
                 Stmt::Import(import) => {
                     imports.push(import);
                 }
-                Stmt::FunctionDeclaration { .. } => {
-                    functions.push(stmt);
+                Stmt::FunctionDeclaration(func) => {
+                    functions.push(func);
                 }
                 _ => {
                     body.push(stmt);
@@ -335,9 +340,25 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
         | Token::Boolean(_)
         | Token::String(_)
         | Token::OpenParen
-        | Token::Word(_)
         | Token::Minus
         | Token::Not => Ok(parse_expression(tokens)?.into()),
+        Token::Word(_) => {
+            let mut lookahead_tokens = tokens.clone();
+
+            lookahead_tokens.next(); // Consume the word token
+
+            // Check if its an assignment
+            match lookahead_tokens.peek() {
+                Some((Token::Equal, _))
+                | Some((Token::PlusEqual, _))
+                | Some((Token::MinusEqual, _))
+                | Some((Token::MultiplyEqual, _))
+                | Some((Token::DivideEqual, _))
+                | Some((Token::ModulusEqual, _)) => parse_assignment(tokens),
+                // Otherwise, its an expression
+                _ => Ok(parse_expression(tokens)?.into()),
+            }
+        }
         Token::Annotation(_) | Token::Func => parse_func_declaration(tokens),
         Token::Import => parse_import(tokens),
         Token::OpenBrace => Ok(Stmt::Block(parse_block(tokens)?)),

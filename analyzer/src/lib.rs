@@ -3,10 +3,12 @@ use crate::{
     scope::{Function, Scope},
 };
 use gneurshk_parser::{
-    BinaryExpression, Expression, FunctionCall, Identifier, Program, Stmt, types::DataType,
+    Assignment, BinaryExpression, Expression, FunctionCall, FunctionDeclaration, Identifier,
+    Program, Stmt, types::DataType,
 };
 use std::collections::HashMap;
 
+mod assignment;
 mod binary_expression;
 mod declaration;
 mod errors;
@@ -39,23 +41,20 @@ impl Analyzer {
 
     pub fn analyze(&mut self, program: Program) -> Result<(), String> {
         for function in program.functions {
-            match function {
-                Stmt::FunctionDeclaration {
-                    name,
-                    params,
+            let FunctionDeclaration {
+                name,
+                params,
+                return_type,
+                ..
+            } = function;
+
+            self.functions.insert(
+                name,
+                Function {
                     return_type,
-                    ..
-                } => {
-                    self.functions.insert(
-                        name,
-                        Function {
-                            return_type,
-                            params,
-                        },
-                    );
-                }
-                _ => return Err("Expected function declaration".to_string()),
-            }
+                    params,
+                },
+            );
         }
 
         for statement in program.body {
@@ -92,6 +91,9 @@ impl Analyzer {
                 data_type,
                 value,
             } => self.analyze_declaration(mutable, name, data_type, value),
+            Stmt::Assignment(Assignment { member, value }) => {
+                self.analyze_assignment(member, value)
+            }
             _ => {
                 println!("statement: {statement:?}");
 
