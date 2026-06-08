@@ -1,4 +1,5 @@
 use crate::output::object::create_object_file;
+use anyhow::{Result, anyhow};
 use gneurshk_parser::Program;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -7,7 +8,7 @@ use std::process::Command;
 ///
 /// # Returns
 /// The path to the executable
-pub fn compile_to_executable(ast: Program, output_path: &Path) -> Result<PathBuf, String> {
+pub fn compile_to_executable(ast: Program, output_path: &Path) -> Result<PathBuf> {
     // First create an object file
     let obj_path = create_object_file(ast, output_path)?;
 
@@ -17,16 +18,16 @@ pub fn compile_to_executable(ast: Program, output_path: &Path) -> Result<PathBuf
         .arg("-o")
         .arg(output_path)
         .output()
-        .map_err(|e| format!("Failed to run linker: {}", e))?;
+        .map_err(|e| anyhow!("Failed to run linker: {}", e))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
-        return Err(format!("Linker failed: {}", stderr));
+        return Err(anyhow!("Linker failed: {}", stderr));
     }
 
     // Clean up the object file
     std::fs::remove_file(&obj_path)
-        .map_err(|e| format!("Failed to clean up object file: {}", e))?;
+        .map_err(|e| anyhow!("Failed to clean up object file: {}", e))?;
 
     // Add the correct extension for the executable
     #[cfg(windows)]
@@ -41,15 +42,16 @@ pub fn compile_to_executable(ast: Program, output_path: &Path) -> Result<PathBuf
 #[cfg(test)]
 mod tests {
     use crate::output::executable::compile_to_executable;
+    use anyhow::{Result, anyhow};
     use std::path::PathBuf;
 
-    fn compile_and_run(source: &str, output_name: &str) -> Result<String, String> {
+    fn compile_and_run(source: &str, output_name: &str) -> Result<String> {
         let output_path = PathBuf::from(format!("tests/{}", output_name));
         let output_path = output_path.as_path();
 
         // Create parent directory if it doesn't exist
         std::fs::create_dir_all(output_path.parent().unwrap())
-            .map_err(|e| format!("Failed to create parent directory: {}", e))?;
+            .map_err(|e| anyhow!("Failed to create parent directory: {}", e))?;
 
         // Compile the source code to an executable
         let executable_path = compile_to_executable(
@@ -62,11 +64,11 @@ mod tests {
 
         let output = std::process::Command::new(&path)
             .output()
-            .map_err(|e| format!("Failed to run executable: {}", e))?;
+            .map_err(|e| anyhow!("Failed to run executable: {}", e))?;
 
         // Return an error if the executable failed
         if !output.status.success() {
-            return Err(format!("Executable failed with status: {}", output.status));
+            return Err(anyhow!("Executable failed with status: {}", output.status));
         }
 
         // Return the output
@@ -75,7 +77,11 @@ mod tests {
 
     #[test]
     fn hello_world() {
-        let source = r#"println("Hello, World!")"#;
+        let source = r#"
+            func main() {
+                println("Hello, World!")
+            }
+        "#;
 
         let output = compile_and_run(source, "hello_world").unwrap();
 
@@ -84,7 +90,11 @@ mod tests {
 
     #[test]
     fn arithmetic() {
-        let source = r#"println(1 + 3 * 4)"#;
+        let source = r#"
+            func main() {
+                println(1 + 3 * 4)
+            }
+        "#;
 
         let output = compile_and_run(source, "arithmetic").unwrap();
 
@@ -98,7 +108,9 @@ mod tests {
                 return a + b
             }
 
-            println(add(2, 3))
+            func main() {
+                println(add(2, 3))
+            }
         "#;
 
         let output = compile_and_run(source, "add_two_numbers_with_function").unwrap();
@@ -109,9 +121,11 @@ mod tests {
     #[test]
     fn multiple_println_statements() {
         let source = r#"
-            println(1)
-            println(2)
-            println(3)
+            func main() {
+                println(1)
+                println(2)
+                println(3)
+            }
         "#;
 
         let output = compile_and_run(source, "multiple_println_statements").unwrap();
@@ -121,7 +135,11 @@ mod tests {
 
     #[test]
     fn print_multiple_values() {
-        let source = r#"println(1, 2, 3)"#;
+        let source = r#"
+            func main() {
+                println(1, 2, 3)
+            }
+        "#;
 
         let output = compile_and_run(source, "print_multiple_values").unwrap();
 
@@ -131,8 +149,10 @@ mod tests {
     #[test]
     fn if_statement() {
         let source = r#"
-            if true {
-                println("if")
+            func main() {
+                if true {
+                    println("if")
+                }
             }
         "#;
 
@@ -144,10 +164,12 @@ mod tests {
     #[test]
     fn if_else_statement() {
         let source = r#"
-            if true {
-                println("if")
-            } else {
-                println("else")
+            func main() {
+                if true {
+                    println("if")
+                } else {
+                    println("else")
+                }
             }
         "#;
 
@@ -159,11 +181,13 @@ mod tests {
     #[test]
     fn pass_if_finally_statement() {
         let source = r#"
-            if false {
-                println("if")
-            }
+            func main() {
+                if false {
+                    println("if")
+                }
 
-            println("finally")
+                println("finally")
+            }
         "#;
 
         let output = compile_and_run(source, "pass_if_finally_statement").unwrap();
@@ -174,11 +198,13 @@ mod tests {
     #[test]
     fn if_finally_statement() {
         let source = r#"
-            if true {
-                println("if")
-            }
+            func main() {
+                if true {
+                    println("if")
+                }
 
-            println("finally")
+                println("finally")
+            }
         "#;
 
         let output = compile_and_run(source, "if_finally_statement").unwrap();
@@ -189,13 +215,15 @@ mod tests {
     #[test]
     fn if_else_finally_statement() {
         let source = r#"
-            if false {
-                println("if")
-            } else {
-                println("else")
-            }
+            func main() {
+                if false {
+                    println("if")
+                } else {
+                    println("else")
+                }
 
-            println("finally")
+                println("finally")
+            }
         "#;
 
         let output = compile_and_run(source, "if_else_finally_statement").unwrap();
@@ -214,7 +242,9 @@ mod tests {
                 return fib(n - 1) + fib(n - 2)
             }
 
-            println(fib(42))
+            func main() {
+                println(fib(42))
+            }
         "#;
 
         let output = compile_and_run(source, "fibonacci").unwrap();
@@ -233,7 +263,9 @@ mod tests {
                 return n * factorial(n - 1)
             }
 
-            println(factorial(12))
+            func main() {
+                println(factorial(12))
+            }
         "#;
 
         let output = compile_and_run(source, "factorial").unwrap();

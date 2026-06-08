@@ -1,12 +1,13 @@
-use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
+use super::{Stmt, TokenStream, expressions::parse_expression};
 use crate::{IfStatement, block::parse_block};
+use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
-pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
+pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<Stmt> {
     // Consume the If token
     match tokens.next() {
         Some((Token::If, _)) => {}
-        _ => return Err("Expected if statement"),
+        _ => return Err(anyhow!("Expected if statement")),
     }
 
     // Parse the condition
@@ -39,16 +40,14 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> StatementResult {
 #[cfg(test)]
 mod tests {
     use crate::{
-        BinaryExpression, BinaryOperator, Block, Expression, IfStatement, IntegerLit, Program,
-        Stmt, parse,
+        BinaryExpression, BinaryOperator, Block, Expression, FunctionDeclaration, IfStatement,
+        IntegerLit, Program, Stmt, parse, types::DataType,
     };
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
     fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
-
-        println!("tokens {tokens:?}");
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,
@@ -59,341 +58,422 @@ mod tests {
     #[test]
     fn large_indented_if_block() {
         let stmt = lex_then_parse(
-            r"
-if 10 + 10 {
-    var apple = 1
+            r#"
+func main() {
+
+    if 10 + 10 {
+        var apple = 1
 
 
 
+        var green = 3
+    }
+    const borg = 5
 
-
-
-
-
-    var green = 3
 }
-const borg = 5
-",
-        )
-        .body;
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![
-                Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
-                        left: Box::new(Expression::Integer(IntegerLit {
-                            value: 10,
-                            span: 4..6
-                        })),
-                        right: Box::new(Expression::Integer(IntegerLit {
-                            value: 10,
-                            span: 9..11
-                        })),
-                        operator: BinaryOperator::Add,
-                    })),
-                    if_block: Box::new(Block {
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
                         body: vec![
+                            Stmt::IfStatement(IfStatement {
+                                condition: Box::new(Expression::BinaryExpression(
+                                    BinaryExpression {
+                                        left: Box::new(Expression::Integer(IntegerLit {
+                                            value: 10,
+                                            span: 23..25
+                                        })),
+                                        right: Box::new(Expression::Integer(IntegerLit {
+                                            value: 10,
+                                            span: 28..30
+                                        })),
+                                        operator: BinaryOperator::Add,
+                                    }
+                                )),
+                                if_block: Box::new(Block {
+                                    body: vec![
+                                        Stmt::Declaration {
+                                            mutable: true,
+                                            name: "apple".to_string(),
+                                            data_type: None,
+                                            value: Some(Expression::Integer(IntegerLit {
+                                                value: 1,
+                                                span: 53..54
+                                            })),
+                                        },
+                                        Stmt::Declaration {
+                                            mutable: true,
+                                            name: "green".to_string(),
+                                            data_type: None,
+                                            value: Some(Expression::Integer(IntegerLit {
+                                                value: 3,
+                                                span: 78..79
+                                            })),
+                                        },
+                                    ],
+                                }),
+                                else_statement: None,
+                            }),
                             Stmt::Declaration {
-                                mutable: true,
-                                name: "apple".to_string(),
+                                mutable: false,
+                                name: "borg".to_string(),
                                 data_type: None,
                                 value: Some(Expression::Integer(IntegerLit {
-                                    value: 1,
-                                    span: 30..31
-                                })),
-                            },
-                            Stmt::Declaration {
-                                mutable: true,
-                                name: "green".to_string(),
-                                data_type: None,
-                                value: Some(Expression::Integer(IntegerLit {
-                                    value: 3,
-                                    span: 56..57
+                                    value: 5,
+                                    span: 103..104
                                 })),
                             },
                         ],
                     }),
-                    else_statement: None,
-                }),
-                Stmt::Declaration {
-                    mutable: false,
-                    name: "borg".to_string(),
-                    data_type: None,
-                    value: Some(Expression::Integer(IntegerLit {
-                        value: 5,
-                        span: 73..74
-                    })),
-                },
-            ]
+                }],
+            }
         );
     }
 
     #[test]
     fn nested_if_blocks() {
         let stmt = lex_then_parse(
-            r"
-if 10 + 10 {
-    if 20 + 20 {
-        var apple = 1
+            r#"
+func main() {
+
+    if 10 + 10 {
+        if 20 + 20 {
+            var apple = 1
+        }
+        if 30 + 30 {
+            var green = 3
+        }
     }
-    if 30 + 30 {
-        var green = 3
-    }
+    const borg = 5
+
 }
-const borg = 5
-",
-        )
-        .body;
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![
-                Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
-                        left: Box::new(Expression::Integer(IntegerLit {
-                            value: 10,
-                            span: 4..6
-                        })),
-                        right: Box::new(Expression::Integer(IntegerLit {
-                            value: 10,
-                            span: 9..11
-                        })),
-                        operator: BinaryOperator::Add,
-                    })),
-                    if_block: Box::new(Block {
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
                         body: vec![
                             Stmt::IfStatement(IfStatement {
                                 condition: Box::new(Expression::BinaryExpression(
                                     BinaryExpression {
                                         left: Box::new(Expression::Integer(IntegerLit {
-                                            value: 20,
-                                            span: 21..23
+                                            value: 10,
+                                            span: 23..25
                                         })),
                                         right: Box::new(Expression::Integer(IntegerLit {
-                                            value: 20,
-                                            span: 26..28
+                                            value: 10,
+                                            span: 28..30
                                         })),
                                         operator: BinaryOperator::Add,
                                     }
                                 )),
                                 if_block: Box::new(Block {
-                                    body: vec![Stmt::Declaration {
-                                        mutable: true,
-                                        name: "apple".to_string(),
-                                        data_type: None,
-                                        value: Some(Expression::Integer(IntegerLit {
-                                            value: 1,
-                                            span: 51..52
-                                        })),
-                                    }]
+                                    body: vec![
+                                        Stmt::IfStatement(IfStatement {
+                                            condition: Box::new(Expression::BinaryExpression(
+                                                BinaryExpression {
+                                                    left: Box::new(Expression::Integer(
+                                                        IntegerLit {
+                                                            value: 20,
+                                                            span: 44..46
+                                                        }
+                                                    )),
+                                                    right: Box::new(Expression::Integer(
+                                                        IntegerLit {
+                                                            value: 20,
+                                                            span: 49..51
+                                                        }
+                                                    )),
+                                                    operator: BinaryOperator::Add,
+                                                }
+                                            )),
+                                            if_block: Box::new(Block {
+                                                body: vec![Stmt::Declaration {
+                                                    mutable: true,
+                                                    name: "apple".to_string(),
+                                                    data_type: None,
+                                                    value: Some(Expression::Integer(IntegerLit {
+                                                        value: 1,
+                                                        span: 78..79
+                                                    })),
+                                                }]
+                                            }),
+                                            else_statement: None,
+                                        }),
+                                        Stmt::IfStatement(IfStatement {
+                                            condition: Box::new(Expression::BinaryExpression(
+                                                BinaryExpression {
+                                                    left: Box::new(Expression::Integer(
+                                                        IntegerLit {
+                                                            value: 30,
+                                                            span: 101..103
+                                                        }
+                                                    )),
+                                                    right: Box::new(Expression::Integer(
+                                                        IntegerLit {
+                                                            value: 30,
+                                                            span: 106..108
+                                                        }
+                                                    )),
+                                                    operator: BinaryOperator::Add,
+                                                }
+                                            )),
+                                            if_block: Box::new(Block {
+                                                body: vec![Stmt::Declaration {
+                                                    mutable: true,
+                                                    name: "green".to_string(),
+                                                    data_type: None,
+                                                    value: Some(Expression::Integer(IntegerLit {
+                                                        value: 3,
+                                                        span: 135..136
+                                                    })),
+                                                }]
+                                            }),
+                                            else_statement: None,
+                                        })
+                                    ]
                                 }),
                                 else_statement: None,
                             }),
-                            Stmt::IfStatement(IfStatement {
-                                condition: Box::new(Expression::BinaryExpression(
-                                    BinaryExpression {
-                                        left: Box::new(Expression::Integer(IntegerLit {
-                                            value: 30,
-                                            span: 66..68
-                                        })),
-                                        right: Box::new(Expression::Integer(IntegerLit {
-                                            value: 30,
-                                            span: 71..73
-                                        })),
-                                        operator: BinaryOperator::Add,
-                                    }
-                                )),
-                                if_block: Box::new(Block {
-                                    body: vec![Stmt::Declaration {
-                                        mutable: true,
-                                        name: "green".to_string(),
-                                        data_type: None,
-                                        value: Some(Expression::Integer(IntegerLit {
-                                            value: 3,
-                                            span: 96..97
-                                        })),
-                                    }]
-                                }),
-                                else_statement: None,
-                            })
-                        ]
+                            Stmt::Declaration {
+                                mutable: false,
+                                name: "borg".to_string(),
+                                data_type: None,
+                                value: Some(Expression::Integer(IntegerLit {
+                                    value: 5,
+                                    span: 170..171
+                                })),
+                            },
+                        ],
                     }),
-                    else_statement: None,
-                }),
-                Stmt::Declaration {
-                    mutable: false,
-                    name: "borg".to_string(),
-                    data_type: None,
-                    value: Some(Expression::Integer(IntegerLit {
-                        value: 5,
-                        span: 119..120
-                    })),
-                },
-            ]
+                }],
+            }
         );
     }
     #[test]
     fn else_block() {
         let stmt = lex_then_parse(
-            r"
-if 10 + 10 {
-    1
-} else {
-    2
+            r#"
+func main() {
+
+    if 10 + 10 {
+        1
+    } else {
+        2
+    }
+
 }
-",
-        )
-        .body;
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::IfStatement(IfStatement {
-                condition: Box::new(Expression::BinaryExpression(BinaryExpression {
-                    left: Box::new(Expression::Integer(IntegerLit {
-                        value: 10,
-                        span: 4..6
-                    })),
-                    right: Box::new(Expression::Integer(IntegerLit {
-                        value: 10,
-                        span: 9..11
-                    })),
-                    operator: BinaryOperator::Add,
-                })),
-                if_block: Box::new(Block {
-                    body: vec![Stmt::Integer(IntegerLit {
-                        value: 1,
-                        span: 18..19
-                    })]
-                }),
-                else_statement: Some(Box::new(Stmt::Block(Block {
-                    body: vec![Stmt::Integer(IntegerLit {
-                        value: 2,
-                        span: 33..34
-                    })]
-                }))),
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::IfStatement(IfStatement {
+                            condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                                left: Box::new(Expression::Integer(IntegerLit {
+                                    value: 10,
+                                    span: 23..25
+                                })),
+                                right: Box::new(Expression::Integer(IntegerLit {
+                                    value: 10,
+                                    span: 28..30
+                                })),
+                                operator: BinaryOperator::Add,
+                            })),
+                            if_block: Box::new(Block {
+                                body: vec![Stmt::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 41..42
+                                })]
+                            }),
+                            else_statement: Some(Box::new(Stmt::Block(Block {
+                                body: vec![Stmt::Integer(IntegerLit {
+                                    value: 2,
+                                    span: 64..65
+                                })]
+                            }))),
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn else_if_block() {
         let stmt = lex_then_parse(
-            r"
-if 10 + 10 {
-    1
-} else if 20 + 20 {
-    2
+            r#"
+func main() {
+
+    if 10 + 10 {
+        1
+    } else if 20 + 20 {
+        2
+    }
+
 }
-",
-        )
-        .body;
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::IfStatement(IfStatement {
-                condition: Box::new(Expression::BinaryExpression(BinaryExpression {
-                    left: Box::new(Expression::Integer(IntegerLit {
-                        value: 10,
-                        span: 4..6
-                    })),
-                    right: Box::new(Expression::Integer(IntegerLit {
-                        value: 10,
-                        span: 9..11
-                    })),
-                    operator: BinaryOperator::Add,
-                })),
-                if_block: Box::new(Block {
-                    body: vec![Stmt::Integer(IntegerLit {
-                        value: 1,
-                        span: 18..19
-                    })]
-                }),
-                else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
-                        left: Box::new(Expression::Integer(IntegerLit {
-                            value: 20,
-                            span: 30..32
-                        })),
-                        right: Box::new(Expression::Integer(IntegerLit {
-                            value: 20,
-                            span: 35..37
-                        })),
-                        operator: BinaryOperator::Add,
-                    })),
-                    if_block: Box::new(Block {
-                        body: vec![Stmt::Integer(IntegerLit {
-                            value: 2,
-                            span: 44..45
-                        })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::IfStatement(IfStatement {
+                            condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                                left: Box::new(Expression::Integer(IntegerLit {
+                                    value: 10,
+                                    span: 23..25
+                                })),
+                                right: Box::new(Expression::Integer(IntegerLit {
+                                    value: 10,
+                                    span: 28..30
+                                })),
+                                operator: BinaryOperator::Add,
+                            })),
+                            if_block: Box::new(Block {
+                                body: vec![Stmt::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 41..42
+                                })]
+                            }),
+                            else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
+                                condition: Box::new(Expression::BinaryExpression(
+                                    BinaryExpression {
+                                        left: Box::new(Expression::Integer(IntegerLit {
+                                            value: 20,
+                                            span: 57..59
+                                        })),
+                                        right: Box::new(Expression::Integer(IntegerLit {
+                                            value: 20,
+                                            span: 62..64
+                                        })),
+                                        operator: BinaryOperator::Add,
+                                    }
+                                )),
+                                if_block: Box::new(Block {
+                                    body: vec![Stmt::Integer(IntegerLit {
+                                        value: 2,
+                                        span: 75..76
+                                    })]
+                                }),
+                                else_statement: None,
+                            }))),
+                        })],
                     }),
-                    else_statement: None,
-                }))),
-            })]
+                }],
+            }
         );
     }
 
     #[test]
     fn else_if_else_block() {
         let stmt = lex_then_parse(
-            r"
-if 10 + 10 {
-    1
-} else if 20 + 20 {
-    2
-} else {
-    3
+            r#"
+func main() {
+
+    if 10 + 10 {
+        1
+    } else if 20 + 20 {
+        2
+    } else {
+        3
+    }
+
 }
-",
-        )
-        .body;
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::IfStatement(IfStatement {
-                condition: Box::new(Expression::BinaryExpression(BinaryExpression {
-                    left: Box::new(Expression::Integer(IntegerLit {
-                        value: 10,
-                        span: 4..6
-                    })),
-                    right: Box::new(Expression::Integer(IntegerLit {
-                        value: 10,
-                        span: 9..11
-                    })),
-                    operator: BinaryOperator::Add,
-                })),
-                if_block: Box::new(Block {
-                    body: vec![Stmt::Integer(IntegerLit {
-                        value: 1,
-                        span: 18..19
-                    })]
-                }),
-                else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
-                    condition: Box::new(Expression::BinaryExpression(BinaryExpression {
-                        left: Box::new(Expression::Integer(IntegerLit {
-                            value: 20,
-                            span: 30..32
-                        })),
-                        right: Box::new(Expression::Integer(IntegerLit {
-                            value: 20,
-                            span: 35..37
-                        })),
-                        operator: BinaryOperator::Add,
-                    })),
-                    if_block: Box::new(Block {
-                        body: vec![Stmt::Integer(IntegerLit {
-                            value: 2,
-                            span: 44..45
-                        })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::IfStatement(IfStatement {
+                            condition: Box::new(Expression::BinaryExpression(BinaryExpression {
+                                left: Box::new(Expression::Integer(IntegerLit {
+                                    value: 10,
+                                    span: 23..25
+                                })),
+                                right: Box::new(Expression::Integer(IntegerLit {
+                                    value: 10,
+                                    span: 28..30
+                                })),
+                                operator: BinaryOperator::Add,
+                            })),
+                            if_block: Box::new(Block {
+                                body: vec![Stmt::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 41..42
+                                })]
+                            }),
+                            else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
+                                condition: Box::new(Expression::BinaryExpression(
+                                    BinaryExpression {
+                                        left: Box::new(Expression::Integer(IntegerLit {
+                                            value: 20,
+                                            span: 57..59
+                                        })),
+                                        right: Box::new(Expression::Integer(IntegerLit {
+                                            value: 20,
+                                            span: 62..64
+                                        })),
+                                        operator: BinaryOperator::Add,
+                                    }
+                                )),
+                                if_block: Box::new(Block {
+                                    body: vec![Stmt::Integer(IntegerLit {
+                                        value: 2,
+                                        span: 75..76
+                                    })]
+                                }),
+                                else_statement: Some(Box::new(Stmt::Block(Block {
+                                    body: vec![Stmt::Integer(IntegerLit {
+                                        value: 3,
+                                        span: 98..99
+                                    })]
+                                }))),
+                            }))),
+                        })],
                     }),
-                    else_statement: Some(Box::new(Stmt::Block(Block {
-                        body: vec![Stmt::Integer(IntegerLit {
-                            value: 3,
-                            span: 59..60
-                        })]
-                    }))),
-                }))),
-            })]
+                }],
+            }
         );
     }
 }

@@ -1,3 +1,4 @@
+use anyhow::{Result, anyhow};
 use gneurshk_lexer::{TokenStream, tokens::Token};
 use std::fmt::Display;
 
@@ -25,7 +26,7 @@ impl Display for DataType {
     }
 }
 
-pub(crate) fn parse_type(tokens: &mut TokenStream) -> Result<DataType, &'static str> {
+pub(crate) fn parse_type(tokens: &mut TokenStream) -> Result<DataType> {
     if let Some((Token::Word(name), _)) = tokens.next() {
         match name.as_str() {
             "Int32" => Ok(DataType::Int32),
@@ -36,6 +37,6 @@ pub(crate) fn parse_type(tokens: &mut TokenStream) -> Result<DataType, &'static 
             _ => Ok(DataType::Custom(name)),
         }
     } else {
-        Err("Expected a type")
+        Err(anyhow!("Expected a type name"))
     }
 }

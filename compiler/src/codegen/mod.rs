@@ -1,4 +1,5 @@
 use crate::codegen::scope::Scope;
+use anyhow::{Result, anyhow};
 use gneurshk_parser::{
     Assignment, BinaryExpression, BooleanLit, Expression, FloatLit, FunctionDeclaration,
     IfStatement, IntegerLit, Program, Stmt, StringLit, UnaryExpression,
@@ -60,8 +61,8 @@ impl<'ctx> Codegen<'ctx> {
         &self.module
     }
 
-    pub fn compile(&mut self, program: Program) {
-        // Prebuild all function declarations
+    pub fn compile(&mut self, program: Program) -> Result<()> {
+        // Prebuild all function declarations so they can reference each other
         let mut functions = HashMap::new();
 
         for function in program.functions.clone() {
@@ -70,10 +71,14 @@ impl<'ctx> Codegen<'ctx> {
             functions.insert(name.clone(), self.build_function_declaration(name, params));
         }
 
-        // Build main function
-        self.build_main_function(program.body);
+        // Check if the program has an entry point
+        if !functions.contains_key("main") {
+            return Err(anyhow!(
+                "No program entry point found. Please define a main function."
+            ));
+        }
 
-        // Build all functions
+        // Build all function bodies
         for function in program.functions {
             let FunctionDeclaration {
                 name,
@@ -87,25 +92,8 @@ impl<'ctx> Codegen<'ctx> {
 
             self.build_function_body(function, params, return_type, *block);
         }
-    }
 
-    fn build_main_function(&mut self, body: Vec<Stmt>) {
-        // Create main function
-        let i32_type = self.context.i32_type();
-        let main_type = i32_type.fn_type(&[], false);
-        let main_function = self.module.add_function("main", main_type, None);
-        let basic_block = self.context.append_basic_block(main_function, "entry");
-
-        self.builder.position_at_end(basic_block);
-
-        // Build the main function body
-        for stmt in body {
-            self.build_stmt(stmt);
-        }
-
-        // Return 0 from main
-        let zero = i32_type.const_int(0, false);
-        self.builder.build_return(Some(&zero)).unwrap();
+        Ok(())
     }
 
     fn build_stmt(&mut self, stmt: Stmt) -> Option<BasicValueEnum<'ctx>> {
@@ -118,13 +106,6 @@ impl<'ctx> Codegen<'ctx> {
                 if_block: block,
                 else_statement: else_block,
             }) => self.build_if_statement(*condition, *block, else_block.map(|b| *b)),
-            Stmt::FunctionDeclaration(FunctionDeclaration {
-                name,
-                params,
-                return_type,
-                block,
-                ..
-            }) => self.build_function(name, params, return_type, *block),
             Stmt::Identifier(identifier) => self.build_identifier(identifier),
             Stmt::FunctionCall(function_call) => self.build_function_call(function_call),
             Stmt::MemberAccess(_) => todo!(),
@@ -141,10 +122,6 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::String(StringLit { value, .. }) => self.build_global_string(value),
             Stmt::Boolean(BooleanLit { value, .. }) => self.build_boolean(value),
             Stmt::ReturnStatement { value } => self.build_return_statement(value),
-            _ => {
-                // TODO: Handle other statements
-                None
-            }
         }
     }
 

@@ -1,6 +1,8 @@
+use anyhow::{Result, anyhow};
 use logos::{Logos, Span, SpannedIter};
 use std::iter::Peekable;
 use tokens::Token;
+
 pub mod tokens;
 
 pub struct Scanner<'source> {
@@ -9,7 +11,7 @@ pub struct Scanner<'source> {
 }
 
 impl<'source> Scanner<'source> {
-    pub fn new(input: &'source str) -> Result<Self, String> {
+    pub fn new(input: &'source str) -> Result<Self> {
         let lexer = Token::lexer(input).spanned();
         let scanner = Scanner {
             lexer: lexer.clone(),
@@ -64,7 +66,7 @@ pub type TokenStream<'a> = Peekable<Scanner<'a>>;
 /// Takes a string and returns a peekable iterator of tokens
 /// # Panics
 /// Panics if there are any lexing errors
-pub fn lex(input: &str) -> Result<TokenStream<'_>, String> {
+pub fn lex(input: &str) -> Result<TokenStream<'_>> {
     // Create a lexer instance from the input
     // Panic ahead of time if there are any errors
     let scanner = Scanner::new(input)?;
@@ -74,7 +76,7 @@ pub fn lex(input: &str) -> Result<TokenStream<'_>, String> {
 }
 
 /// Formats a lexing error with source code context
-fn format_lexing_error(source: &str, span: logos::Span) -> String {
+fn format_lexing_error(source: &str, span: logos::Span) -> anyhow::Error {
     let lines: Vec<&str> = source.lines().collect();
     let mut line_start = 0;
     let mut line_number = 1;
@@ -93,7 +95,7 @@ fn format_lexing_error(source: &str, span: logos::Span) -> String {
     let error_line = lines.get(line_number - 1).unwrap_or(&"");
     let error_char = source.chars().nth(span.start).unwrap_or('?');
 
-    format!(
+    anyhow!(
         "Lexing error at line {}, column {}:\n\
          {}\n\
          {}^\n\

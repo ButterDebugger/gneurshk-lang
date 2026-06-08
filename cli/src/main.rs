@@ -1,3 +1,4 @@
+use anyhow::{Result, anyhow};
 use clap::{
     Arg, ArgAction, Command,
     builder::{
@@ -5,7 +6,7 @@ use clap::{
         styling::{AnsiColor, Color, Style},
     },
 };
-use colored::Colorize;
+use console::style;
 use gneurshk_analyzer::Analyzer;
 use gneurshk_compiler::output::{executable::compile_to_executable, ir::create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
@@ -43,7 +44,7 @@ fn main() {
     let matches = Command::new("gneurshk")
         .about(format!(
             "{} is an awesome programming language",
-            "Gneurshk".bright_magenta()
+            style("Gneurshk").magenta().bright()
         ))
         .version("0.1.0")
         .styles(CLAP_STYLING)
@@ -264,16 +265,19 @@ fn main() {
     }
 }
 
-fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<PathBuf, String> {
+fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<PathBuf> {
     // Analyze the program
     let ast = match analyze_program(input, pb.clone()) {
         Ok((ast, analyzer)) => {
             // Cancel the build if there are any semantic errors
             if !analyzer.errors.is_empty() {
-                return Err(format!("{:?}", analyzer.errors));
+                return Err(anyhow!("{:?}", analyzer.errors));
             }
 
-            // TODO: Print warnings if there are any
+            // Print the warnings
+            for warning in analyzer.warnings {
+                pb.println(format!("Warning: {warning}"));
+            }
 
             // Return the AST
             ast
@@ -342,7 +346,7 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
 
     watcher.watch(path, RecursiveMode::Recursive)?;
 
-    println!("{} Process has started.", "Watcher".bright_green());
+    println!("{} Process has started.", style("Watcher").green().bright());
 
     check(path);
 
@@ -356,13 +360,13 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
                 if let Some(path) = event.paths.first() {
                     println!(
                         "{} Restarting! File change detected: \"{}\"",
-                        "Watcher".bright_green(),
+                        style("Watcher").green().bright(),
                         path.display()
                     );
                 } else {
                     println!(
                         "{} Restarting! File change detected",
-                        "Watcher".bright_green()
+                        style("Watcher").green().bright()
                     );
                 }
 
@@ -372,12 +376,12 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
                 // Once the process has finished, print a finishing message
                 println!(
                     "{} Process has finished. Restarting on file change...",
-                    "Watcher".bright_green()
+                    style("Watcher").green().bright()
                 );
             }
             Err(error) => eprintln!(
                 "{} Encountered an error: {}",
-                "Watcher".bright_green(),
+                style("Watcher").green().bright(),
                 error
             ),
         }
@@ -387,34 +391,24 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
 }
 
 #[allow(clippy::boxed_local)]
-fn tokenize(input: &str, pb: Box<ProgressBar>) -> Result<TokenStream<'_>, String> {
+fn tokenize(input: &str, pb: Box<ProgressBar>) -> Result<TokenStream<'_>> {
     // Create a iterable list of tokens
     pb.set_message("Tokenizing...");
 
-    let tokens = match lex(input) {
-        Ok(result) => result,
-        Err(e) => return Err(e.to_owned()),
-    };
-
-    Ok(tokens)
+    lex(input)
 }
 
-fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Program, String> {
+fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Program> {
     // Tokenize the input
     let tokens = tokenize(input, pb.clone())?;
 
     // Parse the tokens to construct an AST
     pb.set_message("Parsing...");
 
-    let ast = match parse(&mut tokens.clone()) {
-        Ok(result) => result,
-        Err(e) => return Err(e.to_owned()),
-    };
-
-    Ok(ast)
+    parse(&mut tokens.clone())
 }
 
-fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<(Program, Analyzer), String> {
+fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<(Program, Analyzer)> {
     // Create the AST
     let ast = create_ast(input, pb.clone())?;
 
@@ -423,9 +417,7 @@ fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<(Program, Analyz
 
     let mut analyzer = Analyzer::new();
 
-    if let Err(e) = analyzer.analyze(ast.clone()) {
-        return Err(e.to_owned());
-    }
+    analyzer.analyze(ast.clone())?;
 
     Ok((ast, analyzer))
 }

@@ -1,8 +1,9 @@
 use crate::{Block, TokenStream, parse_statement};
+use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
 // TODO: Make this return statement consistent with the rest of the parser
-pub fn parse_block(tokens: &mut TokenStream) -> Result<Block, &'static str> {
+pub fn parse_block(tokens: &mut TokenStream) -> Result<Block> {
     // Consume an optional NewLine token if its present
     if let Some((Token::NewLine, _)) = tokens.peek() {
         tokens.next(); // Consume the new line token
@@ -11,7 +12,7 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block, &'static str> {
     // Consume the OpenBrace token
     match tokens.next() {
         Some((Token::OpenBrace, _)) => {}
-        _ => return Err("Expected opening brace"),
+        _ => return Err(anyhow!("Expected opening brace")),
     }
 
     // Consume an optional NewLine token if its present
@@ -32,7 +33,7 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block, &'static str> {
                 tokens.next(); // Consume the token
                 continue; // Skip to the next token
             }
-            None => return Err("Unexpected end of tokens in indented block"),
+            None => return Err(anyhow!("Unexpected end of tokens in indented block")),
             _ => {}
         }
 
@@ -45,10 +46,10 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block, &'static str> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Block, IntegerLit, Program, Stmt, parse};
+    use crate::{Block, FunctionDeclaration, IntegerLit, Program, Stmt, parse, types::DataType};
     use gneurshk_lexer::lex;
 
-    /// Helper function for testing the parse_func_declaration function
+    /// Helper function for testing the parse function
     fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
@@ -60,65 +61,138 @@ mod tests {
 
     #[test]
     fn empty_block() {
-        let stmt = lex_then_parse("{}").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    {}
+}
+            "#,
+        );
 
-        assert_eq!(stmt, vec![Stmt::Block(Block { body: vec![] })]);
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::Block(Block { body: vec![] })],
+                    }),
+                }],
+            }
+        );
     }
 
     #[test]
     fn single_line_block() {
-        let stmt = lex_then_parse("{ 1 }").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    { 1 }
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block(Block {
-                body: vec![Stmt::Integer(IntegerLit {
-                    value: 1,
-                    span: 2..3
-                })]
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::Block(Block {
+                            body: vec![Stmt::Integer(IntegerLit {
+                                value: 1,
+                                span: 21..22
+                            })]
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn multiple_line_block() {
-        let stmt = lex_then_parse("{ \n 1 \n }").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    {
+        1
+    }
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block(Block {
-                body: vec![Stmt::Integer(IntegerLit {
-                    value: 1,
-                    span: 4..5
-                })]
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::Block(Block {
+                            body: vec![Stmt::Integer(IntegerLit {
+                                value: 1,
+                                span: 29..30
+                            })]
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn nested_blocks() {
-        let stmt = lex_then_parse("{ { { 3 } } { 2 } }").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    { { { 3 } } { 2 } }
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block(Block {
-                body: vec![
-                    Stmt::Block(Block {
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
                         body: vec![Stmt::Block(Block {
-                            body: vec![Stmt::Integer(IntegerLit {
-                                value: 3,
-                                span: 6..7
-                            })]
-                        })]
+                            body: vec![
+                                Stmt::Block(Block {
+                                    body: vec![Stmt::Block(Block {
+                                        body: vec![Stmt::Integer(IntegerLit {
+                                            value: 3,
+                                            span: 25..26
+                                        })]
+                                    })]
+                                }),
+                                Stmt::Block(Block {
+                                    body: vec![Stmt::Integer(IntegerLit {
+                                        value: 2,
+                                        span: 33..34
+                                    })]
+                                })
+                            ]
+                        })],
                     }),
-                    Stmt::Block(Block {
-                        body: vec![Stmt::Integer(IntegerLit {
-                            value: 2,
-                            span: 14..15
-                        })]
-                    })
-                ]
-            })]
+                }],
+            }
         );
     }
 }

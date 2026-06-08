@@ -6,6 +6,7 @@ use crate::imports::parse_import;
 use crate::returns::parse_return_statement;
 use crate::types::DataType;
 use crate::variables::parse_variable_declaration;
+use anyhow::{Result, anyhow};
 use funcs::parse_func_declaration;
 use gneurshk_lexer::TokenStream;
 use gneurshk_lexer::tokens::Token;
@@ -22,18 +23,10 @@ mod returns;
 pub mod types;
 mod variables;
 
-/// An alias for the result of parsing a single statement
-pub type StatementResult = Result<Stmt, &'static str>;
-/// An alias for the result of parsing multiple statements
-pub type MultiStatementResult = Result<Vec<Stmt>, &'static str>;
-/// An alias for the result of parsing a program
-pub type ProgramResult = Result<Program, &'static str>;
-
 #[derive(Debug, PartialEq, Clone)]
 pub struct Program {
     pub imports: Vec<ImportStmt>,
     pub functions: Vec<FunctionDeclaration>,
-    pub body: Vec<Stmt>,
 }
 
 /// A binary operator which takes in two operands
@@ -254,6 +247,32 @@ pub struct FunctionDeclaration {
     pub block: Box<Block>,
 }
 
+// #[derive(Debug, PartialEq, Clone)]
+// pub enum VariableDeclaration {
+//     Mutable {
+//         name: String,
+//         data_type: Option<DataType>,
+//         value: Option<Expression>,
+//     },
+//     Constant {
+//         name: String,
+//         data_type: Option<DataType>,
+//         value: Expression,
+//     },
+// }
+
+/// Anything that can be declared at the top level of a program
+#[derive(Debug, PartialEq, Clone)]
+pub enum Declaration {
+    // TypeAlias {
+    //     name: String,
+    //     types: Vec<String>,
+    // },
+    Import(ImportStmt),
+    Function(FunctionDeclaration),
+}
+
+/// Anything that can be declared inside a block
 #[allow(dead_code)]
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
@@ -266,7 +285,6 @@ pub enum Stmt {
     },
     Block(Block),
     IfStatement(IfStatement),
-    FunctionDeclaration(FunctionDeclaration),
     BinaryExpression(BinaryExpression),
     UnaryExpression(UnaryExpression),
     Identifier(Identifier),
@@ -279,18 +297,12 @@ pub enum Stmt {
     ReturnStatement {
         value: Option<Expression>,
     },
-    // TypeAlias {
-    //     name: String,
-    //     types: Vec<String>,
-    // },
-    Import(ImportStmt),
 }
 
 /// Parses statements that appear directly after an new line and or indentation
-pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
+pub fn parse(tokens: &mut TokenStream) -> Result<Program> {
     let mut imports = vec![];
     let mut functions = vec![];
-    let mut body = vec![];
 
     while let Some((token, _)) = tokens.peek() {
         if token == &Token::NewLine {
@@ -298,37 +310,56 @@ pub fn parse(tokens: &mut TokenStream) -> ProgramResult {
             continue;
         }
 
-        let statement = parse_statement(tokens);
-
         // Append statements or catch and throw errors
-        match statement {
+        match parse_declaration(tokens) {
             Ok(stmt) => match stmt {
-                Stmt::Import(import) => {
+                Declaration::Import(import) => {
                     imports.push(import);
                 }
-                Stmt::FunctionDeclaration(func) => {
+                Declaration::Function(func) => {
                     functions.push(func);
-                }
-                _ => {
-                    body.push(stmt);
                 }
             },
             Err(e) => return Err(e),
         }
     }
 
-    Ok(Program {
-        imports,
-        functions,
-        body,
-    })
+    Ok(Program { imports, functions })
 }
 
-fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
+fn parse_declaration(tokens: &mut TokenStream) -> Result<Declaration> {
     // Peek at the next token
     let (token, _) = match tokens.peek() {
         Some(e) => e,
-        _ => return Err("Unexpected end of tokens at beginning of line"),
+        _ => return Err(anyhow!("Unexpected end of tokens at beginning of line")),
+    };
+
+    // Parse the statement
+    let stmt = match token {
+        Token::Annotation(_) | Token::Func => {
+            Declaration::Function(parse_func_declaration(tokens)?)
+        }
+        Token::Import => Declaration::Import(parse_import(tokens)?),
+        _ => {
+            println!("token: {token:?}");
+            return Err(anyhow!("Unexpected token"));
+        }
+    };
+
+    // Consume a NewLine token if its present
+    if let Some((Token::NewLine, _)) = tokens.peek() {
+        tokens.next(); // Consume the new line token
+    }
+
+    // Return the parsed statement
+    Ok(stmt)
+}
+
+fn parse_statement(tokens: &mut TokenStream) -> Result<Stmt> {
+    // Peek at the next token
+    let (token, _) = match tokens.peek() {
+        Some(e) => e,
+        _ => return Err(anyhow!("Unexpected end of tokens at beginning of line")),
     };
 
     // Parse the statement
@@ -359,13 +390,11 @@ fn parse_statement(tokens: &mut TokenStream) -> StatementResult {
                 _ => Ok(parse_expression(tokens)?.into()),
             }
         }
-        Token::Annotation(_) | Token::Func => parse_func_declaration(tokens),
-        Token::Import => parse_import(tokens),
         Token::OpenBrace => Ok(Stmt::Block(parse_block(tokens)?)),
         Token::Return => parse_return_statement(tokens),
         _ => {
             println!("token: {token:?}");
-            return Err("Unexpected token");
+            return Err(anyhow!("Unexpected token"));
         }
     };
 

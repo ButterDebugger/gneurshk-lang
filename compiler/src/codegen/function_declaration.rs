@@ -4,20 +4,6 @@ use gneurshk_parser::{Block, FunctionParam};
 use inkwell::values::{BasicValueEnum, FunctionValue};
 
 impl<'ctx> Codegen<'ctx> {
-    pub(crate) fn build_function(
-        &mut self,
-        name: String,
-        params: Vec<FunctionParam>,
-        return_type: DataType,
-        block: Block,
-    ) -> Option<BasicValueEnum<'ctx>> {
-        // Build function declaration
-        let function = self.build_function_declaration(name.clone(), params.clone());
-
-        // Build function body
-        self.build_function_body(function, params, return_type, block)
-    }
-
     pub(crate) fn build_function_body(
         &mut self,
         function: FunctionValue<'ctx>,

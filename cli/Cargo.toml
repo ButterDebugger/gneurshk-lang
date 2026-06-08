@@ -9,8 +9,9 @@ gneurshk_analyzer = { path = "../analyzer" }
 gneurshk_parser = { path = "../parser" }
 gneurshk_lexer = { path = "../lexer" }
 
+anyhow.workspace = true
 clearscreen = "4.0.1"
-colored = "3.0.0"
+console = "0.16.3"
 notify = "8.0.0"
 indicatif = "0.18.0"
 clap = "4.5.54"

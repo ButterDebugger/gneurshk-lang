@@ -1,10 +1,13 @@
-use super::{StatementResult, Stmt, TokenStream, expressions::parse_expression};
+use super::{TokenStream, expressions::parse_expression};
 use crate::{
-    Annotation, FunctionDeclaration, FunctionParam, block::parse_block, types::{DataType, parse_type}
+    Annotation, FunctionDeclaration, FunctionParam,
+    block::parse_block,
+    types::{DataType, parse_type},
 };
+use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
-pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
+pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclaration> {
     // Read annotations
     let mut annotations = vec![];
 
@@ -35,9 +38,9 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                             break;
                         }
                         _ => {
-                            return Err(
-                                "Expected a comma or closing parenthesis in the annotation",
-                            );
+                            return Err(anyhow!(
+                                "Expected a comma or closing parenthesis in the annotation"
+                            ));
                         }
                     }
                 }
@@ -56,19 +59,19 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
     // Consume the Func token
     match tokens.next() {
         Some((Token::Func, _)) => {}
-        _ => return Err("Expected the 'func' keyword"),
+        _ => return Err(anyhow!("Expected the 'func' keyword")),
     }
 
     // Read the function name
     let name = match tokens.next() {
         Some((Token::Word(name), _)) => name,
-        _ => return Err("Expected the function name"),
+        _ => return Err(anyhow!("Expected the function name")),
     };
 
     // Read the parameters
     match tokens.next().clone() {
         Some((Token::OpenParen, _)) => {}
-        _ => return Err("Expected an opening parenthesis"),
+        _ => return Err(anyhow!("Expected an opening parenthesis")),
     }
 
     let mut parameters = vec![];
@@ -89,7 +92,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                 // Consume the Colon token
                 match tokens.next().clone() {
                     Some((Token::Colon, _)) => {}
-                    _ => return Err("Expected a colon after the parameter name"),
+                    _ => return Err(anyhow!("Expected a colon after the parameter name")),
                 }
 
                 // Check for mutability
@@ -127,7 +130,9 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
                 });
             }
             _ => {
-                return Err("Encountered an unexpected token while parsing function parameters");
+                return Err(anyhow!(
+                    "Encountered an unexpected token while parsing function parameters"
+                ));
             }
         }
     }
@@ -141,19 +146,23 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> StatementResult {
             // Read the type
             parse_type(tokens)?
         }
-        _ => return Err("Missing a colon after the function name or a return type"),
+        _ => {
+            return Err(anyhow!(
+                "Missing a colon after the function name or a return type"
+            ));
+        }
     };
 
     // Parse the body of the function
     let block = parse_block(tokens)?;
 
-    Ok(Stmt::FunctionDeclaration(FunctionDeclaration {
+    Ok(FunctionDeclaration {
         annotations,
         name: name.to_string(),
         params: parameters,
         return_type,
         block: Box::new(block),
-    }))
+    })
 }
 
 #[cfg(test)]
@@ -165,7 +174,7 @@ mod tests {
     };
     use gneurshk_lexer::lex;
 
-    /// Helper function for testing the parse_func_declaration function
+    /// Helper function for testing the parse function
     fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
@@ -212,7 +221,6 @@ mod tests {
                         }]
                     }),
                 }],
-                body: vec![],
             }
         );
     }
@@ -242,7 +250,6 @@ mod tests {
                         }]
                     }),
                 }],
-                body: vec![],
             }
         );
     }
@@ -275,7 +282,6 @@ mod tests {
                     return_type: DataType::default(),
                     block: Box::new(Block { body: vec![] }),
                 }],
-                body: vec![],
             }
         );
     }
@@ -314,7 +320,6 @@ mod tests {
                     return_type: DataType::default(),
                     block: Box::new(Block { body: vec![] }),
                 }],
-                body: vec![],
             }
         );
     }
@@ -337,7 +342,6 @@ mod tests {
                     return_type: DataType::default(),
                     block: Box::new(Block { body: vec![] }),
                 }],
-                body: vec![],
             }
         );
     }
@@ -379,7 +383,6 @@ mod tests {
                     return_type: DataType::default(),
                     block: Box::new(Block { body: vec![] }),
                 }],
-                body: vec![],
             }
         );
     }
@@ -412,7 +415,6 @@ mod tests {
                     return_type: DataType::default(),
                     block: Box::new(Block { body: vec![] }),
                 }],
-                body: vec![],
             }
         );
     }

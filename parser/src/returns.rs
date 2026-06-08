@@ -1,11 +1,12 @@
-use crate::{StatementResult, Stmt, expressions::parse_expression};
+use crate::{Stmt, expressions::parse_expression};
+use anyhow::{Result, anyhow};
 use gneurshk_lexer::{TokenStream, tokens::Token};
 
-pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
+pub fn parse_return_statement(tokens: &mut TokenStream) -> Result<Stmt> {
     // Consume the Return token
     match tokens.next() {
         Some((Token::Return, _)) => {}
-        _ => return Err("Expected return statement"),
+        _ => return Err(anyhow!("Expected return statement")),
     }
 
     // Check if the next token is something that can be parsed as an expression
@@ -22,15 +23,14 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> StatementResult {
 #[cfg(test)]
 mod tests {
     use crate::{
-        BinaryExpression, BinaryOperator, Block, Expression, IntegerLit, Program, Stmt, parse,
+        BinaryExpression, BinaryOperator, Block, Expression, FunctionDeclaration, IntegerLit,
+        Program, Stmt, parse, types::DataType,
     };
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
     fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
-
-        println!("tokens {tokens:?}");
 
         match parse(&mut tokens.clone()) {
             Ok(result) => result,
@@ -40,74 +40,164 @@ mod tests {
 
     #[test]
     fn return_nothing() {
-        let stmt = lex_then_parse("return").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    return
+}
+            "#,
+        );
 
-        assert_eq!(stmt, vec![Stmt::ReturnStatement { value: None }]);
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::ReturnStatement { value: None }],
+                    }),
+                }],
+            }
+        );
     }
 
     #[test]
     fn return_literal() {
-        let stmt = lex_then_parse("return 1").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    return 1
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::ReturnStatement {
-                value: Some(Expression::Integer(IntegerLit {
-                    value: 1,
-                    span: 7..8
-                }))
-            }]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::ReturnStatement {
+                            value: Some(Expression::Integer(IntegerLit {
+                                value: 1,
+                                span: 26..27
+                            }))
+                        }],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn return_expression() {
-        let stmt = lex_then_parse("return 1 + 2").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    return 1 + 2
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::ReturnStatement {
-                value: Some(Expression::BinaryExpression(BinaryExpression {
-                    left: Box::new(Expression::Integer(IntegerLit {
-                        value: 1,
-                        span: 7..8
-                    })),
-                    right: Box::new(Expression::Integer(IntegerLit {
-                        value: 2,
-                        span: 11..12
-                    })),
-                    operator: BinaryOperator::Add,
-                }))
-            }]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::ReturnStatement {
+                            value: Some(Expression::BinaryExpression(BinaryExpression {
+                                left: Box::new(Expression::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 26..27
+                                })),
+                                right: Box::new(Expression::Integer(IntegerLit {
+                                    value: 2,
+                                    span: 30..31
+                                })),
+                                operator: BinaryOperator::Add,
+                            }))
+                        }],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn return_nothing_in_a_block() {
-        let stmt = lex_then_parse("{ return }").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    {
+        return
+    }
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block(Block {
-                body: vec![Stmt::ReturnStatement { value: None }]
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::Block(Block {
+                            body: vec![Stmt::ReturnStatement { value: None }]
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn return_literal_in_a_block() {
-        let stmt = lex_then_parse("{ return 1 }").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    { return 1 }
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::Block(Block {
-                body: vec![Stmt::ReturnStatement {
-                    value: Some(Expression::Integer(IntegerLit {
-                        value: 1,
-                        span: 9..10
-                    }))
-                }]
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::Block(Block {
+                            body: vec![Stmt::ReturnStatement {
+                                value: Some(Expression::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 28..29
+                                }))
+                            }]
+                        })],
+                    }),
+                }],
+            }
         );
     }
 }

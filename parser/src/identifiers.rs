@@ -2,18 +2,17 @@ use crate::{
     FunctionCall, Identifier, MemberAccess, MemberExpressionBase, MemberExpressionMember,
     expressions::parse_expression,
 };
+use anyhow::{Result, anyhow};
 use gneurshk_lexer::{TokenStream, tokens::Token};
 
 // TODO: handle indexing
 
 /// Parses function calls, identifiers, and member accessing
-pub fn parse_member_expression_base(
-    tokens: &mut TokenStream,
-) -> Result<MemberExpressionBase, &'static str> {
+pub fn parse_member_expression_base(tokens: &mut TokenStream) -> Result<MemberExpressionBase> {
     // Capture the initial word
     let (name, word_span) = match tokens.next() {
         Some((Token::Word(name), span)) => (name, span),
-        _ => return Err(""),
+        _ => return Err(anyhow!("Expected identifier")),
     };
 
     let mut base = match tokens.peek() {
@@ -47,9 +46,9 @@ pub fn parse_member_expression_base(
                             break;
                         }
                         _ => {
-                            return Err(
-                                "Expected a comma or closing parenthesis in the function call",
-                            );
+                            return Err(anyhow!(
+                                "Expected a comma or closing parenthesis in the function call"
+                            ));
                         }
                     }
                 }
@@ -86,7 +85,7 @@ pub fn parse_member_expression_base(
         // Create the member
         let (member_name, member_span) = match tokens.next() {
             Some((Token::Word(name), span)) => (name, span),
-            _ => return Err("Expected identifier after member access"),
+            _ => return Err(anyhow!("Expected identifier after member access")),
         };
 
         let member = match tokens.peek() {
@@ -120,9 +119,9 @@ pub fn parse_member_expression_base(
                                 break;
                             }
                             _ => {
-                                return Err(
-                                    "Expected a comma or closing parenthesis in the function call",
-                                );
+                                return Err(anyhow!(
+                                    "Expected a comma or closing parenthesis in the function call"
+                                ));
                             }
                         }
                     }
@@ -155,12 +154,13 @@ pub fn parse_member_expression_base(
 mod tests {
     use crate::Stmt::{self};
     use crate::{
-        BinaryExpression, BinaryOperator, Expression, FunctionCall, Identifier, IntegerLit,
-        MemberAccess, MemberExpressionBase, MemberExpressionMember, Program, parse,
+        BinaryExpression, BinaryOperator, Block, Expression, FunctionCall, FunctionDeclaration,
+        Identifier, IntegerLit, MemberAccess, MemberExpressionBase, MemberExpressionMember,
+        Program, parse, types::DataType,
     };
     use gneurshk_lexer::lex;
 
-    /// Helper function for testing the parse_expression function
+    /// Helper function for testing the parse function
     fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
@@ -172,235 +172,389 @@ mod tests {
 
     #[test]
     fn single_identifier() {
-        let stmt = lex_then_parse("chicken").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    chicken
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::Identifier(Identifier {
-                name: "chicken".to_string(),
-                span: 0..7,
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::Identifier(Identifier {
+                            name: "chicken".to_string(),
+                            span: 19..26,
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn repeated_identifiers() {
-        let stmt =
-            lex_then_parse("chicken chicken chicken chicken chicken chicken chicken chicken").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    chicken chicken chicken chicken chicken chicken chicken chicken
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 0..7,
-                }),
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 8..15,
-                }),
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 16..23,
-                }),
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 24..31,
-                }),
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 32..39,
-                }),
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 40..47,
-                }),
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 48..55,
-                }),
-                Stmt::Identifier(Identifier {
-                    name: "chicken".to_string(),
-                    span: 56..63,
-                }),
-            ]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 19..26,
+                            }),
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 27..34,
+                            }),
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 35..42,
+                            }),
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 43..50,
+                            }),
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 51..58,
+                            }),
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 59..66,
+                            }),
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 67..74,
+                            }),
+                            Stmt::Identifier(Identifier {
+                                name: "chicken".to_string(),
+                                span: 75..82,
+                            }),
+                        ],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn function_call_no_args() {
-        let stmt = lex_then_parse("foo()").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    foo()
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::FunctionCall(FunctionCall {
-                name: "foo".to_string(),
-                args: vec![],
-                span: 0..5,
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::FunctionCall(FunctionCall {
+                            name: "foo".to_string(),
+                            args: vec![],
+                            span: 19..24,
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn function_call_single_arg() {
-        let stmt = lex_then_parse("bar(42)").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    bar(42)
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::FunctionCall(FunctionCall {
-                name: "bar".to_string(),
-                args: vec![Expression::Integer(IntegerLit {
-                    value: 42,
-                    span: 4..6
-                })],
-                span: 0..7,
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::FunctionCall(FunctionCall {
+                            name: "bar".to_string(),
+                            args: vec![Expression::Integer(IntegerLit {
+                                value: 42,
+                                span: 23..25
+                            })],
+                            span: 19..26,
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn function_call_multiple_args() {
-        let stmt = lex_then_parse("baz(1, 2, 3)").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    baz(1, 2, 3)
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::FunctionCall(FunctionCall {
-                name: "baz".to_string(),
-                args: vec![
-                    Expression::Integer(IntegerLit {
-                        value: 1,
-                        span: 4..5
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::FunctionCall(FunctionCall {
+                            name: "baz".to_string(),
+                            args: vec![
+                                Expression::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 23..24
+                                }),
+                                Expression::Integer(IntegerLit {
+                                    value: 2,
+                                    span: 26..27
+                                }),
+                                Expression::Integer(IntegerLit {
+                                    value: 3,
+                                    span: 29..30
+                                }),
+                            ],
+                            span: 19..31,
+                        })],
                     }),
-                    Expression::Integer(IntegerLit {
-                        value: 2,
-                        span: 7..8
-                    }),
-                    Expression::Integer(IntegerLit {
-                        value: 3,
-                        span: 10..11
-                    }),
-                ],
-                span: 0..12,
-            })]
+                }],
+            }
         );
     }
 
     #[test]
     fn function_call_with_expression_args() {
-        let stmt = lex_then_parse("calculate(1 + (2 + 5), 3 * 4)").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    calculate(1 + (2 + 5), 3 * 4)
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::FunctionCall(FunctionCall {
-                name: "calculate".to_string(),
-                args: vec![
-                    Expression::BinaryExpression(BinaryExpression {
-                        left: Box::new(Expression::Integer(IntegerLit {
-                            value: 1,
-                            span: 10..11
-                        })),
-                        right: Box::new(Expression::BinaryExpression(BinaryExpression {
-                            left: Box::new(Expression::Integer(IntegerLit {
-                                value: 2,
-                                span: 15..16
-                            })),
-                            right: Box::new(Expression::Integer(IntegerLit {
-                                value: 5,
-                                span: 19..20
-                            })),
-                            operator: BinaryOperator::Add,
-                        })),
-                        operator: BinaryOperator::Add,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::FunctionCall(FunctionCall {
+                            name: "calculate".to_string(),
+                            args: vec![
+                                Expression::BinaryExpression(BinaryExpression {
+                                    left: Box::new(Expression::Integer(IntegerLit {
+                                        value: 1,
+                                        span: 29..30
+                                    })),
+                                    right: Box::new(Expression::BinaryExpression(
+                                        BinaryExpression {
+                                            left: Box::new(Expression::Integer(IntegerLit {
+                                                value: 2,
+                                                span: 34..35
+                                            })),
+                                            right: Box::new(Expression::Integer(IntegerLit {
+                                                value: 5,
+                                                span: 38..39
+                                            })),
+                                            operator: BinaryOperator::Add,
+                                        }
+                                    )),
+                                    operator: BinaryOperator::Add,
+                                }),
+                                Expression::BinaryExpression(BinaryExpression {
+                                    left: Box::new(Expression::Integer(IntegerLit {
+                                        value: 3,
+                                        span: 42..43
+                                    })),
+                                    right: Box::new(Expression::Integer(IntegerLit {
+                                        value: 4,
+                                        span: 46..47
+                                    })),
+                                    operator: BinaryOperator::Multiply,
+                                }),
+                            ],
+                            span: 19..48,
+                        })],
                     }),
-                    Expression::BinaryExpression(BinaryExpression {
-                        left: Box::new(Expression::Integer(IntegerLit {
-                            value: 3,
-                            span: 23..24
-                        })),
-                        right: Box::new(Expression::Integer(IntegerLit {
-                            value: 4,
-                            span: 27..28
-                        })),
-                        operator: BinaryOperator::Multiply,
-                    }),
-                ],
-                span: 0..29,
-            })]
+                }],
+            }
         );
     }
 
     #[test]
     fn member_access() {
-        let stmt = lex_then_parse("foo.bar").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    foo.bar
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::MemberAccess(MemberAccess {
-                base: Box::new(MemberExpressionBase::Identifier(Identifier {
-                    name: "foo".to_string(),
-                    span: 0..3,
-                })),
-                member: MemberExpressionMember::Identifier(Identifier {
-                    name: "bar".to_string(),
-                    span: 4..7,
-                }),
-                is_static: false,
-            })]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::MemberAccess(MemberAccess {
+                            base: Box::new(MemberExpressionBase::Identifier(Identifier {
+                                name: "foo".to_string(),
+                                span: 19..22,
+                            })),
+                            member: MemberExpressionMember::Identifier(Identifier {
+                                name: "bar".to_string(),
+                                span: 23..26,
+                            }),
+                            is_static: false,
+                        })],
+                    }),
+                }],
+            }
         );
     }
 
     #[test]
     fn nested_member_access() {
-        let stmt = lex_then_parse("foo.bar.baz").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    foo.bar.baz
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::MemberAccess(MemberAccess {
-                base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
-                    base: Box::new(MemberExpressionBase::Identifier(Identifier {
-                        name: "foo".to_string(),
-                        span: 0..3,
-                    })),
-                    member: MemberExpressionMember::Identifier(Identifier {
-                        name: "bar".to_string(),
-                        span: 4..7,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::MemberAccess(MemberAccess {
+                            base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
+                                base: Box::new(MemberExpressionBase::Identifier(Identifier {
+                                    name: "foo".to_string(),
+                                    span: 19..22,
+                                })),
+                                member: MemberExpressionMember::Identifier(Identifier {
+                                    name: "bar".to_string(),
+                                    span: 23..26,
+                                }),
+                                is_static: false,
+                            })),
+                            member: MemberExpressionMember::Identifier(Identifier {
+                                name: "baz".to_string(),
+                                span: 27..30,
+                            }),
+                            is_static: false,
+                        })],
                     }),
-                    is_static: false,
-                })),
-                member: MemberExpressionMember::Identifier(Identifier {
-                    name: "baz".to_string(),
-                    span: 8..11,
-                }),
-                is_static: false,
-            })]
+                }],
+            }
         );
     }
 
     #[test]
     fn static_member_access_function_call() {
-        let stmt = lex_then_parse("foo::bar().baz").body;
+        let stmt = lex_then_parse(
+            r#"
+func main() {
+    foo::bar().baz
+}
+            "#,
+        );
 
         assert_eq!(
             stmt,
-            vec![Stmt::MemberAccess(MemberAccess {
-                base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
-                    base: Box::new(MemberExpressionBase::Identifier(Identifier {
-                        name: "foo".to_string(),
-                        span: 0..3,
-                    })),
-                    member: MemberExpressionMember::FunctionCall(FunctionCall {
-                        name: "bar".to_string(),
-                        span: 5..10,
-                        args: vec![]
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: DataType::default(),
+                    block: Box::new(Block {
+                        body: vec![Stmt::MemberAccess(MemberAccess {
+                            base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
+                                base: Box::new(MemberExpressionBase::Identifier(Identifier {
+                                    name: "foo".to_string(),
+                                    span: 19..22,
+                                })),
+                                member: MemberExpressionMember::FunctionCall(FunctionCall {
+                                    name: "bar".to_string(),
+                                    span: 24..29,
+                                    args: vec![]
+                                }),
+                                is_static: true,
+                            })),
+                            member: MemberExpressionMember::Identifier(Identifier {
+                                name: "baz".to_string(),
+                                span: 30..33,
+                            }),
+                            is_static: false,
+                        })],
                     }),
-                    is_static: true,
-                })),
-                member: MemberExpressionMember::Identifier(Identifier {
-                    name: "baz".to_string(),
-                    span: 11..14,
-                }),
-                is_static: false,
-            })]
+                }],
+            }
         );
     }
 }

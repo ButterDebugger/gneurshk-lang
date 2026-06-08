@@ -8,4 +8,5 @@ name = "gneurshk_lexer"
 path = "src/lib.rs"
 
 [dependencies]
+anyhow.workspace = true
 logos = "0.15.0"

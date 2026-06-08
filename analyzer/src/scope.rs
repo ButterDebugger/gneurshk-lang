@@ -1,6 +1,8 @@
 use gneurshk_parser::{FunctionParam, types::DataType};
 use std::collections::HashMap;
 
+use crate::Analyzer;
+
 #[derive(Clone, Debug)]
 pub struct Scope {
     parent: Option<Box<Scope>>,
@@ -65,5 +67,20 @@ impl Scope {
         }
 
         unused
+    }
+}
+
+impl Analyzer {
+    pub fn enter_new_scope(&mut self) {
+        let parent = self.scope.to_owned();
+        let new_scope = Scope::new(Some(parent));
+
+        *self.scope = new_scope;
+    }
+
+    pub fn exit_scope(&mut self) {
+        if let Some(parent) = self.scope.parent.to_owned() {
+            self.scope = parent;
+        }
     }
 }

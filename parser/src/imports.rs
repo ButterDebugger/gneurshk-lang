@@ -1,12 +1,13 @@
-use super::{StatementResult, Stmt, TokenStream};
+use super::TokenStream;
 use crate::{ImportCollection, ImportEverything, ImportModules, ImportStmt};
+use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
-pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
+pub fn parse_import(tokens: &mut TokenStream) -> Result<ImportStmt> {
     // Consume the Import token
     match tokens.next() {
         Some((Token::Import, _)) => {}
-        _ => return Err("Expected import statement"),
+        _ => return Err(anyhow!("Expected import statement")),
     }
 
     // Check if it's importing everything from a module
@@ -21,11 +22,9 @@ pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
                 // Get the module name
                 match tokens.next() {
                     Some((Token::Word(module), _)) => {
-                        return Ok(Stmt::Import(ImportStmt::Everything(ImportEverything {
-                            module,
-                        })));
+                        return Ok(ImportStmt::Everything(ImportEverything { module }));
                     }
-                    _ => return Err("Expected a module name after the 'from' keyword"),
+                    _ => return Err(anyhow!("Expected a module name after the 'from' keyword")),
                 }
             }
             // NOTE: Example syntax: import * as rng from random
@@ -35,26 +34,26 @@ pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
                 // Get the alias name
                 let alias = match tokens.next() {
                     Some((Token::Word(name), _)) => name,
-                    _ => return Err("Expected an alias name after the 'as' keyword"),
+                    _ => return Err(anyhow!("Expected an alias name after the 'as' keyword")),
                 };
 
                 // Expect the 'from' keyword
                 match tokens.next() {
                     Some((Token::From, _)) => {}
-                    _ => return Err("Expected the 'from' keyword after module alias"),
+                    _ => return Err(anyhow!("Expected the 'from' keyword after module alias")),
                 }
 
                 // Get the module name
                 match tokens.next() {
                     Some((Token::Word(module), _)) => {
-                        return Ok(Stmt::Import(ImportStmt::Modules(ImportModules {
+                        return Ok(ImportStmt::Modules(ImportModules {
                             modules: vec![(module, Some(alias))],
-                        })));
+                        }));
                     }
-                    _ => return Err("Expected a module name after the 'from' keyword"),
+                    _ => return Err(anyhow!("Expected a module name after the 'from' keyword")),
                 }
             }
-            _ => return Err("Expected the 'from' or 'as' keyword after '*'"),
+            _ => return Err(anyhow!("Expected the 'from' or 'as' keyword after '*'")),
         }
     }
 
@@ -69,27 +68,20 @@ pub fn parse_import(tokens: &mut TokenStream) -> StatementResult {
         // Get the module name
         match tokens.next() {
             Some((Token::Word(module), _)) => {
-                Ok(Stmt::Import(ImportStmt::Collection(ImportCollection {
-                    module,
-                    items,
-                })))
+                Ok(ImportStmt::Collection(ImportCollection { module, items }))
             }
-            _ => Err("Expected a module name after the 'from' keyword"),
+            _ => Err(anyhow!("Expected a module name after the 'from' keyword")),
         }
     } else {
         // Otherwise import multiple modules
-        Ok(Stmt::Import(ImportStmt::Modules(ImportModules {
-            modules: items,
-        })))
+        Ok(ImportStmt::Modules(ImportModules { modules: items }))
     }
 }
 
 /// Reads a list of import items
 /// # Example
 /// `sin, cos, sqrt as square_root`
-fn read_import_items(
-    tokens: &mut TokenStream,
-) -> Result<Vec<(String, Option<String>)>, &'static str> {
+fn read_import_items(tokens: &mut TokenStream) -> Result<Vec<(String, Option<String>)>> {
     let mut items = Vec::new();
 
     loop {
@@ -103,9 +95,9 @@ fn read_import_items(
                     match tokens.next() {
                         Some((Token::Word(name), _)) => Some(name),
                         _ => {
-                            return Err(
-                                "Expected an alias for the imported item after the 'as' keyword",
-                            );
+                            return Err(anyhow!(
+                                "Expected an alias for the imported item after the 'as' keyword"
+                            ));
                         }
                     }
                 } else {
@@ -116,7 +108,7 @@ fn read_import_items(
                 items.push((name, item_alias));
             }
             _ => {
-                return Err("Expected import item name");
+                return Err(anyhow!("Expected import item name"));
             }
         }
 
@@ -137,7 +129,7 @@ mod tests {
     use crate::{ImportCollection, ImportEverything, ImportModules, ImportStmt, Program, parse};
     use gneurshk_lexer::lex;
 
-    /// Helper function for testing the parse_import function
+    /// Helper function for testing the parse function
     fn lex_then_parse(input: &'static str) -> Program {
         let tokens = lex(input).expect("Failed to lex");
 
@@ -163,7 +155,6 @@ mod tests {
                     ],
                 })],
                 functions: vec![],
-                body: vec![],
             }
         );
     }
@@ -187,7 +178,6 @@ mod tests {
                     }),
                 ],
                 functions: vec![],
-                body: vec![],
             }
         );
     }
@@ -207,7 +197,6 @@ mod tests {
                     ],
                 })],
                 functions: vec![],
-                body: vec![],
             }
         );
     }
@@ -223,7 +212,6 @@ mod tests {
                     module: "math".to_string(),
                 })],
                 functions: vec![],
-                body: vec![],
             }
         );
     }

@@ -1,4 +1,5 @@
 use crate::codegen::Codegen;
+use anyhow::{Result, anyhow};
 use gneurshk_parser::Program;
 use inkwell::OptimizationLevel;
 use inkwell::context::Context;
@@ -11,11 +12,11 @@ use std::path::{Path, PathBuf};
 ///
 /// # Returns
 /// The path to the object file
-pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf, String> {
+pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf> {
     let context = Context::create();
     let mut codegen = Codegen::new(&context, "main");
 
-    codegen.compile(ast);
+    codegen.compile(ast)?;
 
     // Initialize LLVM targets
     Target::initialize_all(&InitializationConfig::default());
@@ -23,7 +24,7 @@ pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf, S
     // Get the default target triple
     let target_triple = TargetMachine::get_default_triple();
     let target = Target::from_triple(&target_triple)
-        .map_err(|e| format!("Failed to create target: {}", e))?;
+        .map_err(|e| anyhow!("Failed to create target: {}", e))?;
 
     // Create target machine
     let target_machine = target
@@ -35,7 +36,7 @@ pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf, S
             RelocMode::Default,
             CodeModel::Default,
         )
-        .ok_or("Failed to create target machine")?;
+        .ok_or(anyhow!("Failed to create target machine"))?;
 
     // Write object file
     let module = codegen.get_module();
@@ -43,7 +44,7 @@ pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf, S
 
     target_machine
         .write_to_file(module, FileType::Object, &obj_path)
-        .map_err(|e| format!("Failed to write object file: {}", e))?;
+        .map_err(|e| anyhow!("Failed to write object file: {}", e))?;
 
     // Return the path to the object file
     Ok(obj_path)

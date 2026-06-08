@@ -9,3 +9,5 @@ path = "src/lib.rs"
 
 [dependencies]
 gneurshk_lexer = { path = "../lexer" }
+
+anyhow.workspace = true

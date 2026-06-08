@@ -1,7 +1,8 @@
 use crate::{
     errors::{SematicError, SematicWarning},
-    scope::{Function, Scope},
+    scope::{Function, Scope, Variable},
 };
+use anyhow::Result;
 use gneurshk_parser::{
     Assignment, BinaryExpression, Expression, FunctionCall, FunctionDeclaration, Identifier,
     Program, Stmt, types::DataType,
@@ -10,6 +11,7 @@ use std::collections::HashMap;
 
 mod assignment;
 mod binary_expression;
+mod block;
 mod declaration;
 mod errors;
 mod function_call;
@@ -39,8 +41,9 @@ impl Analyzer {
         }
     }
 
-    pub fn analyze(&mut self, program: Program) -> Result<(), String> {
-        for function in program.functions {
+    pub fn analyze(&mut self, program: Program) -> Result<()> {
+        // Keep track of function declarations
+        for function in program.functions.clone() {
             let FunctionDeclaration {
                 name,
                 params,
@@ -57,8 +60,32 @@ impl Analyzer {
             );
         }
 
-        for statement in program.body {
-            self.analyze_statement(statement);
+        // Analyze each function body
+        for function in program.functions {
+            // Enter the new function scope
+            self.enter_new_scope();
+
+            // Define function parameters in the new scope
+            for param in function.params {
+                self.scope.set_variable(
+                    param.name.clone(),
+                    Variable {
+                        name: param.name,
+                        data_type: param.data_type,
+                        mutable: param.mutable,
+                        used: false,
+                        initialized: true, // Parameters are considered initialized
+                    },
+                );
+            }
+
+            // Analyze the function body
+            self.analyze_block(*function.block);
+
+            // TODO: Check if the function's return type matches the return statements
+
+            // Exit the function scope
+            self.exit_scope();
         }
 
         // Check for unused variables
@@ -94,6 +121,7 @@ impl Analyzer {
             Stmt::Assignment(Assignment { member, value }) => {
                 self.analyze_assignment(member, value)
             }
+            Stmt::Block(block) => self.analyze_block(block),
             _ => {
                 println!("statement: {statement:?}");
 
