@@ -29,6 +29,6 @@ impl Analyzer {
 
         self.scope.set_variable(name, variable);
 
-        Some(var_type)
+        None
     }
 }
