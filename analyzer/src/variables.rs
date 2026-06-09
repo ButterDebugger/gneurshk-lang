@@ -2,7 +2,7 @@ use crate::{Analyzer, errors::SematicError, scope::Variable};
 use gneurshk_parser::{Expression, types::DataType};
 
 impl Analyzer {
-    pub(crate) fn analyze_declaration(
+    pub(crate) fn analyze_variable_declaration(
         &mut self,
         mutable: bool,
         name: String,

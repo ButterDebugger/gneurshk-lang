@@ -12,12 +12,12 @@ use std::collections::HashMap;
 mod assignment;
 mod binary_expression;
 mod block;
-mod declaration;
 mod errors;
 mod function_call;
 mod identifier;
 mod literal;
 mod scope;
+mod variables;
 
 #[derive(Debug, Clone)]
 pub struct Analyzer {
@@ -117,7 +117,7 @@ impl Analyzer {
                 name,
                 data_type,
                 value,
-            } => self.analyze_declaration(mutable, name, data_type, value),
+            } => self.analyze_variable_declaration(mutable, name, data_type, value),
             Stmt::Assignment(Assignment { member, value }) => {
                 self.analyze_assignment(member, value)
             }
