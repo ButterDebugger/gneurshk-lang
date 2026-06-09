@@ -192,10 +192,7 @@ fn parse_literal(tokens: &mut TokenStream) -> Result<Expression> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        BinaryOperator, Block, FunctionDeclaration, Program, Stmt, UnaryOperator, parse,
-        types::DataType,
-    };
+    use crate::{BinaryOperator, Block, FunctionDeclaration, Program, Stmt, UnaryOperator, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -226,7 +223,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![
                             Stmt::Integer(IntegerLit {
@@ -300,7 +297,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Integer(IntegerLit {
                             value: 42,
@@ -330,7 +327,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Integer(IntegerLit {
@@ -390,7 +387,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -455,7 +452,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -520,7 +517,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -599,7 +596,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -682,7 +679,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::UnaryExpression(UnaryExpression {
                             value: Box::new(Expression::Integer(IntegerLit {
@@ -715,7 +712,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::UnaryExpression(UnaryExpression {
                             value: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -755,7 +752,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::UnaryExpression(UnaryExpression {
                             value: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -795,7 +792,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Float(FloatLit {
                             value: 1.0,
@@ -825,7 +822,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Integer(IntegerLit {
@@ -862,7 +859,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Float(FloatLit {
@@ -899,7 +896,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::String(StringLit {
                             value: "i love you".to_string(),

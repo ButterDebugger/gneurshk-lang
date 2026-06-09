@@ -13,7 +13,8 @@ impl Analyzer {
             for arg in args {
                 self.analyze_expression(arg);
             }
-            return Some(DataType::Void);
+
+            return None;
         }
 
         if let Some(function) = self.functions.get(&name).cloned() {
@@ -53,7 +54,7 @@ impl Analyzer {
                 }
             }
 
-            Some(function.return_type.clone())
+            function.return_type
         } else {
             self.errors.push(SematicError::FunctionNotFound(name));
 

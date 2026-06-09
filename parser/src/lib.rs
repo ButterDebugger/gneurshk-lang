@@ -243,7 +243,7 @@ pub struct FunctionDeclaration {
     pub annotations: Vec<Annotation>,
     pub name: String,
     pub params: Vec<FunctionParam>,
-    pub return_type: DataType,
+    pub return_type: Option<DataType>,
     pub block: Box<Block>,
 }
 

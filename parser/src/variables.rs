@@ -21,7 +21,7 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<Stmt> {
         Some((Token::Colon, _)) => {
             tokens.next(); // Consume the token
 
-            Some(parse_type(tokens)?)
+            parse_type(tokens)?
         }
         _ => None,
     };
@@ -131,7 +131,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: true,
@@ -163,7 +163,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: true,
@@ -195,7 +195,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: true,
@@ -230,7 +230,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: true,

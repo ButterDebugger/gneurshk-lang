@@ -1,8 +1,6 @@
 use super::{TokenStream, expressions::parse_expression};
 use crate::{
-    Annotation, FunctionDeclaration, FunctionParam,
-    block::parse_block,
-    types::{DataType, parse_type},
+    Annotation, FunctionDeclaration, FunctionParam, block::parse_block, types::parse_type,
 };
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
@@ -104,7 +102,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
                 };
 
                 // Read the parameter type
-                let data_type = parse_type(tokens)?;
+                let data_type = parse_type(tokens)?.unwrap();
 
                 // Check for a default value
                 let default_value = match tokens.peek().cloned() {
@@ -139,7 +137,7 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
 
     // Parse the return type
     let return_type = match tokens.peek() {
-        Some((Token::OpenBrace, _)) => DataType::default(),
+        Some((Token::OpenBrace, _)) => None,
         Some((Token::Arrow, _)) => {
             tokens.next(); // Consume the Arrow token
 
@@ -208,7 +206,7 @@ mod tests {
                     annotations: vec![],
                     name: "apple".to_string(),
                     params: vec![],
-                    return_type: DataType::Int32,
+                    return_type: Some(DataType::Int32),
                     block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: true,
@@ -237,7 +235,7 @@ mod tests {
                     annotations: vec![],
                     name: "pear".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Declaration {
                             mutable: false,
@@ -279,7 +277,7 @@ mod tests {
                             default_value: None,
                         },
                     ],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block { body: vec![] }),
                 }],
             }
@@ -317,7 +315,7 @@ mod tests {
                             })),
                         },
                     ],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block { body: vec![] }),
                 }],
             }
@@ -339,7 +337,7 @@ mod tests {
                     }],
                     name: "egg".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block { body: vec![] }),
                 }],
             }
@@ -380,7 +378,7 @@ mod tests {
                     ],
                     name: "ham".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block { body: vec![] }),
                 }],
             }
@@ -412,7 +410,7 @@ mod tests {
                             default_value: None,
                         },
                     ],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block { body: vec![] }),
                 }],
             }

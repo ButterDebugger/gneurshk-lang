@@ -8,7 +8,7 @@ impl<'ctx> Codegen<'ctx> {
         &mut self,
         function: FunctionValue<'ctx>,
         params: Vec<FunctionParam>,
-        _return_type: DataType,
+        _return_type: Option<DataType>,
         block: Block,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Get i32 type since functions only support that type TODO: Support other types

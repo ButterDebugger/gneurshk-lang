@@ -156,7 +156,7 @@ mod tests {
     use crate::{
         BinaryExpression, BinaryOperator, Block, Expression, FunctionCall, FunctionDeclaration,
         Identifier, IntegerLit, MemberAccess, MemberExpressionBase, MemberExpressionMember,
-        Program, parse, types::DataType,
+        Program, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -188,7 +188,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Identifier(Identifier {
                             name: "chicken".to_string(),
@@ -218,7 +218,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![
                             Stmt::Identifier(Identifier {
@@ -278,7 +278,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::FunctionCall(FunctionCall {
                             name: "foo".to_string(),
@@ -309,7 +309,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::FunctionCall(FunctionCall {
                             name: "bar".to_string(),
@@ -343,7 +343,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::FunctionCall(FunctionCall {
                             name: "baz".to_string(),
@@ -387,7 +387,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::FunctionCall(FunctionCall {
                             name: "calculate".to_string(),
@@ -450,7 +450,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::MemberAccess(MemberAccess {
                             base: Box::new(MemberExpressionBase::Identifier(Identifier {
@@ -487,7 +487,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::MemberAccess(MemberAccess {
                             base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
@@ -531,7 +531,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::MemberAccess(MemberAccess {
                             base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {

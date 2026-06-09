@@ -21,7 +21,7 @@ pub struct Variable {
 
 #[derive(Clone, Debug)]
 pub struct Function {
-    pub(crate) return_type: DataType,
+    pub(crate) return_type: Option<DataType>,
     pub(crate) params: Vec<FunctionParam>,
 }
 

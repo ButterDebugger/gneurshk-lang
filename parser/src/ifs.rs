@@ -41,7 +41,7 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<Stmt> {
 mod tests {
     use crate::{
         BinaryExpression, BinaryOperator, Block, Expression, FunctionDeclaration, IfStatement,
-        IntegerLit, Program, Stmt, parse, types::DataType,
+        IntegerLit, Program, Stmt, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -82,7 +82,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![
                             Stmt::IfStatement(IfStatement {
@@ -167,7 +167,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![
                             Stmt::IfStatement(IfStatement {
@@ -291,7 +291,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::IfStatement(IfStatement {
                             condition: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -348,7 +348,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::IfStatement(IfStatement {
                             condition: Box::new(Expression::BinaryExpression(BinaryExpression {
@@ -423,7 +423,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::IfStatement(IfStatement {
                             condition: Box::new(Expression::BinaryExpression(BinaryExpression {

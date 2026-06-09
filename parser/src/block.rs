@@ -46,7 +46,7 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Block, FunctionDeclaration, IntegerLit, Program, Stmt, parse, types::DataType};
+    use crate::{Block, FunctionDeclaration, IntegerLit, Program, Stmt, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -77,7 +77,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Block(Block { body: vec![] })],
                     }),
@@ -104,7 +104,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Block(Block {
                             body: vec![Stmt::Integer(IntegerLit {
@@ -138,7 +138,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Block(Block {
                             body: vec![Stmt::Integer(IntegerLit {
@@ -170,7 +170,7 @@ func main() {
                     annotations: vec![],
                     name: "main".to_string(),
                     params: vec![],
-                    return_type: DataType::default(),
+                    return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Block(Block {
                             body: vec![
