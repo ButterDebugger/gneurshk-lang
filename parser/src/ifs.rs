@@ -41,7 +41,7 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<Stmt> {
 mod tests {
     use crate::{
         BinaryExpression, BinaryOperator, Block, Expression, FunctionDeclaration, IfStatement,
-        IntegerLit, Program, Stmt, parse,
+        IntegerLit, Program, Stmt, VariableDeclaration, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -101,37 +101,34 @@ func main() {
                                 )),
                                 if_block: Box::new(Block {
                                     body: vec![
-                                        Stmt::Declaration {
-                                            mutable: true,
+                                        Stmt::VariableDeclaration(VariableDeclaration::Mutable {
                                             name: "apple".to_string(),
                                             data_type: None,
                                             value: Some(Expression::Integer(IntegerLit {
                                                 value: 1,
                                                 span: 53..54
                                             })),
-                                        },
-                                        Stmt::Declaration {
-                                            mutable: true,
+                                        }),
+                                        Stmt::VariableDeclaration(VariableDeclaration::Mutable {
                                             name: "green".to_string(),
                                             data_type: None,
                                             value: Some(Expression::Integer(IntegerLit {
                                                 value: 3,
                                                 span: 78..79
                                             })),
-                                        },
+                                        }),
                                     ],
                                 }),
                                 else_statement: None,
                             }),
-                            Stmt::Declaration {
-                                mutable: false,
+                            Stmt::VariableDeclaration(VariableDeclaration::Constant {
                                 name: "borg".to_string(),
                                 data_type: None,
-                                value: Some(Expression::Integer(IntegerLit {
+                                value: Expression::Integer(IntegerLit {
                                     value: 5,
                                     span: 103..104
-                                })),
-                            },
+                                }),
+                            }),
                         ],
                     }),
                 }],
@@ -205,15 +202,18 @@ func main() {
                                                 }
                                             )),
                                             if_block: Box::new(Block {
-                                                body: vec![Stmt::Declaration {
-                                                    mutable: true,
-                                                    name: "apple".to_string(),
-                                                    data_type: None,
-                                                    value: Some(Expression::Integer(IntegerLit {
-                                                        value: 1,
-                                                        span: 78..79
-                                                    })),
-                                                }]
+                                                body: vec![Stmt::VariableDeclaration(
+                                                    VariableDeclaration::Mutable {
+                                                        name: "apple".to_string(),
+                                                        data_type: None,
+                                                        value: Some(Expression::Integer(
+                                                            IntegerLit {
+                                                                value: 1,
+                                                                span: 78..79
+                                                            }
+                                                        )),
+                                                    }
+                                                )]
                                             }),
                                             else_statement: None,
                                         }),
@@ -236,15 +236,18 @@ func main() {
                                                 }
                                             )),
                                             if_block: Box::new(Block {
-                                                body: vec![Stmt::Declaration {
-                                                    mutable: true,
-                                                    name: "green".to_string(),
-                                                    data_type: None,
-                                                    value: Some(Expression::Integer(IntegerLit {
-                                                        value: 3,
-                                                        span: 135..136
-                                                    })),
-                                                }]
+                                                body: vec![Stmt::VariableDeclaration(
+                                                    VariableDeclaration::Mutable {
+                                                        name: "green".to_string(),
+                                                        data_type: None,
+                                                        value: Some(Expression::Integer(
+                                                            IntegerLit {
+                                                                value: 3,
+                                                                span: 135..136
+                                                            }
+                                                        )),
+                                                    }
+                                                )]
                                             }),
                                             else_statement: None,
                                         })
@@ -252,15 +255,14 @@ func main() {
                                 }),
                                 else_statement: None,
                             }),
-                            Stmt::Declaration {
-                                mutable: false,
+                            Stmt::VariableDeclaration(VariableDeclaration::Constant {
                                 name: "borg".to_string(),
                                 data_type: None,
-                                value: Some(Expression::Integer(IntegerLit {
+                                value: Expression::Integer(IntegerLit {
                                     value: 5,
                                     span: 170..171
-                                })),
-                            },
+                                }),
+                            }),
                         ],
                     }),
                 }],

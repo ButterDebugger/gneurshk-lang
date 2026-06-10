@@ -112,12 +112,7 @@ impl Analyzer {
             Stmt::FunctionCall(FunctionCall { name, args, .. }) => {
                 self.analyze_function_call(name, args)
             }
-            Stmt::Declaration {
-                mutable,
-                name,
-                data_type,
-                value,
-            } => self.analyze_variable_declaration(mutable, name, data_type, value),
+            Stmt::VariableDeclaration(variable) => self.analyze_variable_declaration(variable),
             Stmt::Assignment(Assignment { member, value }) => {
                 self.analyze_assignment(member, value)
             }

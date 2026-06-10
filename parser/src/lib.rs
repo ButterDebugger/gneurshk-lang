@@ -247,19 +247,19 @@ pub struct FunctionDeclaration {
     pub block: Box<Block>,
 }
 
-// #[derive(Debug, PartialEq, Clone)]
-// pub enum VariableDeclaration {
-//     Mutable {
-//         name: String,
-//         data_type: Option<DataType>,
-//         value: Option<Expression>,
-//     },
-//     Constant {
-//         name: String,
-//         data_type: Option<DataType>,
-//         value: Expression,
-//     },
-// }
+#[derive(Debug, PartialEq, Clone)]
+pub enum VariableDeclaration {
+    Mutable {
+        name: String,
+        data_type: Option<DataType>,
+        value: Option<Expression>,
+    },
+    Constant {
+        name: String,
+        data_type: Option<DataType>,
+        value: Expression,
+    },
+}
 
 /// Anything that can be declared at the top level of a program
 #[derive(Debug, PartialEq, Clone)]
@@ -277,12 +277,7 @@ pub enum Declaration {
 #[derive(Debug, PartialEq, Clone)]
 pub enum Stmt {
     Assignment(Assignment),
-    Declaration {
-        mutable: bool,
-        name: String,
-        data_type: Option<DataType>,
-        value: Option<Expression>,
-    },
+    VariableDeclaration(VariableDeclaration),
     Block(Block),
     IfStatement(IfStatement),
     BinaryExpression(BinaryExpression),
@@ -294,9 +289,7 @@ pub enum Stmt {
     Float(FloatLit),
     Boolean(BooleanLit),
     String(StringLit),
-    ReturnStatement {
-        value: Option<Expression>,
-    },
+    ReturnStatement { value: Option<Expression> },
 }
 
 /// Parses statements that appear directly after an new line and or indentation

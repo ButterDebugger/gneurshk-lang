@@ -98,7 +98,7 @@ impl<'ctx> Codegen<'ctx> {
 
     fn build_stmt(&mut self, stmt: Stmt) -> Option<BasicValueEnum<'ctx>> {
         match stmt {
-            Stmt::Declaration { name, value, .. } => self.build_declaration(name, value),
+            Stmt::VariableDeclaration(variable) => self.build_declaration(variable),
             Stmt::Assignment(Assignment { member, value }) => self.build_assignment(member, value),
             Stmt::Block(block) => self.build_block(block),
             Stmt::IfStatement(IfStatement {

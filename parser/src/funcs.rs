@@ -168,7 +168,7 @@ mod tests {
     use crate::types::DataType;
     use crate::{
         Annotation, Block, Expression, FloatLit, FunctionDeclaration, FunctionParam, IntegerLit,
-        Program, Stmt, parse,
+        Program, Stmt, VariableDeclaration, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -208,15 +208,14 @@ mod tests {
                     params: vec![],
                     return_type: Some(DataType::Int32),
                     block: Box::new(Block {
-                        body: vec![Stmt::Declaration {
-                            mutable: true,
+                        body: vec![Stmt::VariableDeclaration(VariableDeclaration::Mutable {
                             name: "peas".to_string(),
                             data_type: None,
                             value: Some(Expression::Integer(IntegerLit {
                                 value: 2,
                                 span: 37..38
                             })),
-                        }]
+                        })]
                     }),
                 }],
             }
@@ -237,15 +236,14 @@ mod tests {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::Declaration {
-                            mutable: false,
+                        body: vec![Stmt::VariableDeclaration(VariableDeclaration::Constant {
                             name: "cucumbers".to_string(),
                             data_type: None,
-                            value: Some(Expression::Integer(IntegerLit {
+                            value: Expression::Integer(IntegerLit {
                                 value: 8,
                                 span: 34..35
-                            })),
-                        }]
+                            }),
+                        })]
                     }),
                 }],
             }

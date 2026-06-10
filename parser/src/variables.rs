@@ -1,5 +1,5 @@
 use super::{Stmt, TokenStream, expressions::parse_expression};
-use crate::types::parse_type;
+use crate::{VariableDeclaration, types::parse_type};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
@@ -26,43 +26,55 @@ pub fn parse_variable_declaration(tokens: &mut TokenStream) -> Result<Stmt> {
         _ => None,
     };
 
-    // Check if there is a value
-    let init_value = match tokens.peek() {
+    // Check if there is an initial value
+    match tokens.peek() {
         Some((Token::Equal, _)) => {
             tokens.next(); // Consume the token
 
             // Parse the expression
-            let value = parse_expression(tokens)?;
+            let init_value = parse_expression(tokens)?;
 
-            // TODO: Based on the value, determine the type if it wasn't specified
-
-            Some(value)
+            // Return the a variable declaration with the initial value
+            if mutable {
+                Ok(Stmt::VariableDeclaration(VariableDeclaration::Mutable {
+                    name,
+                    data_type,
+                    value: Some(init_value),
+                }))
+            } else {
+                Ok(Stmt::VariableDeclaration(VariableDeclaration::Constant {
+                    name,
+                    data_type,
+                    value: init_value,
+                }))
+            }
         }
+        // Otherwise there is no initial value
         _ => {
             // Return an error if there is no type and no value
             if data_type.is_none() {
                 return Err(anyhow!("Expected a type or value for the variable"));
             }
 
-            // Otherwise, return no value
-            None
+            // Return a variable declaration without an initial value
+            if mutable {
+                Ok(Stmt::VariableDeclaration(VariableDeclaration::Mutable {
+                    name,
+                    data_type,
+                    value: None,
+                }))
+            } else {
+                Err(anyhow!("Constants must have an initial value"))
+            }
         }
-    };
-
-    // Return the declaration
-    Ok(Stmt::Declaration {
-        mutable,
-        name: name.to_string(),
-        data_type,
-        value: init_value,
-    })
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::{
         BinaryExpression, BinaryOperator, Block, Expression, FunctionDeclaration, IntegerLit,
-        Program, Stmt, parse, types::DataType,
+        Program, Stmt, VariableDeclaration, parse, types::DataType,
     };
     use gneurshk_lexer::lex;
 
@@ -133,12 +145,11 @@ func main() {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::Declaration {
-                            mutable: true,
+                        body: vec![Stmt::VariableDeclaration(VariableDeclaration::Mutable {
                             name: "apple".to_string(),
                             data_type: None,
                             value: None
-                        }],
+                        })],
                     }),
                 }],
             }
@@ -165,12 +176,11 @@ func main() {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::Declaration {
-                            mutable: true,
+                        body: vec![Stmt::VariableDeclaration(VariableDeclaration::Mutable {
                             name: "pepper".to_string(),
                             data_type: Some(DataType::Int32),
                             value: None
-                        }],
+                        })],
                     }),
                 }],
             }
@@ -197,15 +207,14 @@ func main() {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::Declaration {
-                            mutable: true,
+                        body: vec![Stmt::VariableDeclaration(VariableDeclaration::Mutable {
                             name: "potatoes".to_string(),
                             data_type: Some(DataType::Int32),
                             value: Some(Expression::Integer(IntegerLit {
                                 value: 5,
                                 span: 41..42
                             }))
-                        }],
+                        })],
                     }),
                 }],
             }
@@ -232,8 +241,7 @@ func main() {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::Declaration {
-                            mutable: true,
+                        body: vec![Stmt::VariableDeclaration(VariableDeclaration::Mutable {
                             name: "canned_corn".to_string(),
                             data_type: None,
                             value: Some(Expression::BinaryExpression(BinaryExpression {
@@ -247,7 +255,7 @@ func main() {
                                 })),
                                 operator: BinaryOperator::Add
                             }))
-                        }],
+                        })],
                     }),
                 }],
             }

@@ -1,16 +1,21 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::Expression;
+use gneurshk_parser::VariableDeclaration;
 use inkwell::values::BasicValueEnum;
 
 impl<'ctx> Codegen<'ctx> {
     pub(crate) fn build_declaration(
         &mut self,
-        name: String,
-        value: Option<Expression>,
+        variable_declaration: VariableDeclaration,
     ) -> Option<BasicValueEnum<'ctx>> {
-        let i32_type = self.context.i32_type();
+        // Get name and value
+        let (name, value) = match variable_declaration {
+            VariableDeclaration::Mutable { name, value, .. } => (name, value),
+            VariableDeclaration::Constant { name, value, .. } => (name, Some(value)),
+        };
 
         // Create variable allocation
+        let i32_type = self.context.i32_type();
+
         let alloca = self.builder.build_alloca(i32_type, &name).unwrap();
 
         // If its initial value is provided, compile and store it
