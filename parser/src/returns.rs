@@ -1,4 +1,4 @@
-use crate::{Stmt, expressions::parse_expression};
+use crate::{Return, Stmt, expressions::parse_expression};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::{TokenStream, tokens::Token};
 
@@ -17,14 +17,14 @@ pub fn parse_return_statement(tokens: &mut TokenStream) -> Result<Stmt> {
         _ => None,
     };
 
-    Ok(Stmt::ReturnStatement { value })
+    Ok(Stmt::Return(Return { value }))
 }
 
 #[cfg(test)]
 mod tests {
     use crate::{
         BinaryExpression, BinaryOperator, Block, Expression, FunctionDeclaration, IntegerLit,
-        Program, Stmt, parse,
+        Program, Return, Stmt, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -58,7 +58,7 @@ func main() {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::ReturnStatement { value: None }],
+                        body: vec![Stmt::Return(Return { value: None })],
                     }),
                 }],
             }
@@ -85,12 +85,12 @@ func main() {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::ReturnStatement {
+                        body: vec![Stmt::Return(Return {
                             value: Some(Expression::Integer(IntegerLit {
                                 value: 1,
                                 span: 26..27
                             }))
-                        }],
+                        })],
                     }),
                 }],
             }
@@ -117,7 +117,7 @@ func main() {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::ReturnStatement {
+                        body: vec![Stmt::Return(Return {
                             value: Some(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
@@ -129,7 +129,7 @@ func main() {
                                 })),
                                 operator: BinaryOperator::Add,
                             }))
-                        }],
+                        })],
                     }),
                 }],
             }
@@ -159,7 +159,7 @@ func main() {
                     return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Block(Block {
-                            body: vec![Stmt::ReturnStatement { value: None }]
+                            body: vec![Stmt::Return(Return { value: None })]
                         })],
                     }),
                 }],
@@ -188,12 +188,12 @@ func main() {
                     return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Block(Block {
-                            body: vec![Stmt::ReturnStatement {
+                            body: vec![Stmt::Return(Return {
                                 value: Some(Expression::Integer(IntegerLit {
                                     value: 1,
                                     span: 28..29
                                 }))
-                            }]
+                            })]
                         })],
                     }),
                 }],

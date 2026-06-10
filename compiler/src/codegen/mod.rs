@@ -2,7 +2,7 @@ use crate::codegen::scope::Scope;
 use anyhow::{Result, anyhow};
 use gneurshk_parser::{
     Assignment, BinaryExpression, BooleanLit, Expression, FloatLit, FunctionDeclaration,
-    IfStatement, IntegerLit, Program, Stmt, StringLit, UnaryExpression,
+    IfStatement, IntegerLit, Program, Return, Stmt, StringLit, UnaryExpression,
 };
 use inkwell::AddressSpace;
 use inkwell::builder::Builder;
@@ -121,7 +121,7 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::Float(FloatLit { value, .. }) => self.build_float(value),
             Stmt::String(StringLit { value, .. }) => self.build_global_string(value),
             Stmt::Boolean(BooleanLit { value, .. }) => self.build_boolean(value),
-            Stmt::ReturnStatement { value } => self.build_return_statement(value),
+            Stmt::Return(Return { value }) => self.build_return_statement(value),
         }
     }
 

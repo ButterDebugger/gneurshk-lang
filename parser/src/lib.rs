@@ -261,6 +261,11 @@ pub enum VariableDeclaration {
     },
 }
 
+#[derive(Debug, PartialEq, Clone)]
+pub struct Return {
+    pub value: Option<Expression>,
+}
+
 /// Anything that can be declared at the top level of a program
 #[derive(Debug, PartialEq, Clone)]
 pub enum Declaration {
@@ -289,7 +294,7 @@ pub enum Stmt {
     Float(FloatLit),
     Boolean(BooleanLit),
     String(StringLit),
-    ReturnStatement { value: Option<Expression> },
+    Return(Return),
 }
 
 /// Parses statements that appear directly after an new line and or indentation
