@@ -7,7 +7,7 @@ use clap::{
     },
 };
 use console::style;
-use gneurshk_analyzer::Analyzer;
+use gneurshk_analyzer::program::{AnalyzedProgram, ProgramAnalyzer};
 use gneurshk_compiler::output::{executable::compile_to_executable, ir::create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
 use gneurshk_parser::{Program, parse};
@@ -268,14 +268,16 @@ fn main() {
 fn build_cmd(input: &str, pb: Box<ProgressBar>) -> Result<PathBuf> {
     // Analyze the program
     let ast = match analyze_program(input, pb.clone()) {
-        Ok((ast, analyzer)) => {
+        Ok((ast, analyzed)) => {
             // Cancel the build if there are any semantic errors
-            if !analyzer.errors.is_empty() {
-                return Err(anyhow!("{:?}", analyzer.errors));
+            let all_errors = analyzed.get_all_errors();
+
+            if !all_errors.is_empty() {
+                return Err(anyhow!("{:?}", all_errors));
             }
 
             // Print the warnings
-            for warning in analyzer.warnings {
+            for warning in analyzed.warnings {
                 pb.println(format!("Warning: {warning}"));
             }
 
@@ -318,18 +320,18 @@ fn check_cmd(path: &Path) -> notify::Result<()> {
 
         // Analyze the program
         match analyze_program(&source, pb.clone()) {
-            Ok((_ast, analyzer)) => {
+            Ok((_ast, analyzed)) => {
                 pb.finish_and_clear();
 
                 // Print the errors and warnings
-                if analyzer.errors.is_empty() && analyzer.warnings.is_empty() {
+                if analyzed.errors.is_empty() && analyzed.warnings.is_empty() {
                     println!("✅");
                 } else {
-                    for error in analyzer.errors {
+                    for error in analyzed.errors {
                         eprintln!("❗ {}", error);
                     }
 
-                    for warning in analyzer.warnings {
+                    for warning in analyzed.warnings {
                         eprintln!("⚠️  {}", warning);
                     }
                 }
@@ -408,18 +410,16 @@ fn create_ast(input: &str, pb: Box<ProgressBar>) -> Result<Program> {
     parse(&mut tokens.clone())
 }
 
-fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<(Program, Analyzer)> {
+fn analyze_program(input: &str, pb: Box<ProgressBar>) -> Result<(Program, AnalyzedProgram)> {
     // Create the AST
     let ast = create_ast(input, pb.clone())?;
 
     // Analyze the AST
     pb.set_message("Analyzing...");
 
-    let mut analyzer = Analyzer::new();
+    let analyzed_program = ProgramAnalyzer::analyze(ast.clone());
 
-    analyzer.analyze(ast.clone())?;
-
-    Ok((ast, analyzer))
+    Ok((ast, analyzed_program))
 }
 
 fn create_progress_bar() -> Box<ProgressBar> {

@@ -1,9 +1,9 @@
-use super::{Stmt, TokenStream, expressions::parse_expression};
-use crate::{IfStatement, block::parse_block};
+use super::{TokenStream, expressions::parse_expression};
+use crate::{ElseBranch, IfStatement, block::parse_block};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
-pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<Stmt> {
+pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<IfStatement> {
     // Consume the If token
     match tokens.next() {
         Some((Token::If, _)) => {}
@@ -22,26 +22,28 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<Stmt> {
 
         // Determine what type of statement follows
         match tokens.peek() {
-            Some((Token::If, _)) => Some(Box::new(parse_if_statement(tokens)?)),
-            Some((Token::OpenBrace, _)) => Some(Box::new(Stmt::Block(parse_block(tokens)?))),
+            Some((Token::If, _)) => Some(Box::new(ElseBranch::IfStatement(parse_if_statement(
+                tokens,
+            )?))),
+            Some((Token::OpenBrace, _)) => Some(Box::new(ElseBranch::Block(parse_block(tokens)?))),
             _ => None,
         }
     } else {
         None
     };
 
-    Ok(Stmt::IfStatement(IfStatement {
+    Ok(IfStatement {
         condition: Box::new(condition),
         if_block: Box::new(if_block),
         else_statement: else_block,
-    }))
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use crate::{
-        BinaryExpression, BinaryOperator, Block, Expression, FunctionDeclaration, IfStatement,
-        IntegerLit, Program, Stmt, VariableDeclaration, parse,
+        BinaryExpression, BinaryOperator, Block, ElseBranch, Expression, FunctionDeclaration,
+        IfStatement, IntegerLit, Program, Stmt, VariableDeclaration, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -313,7 +315,7 @@ func main() {
                                     span: 41..42
                                 })]
                             }),
-                            else_statement: Some(Box::new(Stmt::Block(Block {
+                            else_statement: Some(Box::new(ElseBranch::Block(Block {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 2,
                                     span: 64..65
@@ -370,7 +372,7 @@ func main() {
                                     span: 41..42
                                 })]
                             }),
-                            else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
+                            else_statement: Some(Box::new(ElseBranch::IfStatement(IfStatement {
                                 condition: Box::new(Expression::BinaryExpression(
                                     BinaryExpression {
                                         left: Box::new(Expression::Integer(IntegerLit {
@@ -445,7 +447,7 @@ func main() {
                                     span: 41..42
                                 })]
                             }),
-                            else_statement: Some(Box::new(Stmt::IfStatement(IfStatement {
+                            else_statement: Some(Box::new(ElseBranch::IfStatement(IfStatement {
                                 condition: Box::new(Expression::BinaryExpression(
                                     BinaryExpression {
                                         left: Box::new(Expression::Integer(IntegerLit {
@@ -465,7 +467,7 @@ func main() {
                                         span: 75..76
                                     })]
                                 }),
-                                else_statement: Some(Box::new(Stmt::Block(Block {
+                                else_statement: Some(Box::new(ElseBranch::Block(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 3,
                                         span: 98..99

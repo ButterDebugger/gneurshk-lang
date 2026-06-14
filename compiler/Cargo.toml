@@ -12,4 +12,4 @@ gneurshk_parser = { path = "../parser" }
 gneurshk_lexer = { path = "../lexer" }
 
 anyhow.workspace = true
-inkwell = { version = "0.8.0", features = ["llvm21-1"] }
+inkwell = { version = "0.9.0", features = ["llvm21-1"] }

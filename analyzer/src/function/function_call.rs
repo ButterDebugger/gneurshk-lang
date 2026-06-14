@@ -1,7 +1,7 @@
-use crate::{Analyzer, errors::SematicError};
+use crate::{errors::SematicError, function::FunctionAnalyzer};
 use gneurshk_parser::{Expression, types::DataType};
 
-impl Analyzer {
+impl<'a> FunctionAnalyzer<'a> {
     pub(crate) fn analyze_function_call(
         &mut self,
         name: String,
@@ -17,10 +17,11 @@ impl Analyzer {
             return None;
         }
 
-        if let Some(function) = self.functions.get(&name).cloned() {
+        if let Some(function) = self.program_analyzer.functions.get(&name).cloned() {
             // Check for correct number of arguments
             if args.len() != function.params.len() {
-                self.errors
+                self.program_analyzer
+                    .errors
                     .push(SematicError::FunctionCallArgumentCountMismatch(
                         name.clone(),
                         function.params.len(),
@@ -44,19 +45,23 @@ impl Analyzer {
                     expected_types.iter().zip(arg_types.iter()).enumerate()
                 {
                     if expected != actual {
-                        self.errors.push(SematicError::FunctionCallArgumentMismatch(
-                            name.clone(),
-                            i + 1,
-                            expected.clone(),
-                            actual.clone(),
-                        ));
+                        self.program_analyzer.errors.push(
+                            SematicError::FunctionCallArgumentMismatch(
+                                name.clone(),
+                                i + 1,
+                                expected.clone(),
+                                actual.clone(),
+                            ),
+                        );
                     }
                 }
             }
 
             function.return_type
         } else {
-            self.errors.push(SematicError::FunctionNotFound(name));
+            self.program_analyzer
+                .errors
+                .push(SematicError::FunctionNotFound(name));
 
             // TODO: analyze arguments anyway
 

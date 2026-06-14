@@ -150,8 +150,15 @@ pub struct ImportCollection {
     items: Vec<(String, Option<String>)>,
 }
 
+/// Represents anything that can come after 'else' in an if statement
 #[derive(Debug, PartialEq, Clone)]
+pub enum ElseBranch {
+    Block(Block),
+    IfStatement(IfStatement),
+}
+
 /// Represents anything that can be evaluated to a value
+#[derive(Debug, PartialEq, Clone)]
 pub enum Expression {
     Block(Block),
     BinaryExpression(BinaryExpression),
@@ -192,7 +199,7 @@ impl From<Expression> for Stmt {
 pub struct IfStatement {
     pub condition: Box<Expression>,
     pub if_block: Box<Block>,
-    pub else_statement: Option<Box<Stmt>>,
+    pub else_statement: Option<Box<ElseBranch>>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -309,16 +316,13 @@ pub fn parse(tokens: &mut TokenStream) -> Result<Program> {
         }
 
         // Append statements or catch and throw errors
-        match parse_declaration(tokens) {
-            Ok(stmt) => match stmt {
-                Declaration::Import(import) => {
-                    imports.push(import);
-                }
-                Declaration::Function(func) => {
-                    functions.push(func);
-                }
-            },
-            Err(e) => return Err(e),
+        match parse_declaration(tokens)? {
+            Declaration::Import(import) => {
+                imports.push(import);
+            }
+            Declaration::Function(func) => {
+                functions.push(func);
+            }
         }
     }
 
@@ -363,7 +367,7 @@ fn parse_statement(tokens: &mut TokenStream) -> Result<Stmt> {
     // Parse the statement
     let stmt = match token {
         Token::Var | Token::Const => parse_variable_declaration(tokens),
-        Token::If => parse_if_statement(tokens),
+        Token::If => Ok(Stmt::IfStatement(parse_if_statement(tokens)?)),
         Token::Integer(_)
         | Token::Float(_)
         | Token::Boolean(_)

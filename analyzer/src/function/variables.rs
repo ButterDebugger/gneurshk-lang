@@ -1,7 +1,7 @@
-use crate::{Analyzer, errors::SematicError, scope::Variable};
+use crate::{errors::SematicError, function::FunctionAnalyzer, scope::Variable};
 use gneurshk_parser::{VariableDeclaration, types::DataType};
 
-impl Analyzer {
+impl<'a> FunctionAnalyzer<'a> {
     pub(crate) fn analyze_variable_declaration(
         &mut self,
         variable: VariableDeclaration,
@@ -28,7 +28,9 @@ impl Analyzer {
         } else if let Some(val) = value.clone() {
             self.analyze_expression(val)?
         } else {
-            self.errors.push(SematicError::NoTypeOrValueProvided);
+            self.program_analyzer
+                .errors
+                .push(SematicError::NoTypeOrValueProvided);
 
             return None;
         };

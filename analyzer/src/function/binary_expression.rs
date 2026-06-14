@@ -1,7 +1,7 @@
-use crate::{Analyzer, errors::SematicError};
+use crate::{errors::SematicError, function::FunctionAnalyzer};
 use gneurshk_parser::{BinaryOperator, Expression, types::DataType};
 
-impl Analyzer {
+impl<'a> FunctionAnalyzer<'a> {
     pub(crate) fn analyze_binary_expression(
         &mut self,
         left: Expression,
@@ -29,7 +29,8 @@ impl Analyzer {
             (DataType::Int32, DataType::Int32) => Some(DataType::Int32),
             (DataType::Float32, DataType::Float32) => Some(DataType::Float32),
             _ => {
-                self.errors
+                self.program_analyzer
+                    .errors
                     .push(SematicError::TypeMismatch(left_type, right_type));
 
                 None

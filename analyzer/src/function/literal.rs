@@ -1,7 +1,7 @@
-use crate::Analyzer;
+use crate::function::FunctionAnalyzer;
 use gneurshk_parser::types::DataType;
 
-impl Analyzer {
+impl<'a> FunctionAnalyzer<'a> {
     pub(crate) fn analyze_string(&mut self) -> Option<DataType> {
         Some(DataType::String)
     }

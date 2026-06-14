@@ -14,6 +14,9 @@ pub enum SematicError {
     )]
     FunctionCallArgumentMismatch(String, usize, DataType, DataType),
 
+    #[error("Function '{0}' return type mismatch.")]
+    FunctionReturnTypeMismatch(String),
+
     #[error("Variable '{0}' not found")]
     VariableNotFound(String),
 
@@ -25,6 +28,15 @@ pub enum SematicError {
 
     #[error("Variable '{0}' is not able to be modified")]
     VariableUnmodifiable(String),
+
+    #[error("The if statement requires an else that evaluates to the expected type")]
+    IfMissingElse,
+
+    #[error("The if and else types do not match")]
+    IfElseTypeMismatch,
+
+    #[error("If condition must evaluate to a boolean value")]
+    BooleanOnlyIfCondition,
 }
 
 #[derive(Error, Debug, Clone, PartialEq, Eq, Hash)]

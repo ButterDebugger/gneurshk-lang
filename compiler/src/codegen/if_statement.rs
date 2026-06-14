@@ -1,5 +1,5 @@
 use crate::codegen::Codegen;
-use gneurshk_parser::{Block, Expression, Stmt};
+use gneurshk_parser::{Block, ElseBranch, Expression, IfStatement};
 use inkwell::{IntPredicate, values::BasicValueEnum};
 
 impl<'ctx> Codegen<'ctx> {
@@ -7,7 +7,7 @@ impl<'ctx> Codegen<'ctx> {
         &mut self,
         condition: Expression,
         block: Block,
-        else_block: Option<Stmt>,
+        else_block: Option<ElseBranch>,
     ) -> Option<BasicValueEnum<'ctx>> {
         // Compile the condition
         let condition_value = self.build_expression(condition)?;
@@ -74,7 +74,16 @@ impl<'ctx> Codegen<'ctx> {
         if let Some(else_block) = else_block {
             let else_branch_block = else_branch.unwrap();
             self.builder.position_at_end(else_branch_block);
-            self.build_stmt(else_block);
+
+            match else_block {
+                ElseBranch::Block(block) => self.build_block(block),
+                ElseBranch::IfStatement(IfStatement {
+                    condition: condition2,
+                    if_block: block2,
+                    else_statement: else_block2,
+                    ..
+                }) => self.build_if_statement(*condition2, *block2, else_block2.map(|b| *b)),
+            };
 
             // Only add the merge branch if the current block doesn't have a terminator
             let current_block = self.builder.get_insert_block().unwrap();
