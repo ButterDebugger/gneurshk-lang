@@ -19,19 +19,27 @@ pub(crate) fn watch<F>(path: &Path, callback: F) -> notify::Result<()>
 where
     F: Fn(),
 {
+    // Create the watcher
     let (tx, rx) = std::sync::mpsc::channel();
 
     let mut watcher = RecommendedWatcher::new(tx, Config::default().with_compare_contents(true))?;
 
     watcher.watch(path, RecursiveMode::Recursive)?;
 
+    // Print the watcher's status
     println!("{} Process has started.", style("Watcher").green().bright());
 
+    // Run the callback
     callback();
 
+    // Wait for watcher restarts
     let mut restart_count = 0;
 
-    for res in rx {
+    for res in &rx {
+        // Wait for the burst to settle, then drain any queued events
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        while rx.try_recv().is_ok() {}
+
         // Clear the screen
         clearscreen::clear().unwrap();
 
