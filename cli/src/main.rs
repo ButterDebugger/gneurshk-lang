@@ -304,15 +304,18 @@ fn main() {
                         Ok((_ast, analyzed)) => {
                             pb.finish_and_clear();
 
+                            let errors = analyzed.get_all_errors();
+                            let warnings = analyzed.get_all_warnings();
+
                             // Print the errors and warnings
-                            if analyzed.errors.is_empty() && analyzed.warnings.is_empty() {
+                            if errors.is_empty() && warnings.is_empty() {
                                 println!("✅");
                             } else {
-                                for error in analyzed.errors {
+                                for error in errors {
                                     eprintln!("❗ {}", error);
                                 }
 
-                                for warning in analyzed.warnings {
+                                for warning in warnings {
                                     eprintln!("⚠️  {}", warning);
                                 }
                             }
