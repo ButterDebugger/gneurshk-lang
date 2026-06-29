@@ -1,4 +1,5 @@
 use crate::codegen::Codegen;
+use crate::codegen::scope::{AllocationKind, Variable};
 use gneurshk_parser::types::DataType;
 use gneurshk_parser::{Block, FunctionParam};
 use inkwell::values::{BasicValueEnum, FunctionValue};
@@ -26,10 +27,16 @@ impl<'ctx> Codegen<'ctx> {
         // Create a variable for each parameter in the current scope
         for (i, param) in params.iter().enumerate() {
             let param_value = function.get_nth_param(i as u32).unwrap();
-            let alloca = self.builder.build_alloca(i32_type, &param.name).unwrap();
-            self.builder.build_store(alloca, param_value).unwrap();
+            let ptr = self.builder.build_alloca(i32_type, &param.name).unwrap();
+            self.builder.build_store(ptr, param_value).unwrap();
 
-            self.scope.set_variable(param.name.clone(), alloca);
+            self.scope.set_variable(
+                param.name.clone(),
+                Variable {
+                    pointer: ptr,
+                    alloc: AllocationKind::Stack,
+                },
+            );
         }
 
         // Compile function body

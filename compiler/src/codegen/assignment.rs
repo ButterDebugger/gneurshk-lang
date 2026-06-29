@@ -13,7 +13,7 @@ impl<'ctx> Codegen<'ctx> {
                 let name = identifier.name;
 
                 let new_value = self.build_expression(value)?;
-                let pointer = self.scope.get_variable(&name)?;
+                let pointer = self.scope.get_variable(&name)?.pointer;
 
                 self.builder.build_store(pointer, new_value).unwrap();
 
