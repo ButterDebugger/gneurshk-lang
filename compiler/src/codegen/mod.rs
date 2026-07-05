@@ -5,6 +5,7 @@ use gneurshk_parser::{
     IfStatement, IntegerLit, Program, Return, Stmt, StringLit, UnaryExpression,
 };
 use inkwell::AddressSpace;
+use inkwell::basic_block::BasicBlock;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
@@ -20,9 +21,15 @@ mod function_declaration;
 mod identifier;
 mod if_statement;
 mod literal;
+mod loops;
 mod return_statement;
 mod scope;
 mod unary_expression;
+
+struct LoopContext<'ctx> {
+    continue_target: BasicBlock<'ctx>,
+    break_target: BasicBlock<'ctx>,
+}
 
 pub struct Codegen<'ctx> {
     context: &'ctx Context,
@@ -30,6 +37,7 @@ pub struct Codegen<'ctx> {
     builder: Builder<'ctx>,
 
     scope: Box<Scope<'ctx>>,
+    loop_stack: Vec<LoopContext<'ctx>>,
 }
 
 impl<'ctx> Codegen<'ctx> {
@@ -40,6 +48,7 @@ impl<'ctx> Codegen<'ctx> {
             builder: context.create_builder(),
 
             scope: Box::new(Scope::new(None)),
+            loop_stack: Vec::new(),
         };
 
         // Add built-in functions
@@ -122,6 +131,9 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::String(StringLit { value, .. }) => self.build_global_string(value),
             Stmt::Boolean(BooleanLit { value, .. }) => self.build_boolean(value),
             Stmt::Return(Return { value }) => self.build_return_statement(value),
+            Stmt::Loop(loop_stmt) => self.build_loop(loop_stmt),
+            Stmt::Break => self.build_break_statement(),
+            Stmt::Continue => self.build_continue_statement(),
         }
     }
 

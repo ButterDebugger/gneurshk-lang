@@ -3,6 +3,7 @@ use crate::block::parse_block;
 use crate::expressions::parse_expression;
 use crate::ifs::parse_if_statement;
 use crate::imports::parse_import;
+use crate::loops::{parse_loop, parse_while_loop};
 use crate::returns::parse_return_statement;
 use crate::types::DataType;
 use crate::variables::parse_variable_declaration;
@@ -19,6 +20,7 @@ mod funcs;
 mod identifiers;
 mod ifs;
 mod imports;
+mod loops;
 mod returns;
 pub mod types;
 mod variables;
@@ -203,6 +205,11 @@ pub struct IfStatement {
 }
 
 #[derive(Debug, PartialEq, Clone)]
+pub struct LoopStmt {
+    pub block: Box<Block>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct IntegerLit {
     pub value: u64,
     pub span: Range<usize>,
@@ -302,6 +309,9 @@ pub enum Stmt {
     Boolean(BooleanLit),
     String(StringLit),
     Return(Return),
+    Loop(LoopStmt),
+    Continue,
+    Break,
 }
 
 /// Parses statements that appear directly after an new line and or indentation
@@ -394,6 +404,18 @@ fn parse_statement(tokens: &mut TokenStream) -> Result<Stmt> {
         }
         Token::OpenBrace => Ok(Stmt::Block(parse_block(tokens)?)),
         Token::Return => parse_return_statement(tokens),
+        Token::Loop => Ok(Stmt::Loop(parse_loop(tokens)?)),
+        Token::While => Ok(Stmt::Loop(parse_while_loop(tokens)?)),
+        Token::Break => {
+            tokens.next(); // Consume the break token
+
+            Ok(Stmt::Break)
+        }
+        Token::Continue => {
+            tokens.next(); // Consume the continue token
+
+            Ok(Stmt::Continue)
+        }
         _ => {
             println!("token: {token:?}");
             return Err(anyhow!("Unexpected token"));

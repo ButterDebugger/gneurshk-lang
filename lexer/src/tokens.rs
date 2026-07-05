@@ -107,6 +107,16 @@ pub enum Token {
     If,
     #[token("else")]
     Else,
+    #[token("loop")]
+    Loop,
+    #[token("for")]
+    For,
+    #[token("while")]
+    While,
+    #[token("continue")]
+    Continue,
+    #[token("break")]
+    Break,
     #[token("func")]
     Func,
     #[token("struct")]

@@ -26,6 +26,23 @@ impl<'a> FunctionAnalyzer<'a> {
             Stmt::Block(block) => self.analyze_block(block),
             Stmt::IfStatement(return_stmt) => self.analyze_if(return_stmt),
             Stmt::Return(return_stmt) => self.analyze_return(return_stmt),
+            Stmt::Loop(loop_stmt) => self.analyze_loop(loop_stmt),
+            Stmt::Break => {
+                if self.loop_stack.is_empty() {
+                    self.errors
+                        .push(crate::errors::SematicError::BreakOutsideLoop);
+                }
+
+                None
+            }
+            Stmt::Continue => {
+                if self.loop_stack.is_empty() {
+                    self.errors
+                        .push(crate::errors::SematicError::ContinueOutsideLoop);
+                }
+
+                None
+            }
             _ => {
                 println!("statement: {statement:?}");
 

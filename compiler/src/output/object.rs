@@ -3,9 +3,9 @@ use anyhow::{Result, anyhow};
 use gneurshk_parser::Program;
 use inkwell::OptimizationLevel;
 use inkwell::context::Context;
-use inkwell::targets::{
-    CodeModel, FileType, InitializationConfig, RelocMode, Target, TargetMachine,
-};
+#[cfg(windows)]
+use inkwell::targets::TargetTriple;
+use inkwell::targets::{CodeModel, FileType, InitializationConfig, RelocMode, Target};
 use std::path::{Path, PathBuf};
 
 /// Creates object files (.o) from the AST
@@ -21,8 +21,8 @@ pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf> {
     // Initialize LLVM targets
     Target::initialize_all(&InitializationConfig::default());
 
-    // Get the default target triple
-    let target_triple = TargetMachine::get_default_triple();
+    // Get the appropriate target triple
+    let target_triple = get_host_target_triple();
     let target = Target::from_triple(&target_triple)
         .map_err(|e| anyhow!("Failed to create target: {}", e))?;
 
@@ -48,4 +48,21 @@ pub fn create_object_file(ast: Program, output_path: &Path) -> Result<PathBuf> {
 
     // Return the path to the object file
     Ok(obj_path)
+}
+
+fn get_host_target_triple() -> TargetTriple {
+    use std::env::consts::{ARCH, OS};
+
+    // NOTE: ideally I should be using `target_lexicon::HOST` but i've hardcoded using gcc, so we can't do that yet
+
+    let triple = match (OS, ARCH) {
+        ("windows", "x86_64") => "x86_64-pc-windows-gnu",
+        // TODO: test theses other platforms
+        ("linux", "x86_64") => "x86_64-unknown-linux-gnu",
+        ("macos", "x86_64") => "x86_64-apple-darwin",
+        ("macos", "aarch64") => "aarch64-apple-darwin",
+        (os, arch) => panic!("Unsupported host platform: {os}-{arch}"),
+    };
+
+    TargetTriple::create(triple)
 }

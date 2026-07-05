@@ -46,7 +46,7 @@ mod tests {
     use std::path::PathBuf;
 
     fn compile_and_run(source: &str, output_name: &str) -> Result<String> {
-        let output_path = PathBuf::from(format!("tests/{}", output_name));
+        let output_path = PathBuf::from(format!("out/{}", output_name));
         let output_path = output_path.as_path();
 
         // Create parent directory if it doesn't exist
@@ -233,20 +233,7 @@ mod tests {
 
     #[test]
     fn fibonacci() {
-        let source = r#"
-            func fib(n: Int32) -> Int32 {
-                if n <= 1 {
-                    return n
-                }
-
-                return fib(n - 1) + fib(n - 2)
-            }
-
-            func main() {
-                println(fib(42))
-            }
-        "#;
-
+        let source = include_str!("../../tests/fibonacci.iv");
         let output = compile_and_run(source, "fibonacci").unwrap();
 
         assert_eq!(output.trim(), "267914296");
@@ -254,22 +241,28 @@ mod tests {
 
     #[test]
     fn factorial() {
-        let source = r#"
-            func factorial(n: Int32) -> Int32 {
-                if n == 0 {
-                    return 1
-                }
-
-                return n * factorial(n - 1)
-            }
-
-            func main() {
-                println(factorial(12))
-            }
-        "#;
-
+        let source = include_str!("../../tests/factorial.iv");
         let output = compile_and_run(source, "factorial").unwrap();
 
         assert_eq!(output.trim(), "479001600");
+    }
+
+    #[test]
+    fn a_loop() {
+        let source = include_str!("../../tests/a_loop.iv");
+        let output = compile_and_run(source, "a_loop").unwrap();
+
+        assert_eq!(output.trim(), "Hello 1\r\nHello 2\r\nHello 4\r\nDone 5");
+    }
+
+    #[test]
+    fn nested_loops() {
+        let source = include_str!("../../tests/nested_loops.iv");
+        let output = compile_and_run(source, "nested_loops").unwrap();
+
+        assert_eq!(
+            output.trim(),
+            "Hi 1\r\nHey 1\r\nHey 2\r\nHi 2\r\nHey 1\r\nHey 2"
+        );
     }
 }

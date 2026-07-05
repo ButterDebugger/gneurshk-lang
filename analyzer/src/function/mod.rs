@@ -13,8 +13,10 @@ mod function_call;
 mod identifier;
 mod ifs;
 mod literal;
+mod loops;
 mod returns;
 mod statement;
+mod unary_expression;
 mod variables;
 
 #[derive(Debug)]
@@ -24,10 +26,14 @@ pub struct AnalyzedFunction {
 }
 
 #[derive(Debug)]
+pub(crate) struct LoopContext {}
+
+#[derive(Debug)]
 pub(crate) struct FunctionAnalyzer<'a> {
     pub(crate) scope: Box<Scope>,
     pub(crate) program_analyzer: &'a mut ProgramAnalyzer,
     pub(crate) function_declaration: FunctionDeclaration,
+    pub(crate) loop_stack: Vec<LoopContext>,
 
     pub(crate) errors: Vec<SematicError>,
     pub(crate) warnings: Vec<SematicWarning>,
@@ -46,6 +52,7 @@ impl<'a> FunctionAnalyzer<'a> {
             function_declaration: function.clone(),
             errors: Vec::new(),
             warnings: Vec::new(),
+            loop_stack: Vec::new(),
         };
 
         // Declare the params in the scope

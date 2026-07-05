@@ -37,6 +37,18 @@ pub enum SematicError {
 
     #[error("If condition must evaluate to a boolean value")]
     BooleanOnlyIfCondition,
+
+    #[error("Break statement cannot belong outside of a loop")]
+    BreakOutsideLoop,
+
+    #[error("Continue statement cannot belong outside of a loop")]
+    ContinueOutsideLoop,
+
+    #[error("Cannot apply the not operator to a non-boolean type")]
+    CannotUseNot,
+
+    #[error("Cannot apply the negative operator to a non-numeric type")]
+    CannotUseNegative,
 }
 
 #[derive(Error, Debug, Clone, PartialEq, Eq, Hash)]

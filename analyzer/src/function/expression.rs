@@ -17,6 +17,7 @@ impl<'a> FunctionAnalyzer<'a> {
             Expression::FunctionCall(FunctionCall { name, args, .. }) => {
                 self.analyze_function_call(name, args)
             }
+            Expression::UnaryExpression(unary_expr) => self.analyze_unary_expression(unary_expr),
             _ => {
                 println!("expression: {expr:?}");
 

@@ -10,6 +10,17 @@ impl<'ctx> Codegen<'ctx> {
         let mut last_value = None;
 
         for stmt in block.body {
+            // Stop if a previous statement already terminated the block and everything after is unreachable
+            if self
+                .builder
+                .get_insert_block()
+                .unwrap()
+                .get_terminator()
+                .is_some()
+            {
+                break;
+            }
+
             last_value = self.build_stmt(stmt);
         }
 
