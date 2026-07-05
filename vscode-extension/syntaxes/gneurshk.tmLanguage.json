@@ -32,7 +32,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.gneurshk",
-					"match": "\\b(if|while|for|return|else|as|do|import|export|from|await|break|continue)\\b"
+					"match": "\\b(if|while|for|loop|return|else|as|do|import|export|from|await|break|continue)\\b"
 				},
 				{
 					"name": "storage.type.gneurshk",
