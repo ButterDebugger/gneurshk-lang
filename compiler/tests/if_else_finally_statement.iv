@@ -1,0 +1,9 @@
+func main() {
+    if false {
+        println("if")
+    } else {
+        println("else")
+    }
+
+    println("finally")
+}

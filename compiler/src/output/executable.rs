@@ -77,12 +77,7 @@ mod tests {
 
     #[test]
     fn hello_world() {
-        let source = r#"
-            func main() {
-                println("Hello, World!")
-            }
-        "#;
-
+        let source = include_str!("../../tests/hello_world.iv");
         let output = compile_and_run(source, "hello_world").unwrap();
 
         assert_eq!(output.trim(), "Hello, World!");
@@ -90,12 +85,7 @@ mod tests {
 
     #[test]
     fn arithmetic() {
-        let source = r#"
-            func main() {
-                println(1 + 3 * 4)
-            }
-        "#;
-
+        let source = include_str!("../../tests/arithmetic.iv");
         let output = compile_and_run(source, "arithmetic").unwrap();
 
         assert_eq!(output.trim(), "13");
@@ -103,16 +93,7 @@ mod tests {
 
     #[test]
     fn add_two_numbers_with_function() {
-        let source = r#"
-            func add(a: Int32, b: Int32) -> Int32 {
-                return a + b
-            }
-
-            func main() {
-                println(add(2, 3))
-            }
-        "#;
-
+        let source = include_str!("../../tests/add_two_numbers_with_function.iv");
         let output = compile_and_run(source, "add_two_numbers_with_function").unwrap();
 
         assert_eq!(output.trim(), "5");
@@ -120,14 +101,7 @@ mod tests {
 
     #[test]
     fn multiple_println_statements() {
-        let source = r#"
-            func main() {
-                println(1)
-                println(2)
-                println(3)
-            }
-        "#;
-
+        let source = include_str!("../../tests/multiple_println_statements.iv");
         let output = compile_and_run(source, "multiple_println_statements").unwrap();
 
         assert_eq!(output.trim(), "1\r\n2\r\n3");
@@ -135,12 +109,7 @@ mod tests {
 
     #[test]
     fn print_multiple_values() {
-        let source = r#"
-            func main() {
-                println(1, 2, 3)
-            }
-        "#;
-
+        let source = include_str!("../../tests/print_multiple_values.iv");
         let output = compile_and_run(source, "print_multiple_values").unwrap();
 
         assert_eq!(output.trim(), "1 2 3");
@@ -148,14 +117,7 @@ mod tests {
 
     #[test]
     fn if_statement() {
-        let source = r#"
-            func main() {
-                if true {
-                    println("if")
-                }
-            }
-        "#;
-
+        let source = include_str!("../../tests/if_statement.iv");
         let output = compile_and_run(source, "if_statement").unwrap();
 
         assert_eq!(output.trim(), "if");
@@ -163,16 +125,7 @@ mod tests {
 
     #[test]
     fn if_else_statement() {
-        let source = r#"
-            func main() {
-                if true {
-                    println("if")
-                } else {
-                    println("else")
-                }
-            }
-        "#;
-
+        let source = include_str!("../../tests/if_else_statement.iv");
         let output = compile_and_run(source, "if_else_statement").unwrap();
 
         assert_eq!(output.trim(), "if");
@@ -180,16 +133,7 @@ mod tests {
 
     #[test]
     fn pass_if_finally_statement() {
-        let source = r#"
-            func main() {
-                if false {
-                    println("if")
-                }
-
-                println("finally")
-            }
-        "#;
-
+        let source = include_str!("../../tests/pass_if_finally_statement.iv");
         let output = compile_and_run(source, "pass_if_finally_statement").unwrap();
 
         assert_eq!(output.trim(), "finally");
@@ -197,16 +141,7 @@ mod tests {
 
     #[test]
     fn if_finally_statement() {
-        let source = r#"
-            func main() {
-                if true {
-                    println("if")
-                }
-
-                println("finally")
-            }
-        "#;
-
+        let source = include_str!("../../tests/if_finally_statement.iv");
         let output = compile_and_run(source, "if_finally_statement").unwrap();
 
         assert_eq!(output.trim(), "if\r\nfinally");
@@ -214,18 +149,7 @@ mod tests {
 
     #[test]
     fn if_else_finally_statement() {
-        let source = r#"
-            func main() {
-                if false {
-                    println("if")
-                } else {
-                    println("else")
-                }
-
-                println("finally")
-            }
-        "#;
-
+        let source = include_str!("../../tests/if_else_finally_statement.iv");
         let output = compile_and_run(source, "if_else_finally_statement").unwrap();
 
         assert_eq!(output.trim(), "else\r\nfinally");
