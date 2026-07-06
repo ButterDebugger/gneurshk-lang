@@ -39,7 +39,7 @@ pub(crate) fn analyze_program(
     Ok((ast, analyzed_program))
 }
 
-pub(crate) fn build(source: &str, pb: Box<ProgressBar>) -> Result<PathBuf> {
+pub(crate) fn build(source: &str, output_ir: bool, pb: Box<ProgressBar>) -> Result<PathBuf> {
     // Analyze the program
     let ast = match analyze_program(source, pb.clone()) {
         Ok((ast, analyzed)) => {
@@ -64,9 +64,11 @@ pub(crate) fn build(source: &str, pb: Box<ProgressBar>) -> Result<PathBuf> {
     };
 
     // Create the LLVM IR file
-    pb.set_message("Creating LLVM IR file...");
+    if output_ir {
+        pb.set_message("Creating LLVM IR file...");
 
-    create_llvm_ir_file(ast.clone(), "output".as_ref())?;
+        create_llvm_ir_file(ast.clone(), "output".as_ref())?;
+    }
 
     // Create the executable
     pb.set_message("Compiling to executable...");

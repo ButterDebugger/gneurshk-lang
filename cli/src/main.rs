@@ -64,6 +64,13 @@ fn main() {
                         .action(ArgAction::SetTrue)
                         .long("watch")
                         .short('w'),
+                )
+                .arg(
+                    Arg::new("output-ir")
+                        .help("Outputs the LLVM IR file")
+                        .required(false)
+                        .action(ArgAction::SetTrue)
+                        .long("ir"),
                 ),
         )
         .subcommand(
@@ -75,6 +82,13 @@ fn main() {
                         .required(true)
                         .action(ArgAction::Set)
                         .num_args(1),
+                )
+                .arg(
+                    Arg::new("output-ir")
+                        .help("Outputs the LLVM IR file")
+                        .required(false)
+                        .action(ArgAction::SetTrue)
+                        .long("ir"),
                 ),
         )
         .subcommand(
@@ -128,8 +142,9 @@ fn main() {
                 .expect("Argument 'file' is required");
             let path: &Path = path.as_ref();
 
-            // Get the watching flag from the arguments
+            // Get the flags from the arguments
             let is_watching = query_matches.get_flag("watch");
+            let output_ir = query_matches.get_flag("output-ir");
 
             // Run the build command with the command flags
             run_with_flags(
@@ -148,7 +163,7 @@ fn main() {
                     let pb = create_progress_bar();
 
                     // Build the source code
-                    match build(&source, pb.clone()) {
+                    match build(&source, output_ir, pb.clone()) {
                         Ok(executable_path) => {
                             pb.finish_with_message("Running executable");
 
@@ -180,6 +195,9 @@ fn main() {
                 .expect("Argument 'file' is required");
             let path: &Path = path.as_ref();
 
+            // Get the flags from the arguments
+            let output_ir = query_matches.get_flag("output-ir");
+
             // Read the file
             let source = match read_to_string(path) {
                 Ok(source) => source,
@@ -193,7 +211,7 @@ fn main() {
             let pb = create_progress_bar();
 
             // Build the source code
-            match build(&source, pb.clone()) {
+            match build(&source, output_ir, pb.clone()) {
                 Ok(_) => {
                     pb.finish_with_message("Successfully built executable");
                 }
