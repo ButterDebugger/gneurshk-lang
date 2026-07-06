@@ -172,13 +172,8 @@ mod tests {
 
     #[test]
     fn single_identifier() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    chicken
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/single_identifier.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -192,7 +187,7 @@ func main() {
                     block: Box::new(Block {
                         body: vec![Stmt::Identifier(Identifier {
                             name: "chicken".to_string(),
-                            span: 19..26,
+                            span: 18..25,
                         })],
                     }),
                 }],
@@ -202,13 +197,8 @@ func main() {
 
     #[test]
     fn repeated_identifiers() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    chicken chicken chicken chicken chicken chicken chicken chicken
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/repeated_identifiers.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -223,35 +213,35 @@ func main() {
                         body: vec![
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 19..26,
+                                span: 18..25,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 27..34,
+                                span: 26..33,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 35..42,
+                                span: 34..41,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 43..50,
+                                span: 42..49,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 51..58,
+                                span: 50..57,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 59..66,
+                                span: 58..65,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 67..74,
+                                span: 66..73,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 75..82,
+                                span: 74..81,
                             }),
                         ],
                     }),
@@ -262,13 +252,8 @@ func main() {
 
     #[test]
     fn function_call_no_args() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    foo()
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/function_call_no_args.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -283,7 +268,7 @@ func main() {
                         body: vec![Stmt::FunctionCall(FunctionCall {
                             name: "foo".to_string(),
                             args: vec![],
-                            span: 19..24,
+                            span: 18..23,
                         })],
                     }),
                 }],
@@ -293,13 +278,8 @@ func main() {
 
     #[test]
     fn function_call_single_arg() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    bar(42)
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/function_call_single_arg.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -315,9 +295,9 @@ func main() {
                             name: "bar".to_string(),
                             args: vec![Expression::Integer(IntegerLit {
                                 value: 42,
-                                span: 23..25
+                                span: 22..24
                             })],
-                            span: 19..26,
+                            span: 18..25,
                         })],
                     }),
                 }],
@@ -327,13 +307,8 @@ func main() {
 
     #[test]
     fn function_call_multiple_args() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    baz(1, 2, 3)
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/function_call_multiple_args.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -350,18 +325,18 @@ func main() {
                             args: vec![
                                 Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 23..24
+                                    span: 22..23
                                 }),
                                 Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 26..27
+                                    span: 25..26
                                 }),
                                 Expression::Integer(IntegerLit {
                                     value: 3,
-                                    span: 29..30
+                                    span: 28..29
                                 }),
                             ],
-                            span: 19..31,
+                            span: 18..30,
                         })],
                     }),
                 }],
@@ -371,13 +346,8 @@ func main() {
 
     #[test]
     fn function_call_with_expression_args() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    calculate(1 + (2 + 5), 3 * 4)
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/function_call_with_expression_args.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -395,17 +365,17 @@ func main() {
                                 Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 29..30
+                                        span: 28..29
                                     })),
                                     right: Box::new(Expression::BinaryExpression(
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 2,
-                                                span: 34..35
+                                                span: 33..34
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 5,
-                                                span: 38..39
+                                                span: 37..38
                                             })),
                                             operator: BinaryOperator::Add,
                                         }
@@ -415,16 +385,16 @@ func main() {
                                 Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 42..43
+                                        span: 41..42
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 46..47
+                                        span: 45..46
                                     })),
                                     operator: BinaryOperator::Multiply,
                                 }),
                             ],
-                            span: 19..48,
+                            span: 18..47,
                         })],
                     }),
                 }],
@@ -434,13 +404,8 @@ func main() {
 
     #[test]
     fn member_access() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    foo.bar
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/member_access.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -455,11 +420,11 @@ func main() {
                         body: vec![Stmt::MemberAccess(MemberAccess {
                             base: Box::new(MemberExpressionBase::Identifier(Identifier {
                                 name: "foo".to_string(),
-                                span: 19..22,
+                                span: 18..21,
                             })),
                             member: MemberExpressionMember::Identifier(Identifier {
                                 name: "bar".to_string(),
-                                span: 23..26,
+                                span: 22..25,
                             }),
                             is_static: false,
                         })],
@@ -471,13 +436,8 @@ func main() {
 
     #[test]
     fn nested_member_access() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    foo.bar.baz
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/nested_member_access.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -493,17 +453,17 @@ func main() {
                             base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
                                 base: Box::new(MemberExpressionBase::Identifier(Identifier {
                                     name: "foo".to_string(),
-                                    span: 19..22,
+                                    span: 18..21,
                                 })),
                                 member: MemberExpressionMember::Identifier(Identifier {
                                     name: "bar".to_string(),
-                                    span: 23..26,
+                                    span: 22..25,
                                 }),
                                 is_static: false,
                             })),
                             member: MemberExpressionMember::Identifier(Identifier {
                                 name: "baz".to_string(),
-                                span: 27..30,
+                                span: 26..29,
                             }),
                             is_static: false,
                         })],
@@ -515,13 +475,8 @@ func main() {
 
     #[test]
     fn static_member_access_function_call() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    foo::bar().baz
-}
-            "#,
-        );
+        let source = include_str!("../tests/identifiers/static_member_access_function_call.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -537,18 +492,18 @@ func main() {
                             base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
                                 base: Box::new(MemberExpressionBase::Identifier(Identifier {
                                     name: "foo".to_string(),
-                                    span: 19..22,
+                                    span: 18..21,
                                 })),
                                 member: MemberExpressionMember::FunctionCall(FunctionCall {
                                     name: "bar".to_string(),
-                                    span: 24..29,
+                                    span: 23..28,
                                     args: vec![]
                                 }),
                                 is_static: true,
                             })),
                             member: MemberExpressionMember::Identifier(Identifier {
                                 name: "baz".to_string(),
-                                span: 30..33,
+                                span: 29..32,
                             }),
                             is_static: false,
                         })],

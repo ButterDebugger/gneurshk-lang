@@ -1,5 +1,6 @@
 use crate::{
-    Block, Expression, IfStatement, LoopStmt, Stmt, UnaryExpression, UnaryOperator, block::parse_block, expressions::parse_expression,
+    Block, Expression, IfStatement, LoopStmt, Stmt, UnaryExpression, UnaryOperator,
+    block::parse_block, expressions::parse_expression,
 };
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::{TokenStream, tokens::Token};
@@ -70,15 +71,8 @@ mod tests {
 
     #[test]
     fn a_loop() {
-        let input = r#"
-func main() {
-    loop {
-        println("Hello, world!");
-    }
-}
-        "#;
-
-        let program = lex_then_parse(input);
+        let source = include_str!("../tests/loops/a_loop.iv");
+        let program = lex_then_parse(source);
 
         assert_eq!(
             program,
@@ -96,9 +90,9 @@ func main() {
                                     name: "println".to_string(),
                                     args: vec![Expression::String(StringLit {
                                         value: "Hello, world!".to_string(),
-                                        span: 42..57
+                                        span: 41..56
                                     })],
-                                    span: 34..58
+                                    span: 33..57
                                 })],
                             }),
                         })],
@@ -110,16 +104,8 @@ func main() {
 
     #[test]
     fn break_and_continue_statements() {
-        let input = r#"
-func main() {
-    loop {
-        break
-        continue
-    }
-}
-        "#;
-
-        let program = lex_then_parse(input);
+        let source = include_str!("../tests/loops/break_and_continue_statements.iv");
+        let program = lex_then_parse(source);
 
         assert_eq!(
             program,

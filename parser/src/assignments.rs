@@ -67,13 +67,8 @@ mod tests {
 
     #[test]
     fn regular_assignment() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    a = 2
-}
-            "#,
-        );
+        let source = include_str!("../tests/assignments/regular_assignment.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -88,11 +83,11 @@ func main() {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "a".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::Integer(IntegerLit {
                                 value: 2,
-                                span: 23..24
+                                span: 22..23
                             })
                         })],
                     }),
@@ -103,13 +98,8 @@ func main() {
 
     #[test]
     fn plus_equal_assignment() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    a += 2 + 3
-}
-            "#,
-        );
+        let source = include_str!("../tests/assignments/plus_equal_assignment.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -124,21 +114,21 @@ func main() {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "a".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "a".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 24..25
+                                        span: 23..24
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 28..29
+                                        span: 27..28
                                     })),
                                     operator: BinaryOperator::Add
                                 })),
@@ -153,13 +143,8 @@ func main() {
 
     #[test]
     fn minus_equal_assignment() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    b -= 5
-}
-            "#,
-        );
+        let source = include_str!("../tests/assignments/minus_equal_assignment.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -174,16 +159,16 @@ func main() {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "b".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "b".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Subtract
                             })
@@ -196,13 +181,8 @@ func main() {
 
     #[test]
     fn multiply_equal_assignment() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    c *= 4
-}
-            "#,
-        );
+        let source = include_str!("../tests/assignments/multiply_equal_assignment.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -217,16 +197,16 @@ func main() {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "c".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "c".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 4,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Multiply
                             })
@@ -239,13 +219,8 @@ func main() {
 
     #[test]
     fn divide_equal_assignment() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    d /= 2
-}
-            "#,
-        );
+        let source = include_str!("../tests/assignments/divide_equal_assignment.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -260,16 +235,16 @@ func main() {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "d".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "d".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Divide
                             })
@@ -282,13 +257,8 @@ func main() {
 
     #[test]
     fn modulus_equal_assignment() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    e %= 3
-}
-            "#,
-        );
+        let source = include_str!("../tests/assignments/modulus_equal_assignment.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -303,16 +273,16 @@ func main() {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "e".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "e".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 3,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Modulus
                             })

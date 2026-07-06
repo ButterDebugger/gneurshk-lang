@@ -1,0 +1,4 @@
+# This is a comment
+var x = 5  # Inline comment
+# Another comment
+var y = 10

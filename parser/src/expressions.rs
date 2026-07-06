@@ -207,13 +207,8 @@ mod tests {
 
     #[test]
     fn repeated_numbers() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1 2 3 + 4 == 5 6 7 8 9 10
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/repeated_numbers.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -228,49 +223,49 @@ func main() {
                         body: vec![
                             Stmt::Integer(IntegerLit {
                                 value: 1,
-                                span: 19..20
+                                span: 18..19
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 2,
-                                span: 21..22
+                                span: 20..21
                             }),
                             Stmt::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 23..24
+                                        span: 22..23
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 27..28
+                                        span: 26..27
                                     })),
                                     operator: BinaryOperator::Add,
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 32..33
+                                    span: 31..32
                                 })),
                                 operator: BinaryOperator::Equal,
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 6,
-                                span: 34..35
+                                span: 33..34
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 7,
-                                span: 36..37
+                                span: 35..36
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 8,
-                                span: 38..39
+                                span: 37..38
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 9,
-                                span: 40..41
+                                span: 39..40
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 10,
-                                span: 42..44
+                                span: 41..43
                             }),
                         ],
                     }),
@@ -281,13 +276,8 @@ func main() {
 
     #[test]
     fn single_integer() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    42
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/single_integer.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -301,7 +291,7 @@ func main() {
                     block: Box::new(Block {
                         body: vec![Stmt::Integer(IntegerLit {
                             value: 42,
-                            span: 19..21
+                            span: 18..20
                         })],
                     }),
                 }],
@@ -311,13 +301,8 @@ func main() {
 
     #[test]
     fn basic_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1 + 7 * (3 - 4) / 5
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/basic_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -332,23 +317,23 @@ func main() {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 19..20
+                                span: 18..19
                             })),
                             right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 7,
-                                        span: 23..24
+                                        span: 22..23
                                     })),
                                     right: Box::new(Expression::BinaryExpression(
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 3,
-                                                span: 28..29
+                                                span: 27..28
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 4,
-                                                span: 32..33
+                                                span: 31..32
                                             })),
                                             operator: BinaryOperator::Subtract,
                                         }
@@ -357,7 +342,7 @@ func main() {
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 37..38
+                                    span: 36..37
                                 })),
                                 operator: BinaryOperator::Divide,
                             })),
@@ -371,13 +356,8 @@ func main() {
 
     #[test]
     fn and_or_logical_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1 < 2 && 3 > 4 || 5 == 6
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/and_or_logical_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -394,22 +374,22 @@ func main() {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 19..20
+                                        span: 18..19
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 23..24
+                                        span: 22..23
                                     })),
                                     operator: BinaryOperator::LessThan,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 28..29
+                                        span: 27..28
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 32..33
+                                        span: 31..32
                                     })),
                                     operator: BinaryOperator::GreaterThan,
                                 })),
@@ -418,11 +398,11 @@ func main() {
                             right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 37..38
+                                    span: 36..37
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 6,
-                                    span: 42..43
+                                    span: 41..42
                                 })),
                                 operator: BinaryOperator::Equal,
                             })),
@@ -436,13 +416,8 @@ func main() {
 
     #[test]
     fn or_and_logical_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1 < 2 || 3 > 4 && 5 == 6
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/or_and_logical_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -458,11 +433,11 @@ func main() {
                             left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 23..24
+                                    span: 22..23
                                 })),
                                 operator: BinaryOperator::LessThan,
                             })),
@@ -470,22 +445,22 @@ func main() {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 28..29
+                                        span: 27..28
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 32..33
+                                        span: 31..32
                                     })),
                                     operator: BinaryOperator::GreaterThan,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 5,
-                                        span: 37..38
+                                        span: 36..37
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 6,
-                                        span: 42..43
+                                        span: 41..42
                                     })),
                                     operator: BinaryOperator::Equal,
                                 })),
@@ -501,13 +476,8 @@ func main() {
 
     #[test]
     fn and_or_and_logical_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1 < 2 && 3 > 4 || 5 == 6 && 7 != 8
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/and_or_and_logical_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -524,22 +494,22 @@ func main() {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 19..20
+                                        span: 18..19
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 23..24
+                                        span: 22..23
                                     })),
                                     operator: BinaryOperator::LessThan,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 28..29
+                                        span: 27..28
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 32..33
+                                        span: 31..32
                                     })),
                                     operator: BinaryOperator::GreaterThan,
                                 })),
@@ -549,22 +519,22 @@ func main() {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 5,
-                                        span: 37..38
+                                        span: 36..37
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 6,
-                                        span: 42..43
+                                        span: 41..42
                                     })),
                                     operator: BinaryOperator::Equal,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 7,
-                                        span: 47..48
+                                        span: 46..47
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 8,
-                                        span: 52..53
+                                        span: 51..52
                                     })),
                                     operator: BinaryOperator::NotEqual,
                                 })),
@@ -580,13 +550,8 @@ func main() {
 
     #[test]
     fn or_and_or_logical_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1 < 2 || 3 > 4 && 5 == 6 || 7 != 8
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/or_and_or_logical_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -603,11 +568,11 @@ func main() {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 19..20
+                                        span: 18..19
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 23..24
+                                        span: 22..23
                                     })),
                                     operator: BinaryOperator::LessThan,
                                 })),
@@ -616,11 +581,11 @@ func main() {
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 3,
-                                                span: 28..29
+                                                span: 27..28
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 4,
-                                                span: 32..33
+                                                span: 31..32
                                             })),
                                             operator: BinaryOperator::GreaterThan,
                                         }
@@ -629,11 +594,11 @@ func main() {
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 5,
-                                                span: 37..38
+                                                span: 36..37
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 6,
-                                                span: 42..43
+                                                span: 41..42
                                             })),
                                             operator: BinaryOperator::Equal,
                                         }
@@ -645,11 +610,11 @@ func main() {
                             right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 7,
-                                    span: 47..48
+                                    span: 46..47
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 8,
-                                    span: 52..53
+                                    span: 51..52
                                 })),
                                 operator: BinaryOperator::NotEqual,
                             })),
@@ -663,13 +628,8 @@ func main() {
 
     #[test]
     fn negative_number() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    -1
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/negative_number.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -684,7 +644,7 @@ func main() {
                         body: vec![Stmt::UnaryExpression(UnaryExpression {
                             value: Box::new(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 20..21
+                                span: 19..20
                             })),
                             operator: UnaryOperator::Negative,
                         })],
@@ -696,13 +656,8 @@ func main() {
 
     #[test]
     fn negative_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    -(1 + 2)
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/negative_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -718,11 +673,11 @@ func main() {
                             value: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 21..22
+                                    span: 20..21
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 25..26
+                                    span: 24..25
                                 })),
                                 operator: BinaryOperator::Add,
                             })),
@@ -736,13 +691,8 @@ func main() {
 
     #[test]
     fn not_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    not (1 == 2)
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/not_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -758,11 +708,11 @@ func main() {
                             value: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 29..30
+                                    span: 28..29
                                 })),
                                 operator: BinaryOperator::Equal,
                             })),
@@ -776,13 +726,8 @@ func main() {
 
     #[test]
     fn single_float() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1.0
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/single_float.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -796,7 +741,7 @@ func main() {
                     block: Box::new(Block {
                         body: vec![Stmt::Float(FloatLit {
                             value: 1.0,
-                            span: 19..22
+                            span: 18..21
                         })],
                     }),
                 }],
@@ -806,13 +751,8 @@ func main() {
 
     #[test]
     fn float_and_integer_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1 + 2.0
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/float_and_integer_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -827,11 +767,11 @@ func main() {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 19..20
+                                span: 18..19
                             })),
                             right: Box::new(Expression::Float(FloatLit {
                                 value: 2.0,
-                                span: 23..26
+                                span: 22..25
                             })),
                             operator: BinaryOperator::Add,
                         })],
@@ -843,13 +783,8 @@ func main() {
 
     #[test]
     fn float_and_float_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    1.0 + 2.0
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/float_and_float_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -864,11 +799,11 @@ func main() {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Float(FloatLit {
                                 value: 1.0,
-                                span: 19..22
+                                span: 18..21
                             })),
                             right: Box::new(Expression::Float(FloatLit {
                                 value: 2.0,
-                                span: 25..28
+                                span: 24..27
                             })),
                             operator: BinaryOperator::Add,
                         })],
@@ -880,13 +815,8 @@ func main() {
 
     #[test]
     fn single_string() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    "i love you"
-}
-            "#,
-        );
+        let source = include_str!("../tests/expressions/single_string.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -900,7 +830,7 @@ func main() {
                     block: Box::new(Block {
                         body: vec![Stmt::String(StringLit {
                             value: "i love you".to_string(),
-                            span: 19..31,
+                            span: 18..30,
                         })],
                     }),
                 }],

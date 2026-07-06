@@ -128,12 +128,8 @@ mod tests {
 
     #[test]
     fn comments_are_ignored() {
-        let tokens = lex_and_vectorize(
-            r#"# This is a comment
-    var x = 5  # Inline comment
-    # Another comment
-    var y = 10"#,
-        );
+        let source = include_str!("../tests/comments_are_ignored.iv");
+        let tokens = lex_and_vectorize(source);
 
         assert_eq!(
             tokens,
@@ -149,13 +145,15 @@ mod tests {
                 Token::Word("y".to_string()),
                 Token::Equal,
                 Token::Integer(10),
+                Token::NewLine,
             ]
         );
     }
 
     #[test]
     fn strings() {
-        let tokens = lex_and_vectorize(r#"var message = "Hello, world!""#);
+        let source = include_str!("../tests/strings.iv");
+        let tokens = lex_and_vectorize(source);
 
         assert_eq!(
             tokens,
@@ -164,6 +162,7 @@ mod tests {
                 Token::Word("message".to_string()),
                 Token::Equal,
                 Token::String("Hello, world!".to_string()),
+                Token::NewLine,
             ]
         );
     }

@@ -61,13 +61,8 @@ mod tests {
 
     #[test]
     fn empty_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    {}
-}
-            "#,
-        );
+        let source = include_str!("../tests/block/empty_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -88,13 +83,8 @@ func main() {
 
     #[test]
     fn single_line_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    { 1 }
-}
-            "#,
-        );
+        let source = include_str!("../tests/block/single_line_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -109,7 +99,7 @@ func main() {
                         body: vec![Stmt::Block(Block {
                             body: vec![Stmt::Integer(IntegerLit {
                                 value: 1,
-                                span: 21..22
+                                span: 20..21
                             })]
                         })],
                     }),
@@ -120,15 +110,8 @@ func main() {
 
     #[test]
     fn multiple_line_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    {
-        1
-    }
-}
-            "#,
-        );
+        let source = include_str!("../tests/block/multiple_line_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -143,7 +126,7 @@ func main() {
                         body: vec![Stmt::Block(Block {
                             body: vec![Stmt::Integer(IntegerLit {
                                 value: 1,
-                                span: 29..30
+                                span: 28..29
                             })]
                         })],
                     }),
@@ -154,13 +137,8 @@ func main() {
 
     #[test]
     fn nested_blocks() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    { { { 3 } } { 2 } }
-}
-            "#,
-        );
+        let source = include_str!("../tests/block/nested_blocks.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -178,14 +156,14 @@ func main() {
                                     body: vec![Stmt::Block(Block {
                                         body: vec![Stmt::Integer(IntegerLit {
                                             value: 3,
-                                            span: 25..26
+                                            span: 24..25
                                         })]
                                     })]
                                 }),
                                 Stmt::Block(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 2,
-                                        span: 33..34
+                                        span: 32..33
                                     })]
                                 })
                             ]

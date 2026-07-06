@@ -1,0 +1,11 @@
+func main() {
+    if 10 + 10 {
+        if 20 + 20 {
+            var apple = 1
+        }
+        if 30 + 30 {
+            var green = 3
+        }
+    }
+    const borg = 5
+}

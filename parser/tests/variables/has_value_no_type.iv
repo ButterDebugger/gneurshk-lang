@@ -1,0 +1,3 @@
+func main() {
+    var canned_corn = 2 + 5
+}

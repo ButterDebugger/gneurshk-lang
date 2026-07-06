@@ -40,13 +40,8 @@ mod tests {
 
     #[test]
     fn return_nothing() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    return
-}
-            "#,
-        );
+        let source = include_str!("../tests/returns/return_nothing.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -67,13 +62,8 @@ func main() {
 
     #[test]
     fn return_literal() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    return 1
-}
-            "#,
-        );
+        let source = include_str!("../tests/returns/return_literal.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -88,7 +78,7 @@ func main() {
                         body: vec![Stmt::Return(Return {
                             value: Some(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 26..27
+                                span: 25..26
                             }))
                         })],
                     }),
@@ -99,13 +89,8 @@ func main() {
 
     #[test]
     fn return_expression() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    return 1 + 2
-}
-            "#,
-        );
+        let source = include_str!("../tests/returns/return_expression.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -121,11 +106,11 @@ func main() {
                             value: Some(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 26..27
+                                    span: 25..26
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 30..31
+                                    span: 29..30
                                 })),
                                 operator: BinaryOperator::Add,
                             }))
@@ -138,15 +123,8 @@ func main() {
 
     #[test]
     fn return_nothing_in_a_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    {
-        return
-    }
-}
-            "#,
-        );
+        let source = include_str!("../tests/returns/return_nothing_in_a_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -169,13 +147,8 @@ func main() {
 
     #[test]
     fn return_literal_in_a_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    { return 1 }
-}
-            "#,
-        );
+        let source = include_str!("../tests/returns/return_literal_in_a_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -191,7 +164,7 @@ func main() {
                             body: vec![Stmt::Return(Return {
                                 value: Some(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 28..29
+                                    span: 27..28
                                 }))
                             })]
                         })],

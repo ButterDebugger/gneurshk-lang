@@ -91,49 +91,29 @@ mod tests {
     #[test]
     #[should_panic]
     fn invalid_variable_declaration() {
-        lex_then_parse(
-            r#"
-func main() {
-    var var extra_extra = 0
-}
-            "#,
-        );
+        let source = include_str!("../tests/variables/invalid_variable_declaration.iv");
+        let _ = lex_then_parse(source);
     }
 
     #[test]
     #[should_panic]
     fn unfinished_variable_declaration() {
-        lex_then_parse(
-            r#"
-func main() {
-    var
-}
-            "#,
-        );
+        let source = include_str!("../tests/variables/unfinished_variable_declaration.iv");
+        let _ = lex_then_parse(source);
     }
 
     #[test]
     #[should_panic]
     fn unfinished_constant_declaration() {
-        lex_then_parse(
-            r#"
-func main() {
-    const
-}
-            "#,
-        );
+        let source = include_str!("../tests/variables/unfinished_constant_declaration.iv");
+        let _ = lex_then_parse(source);
     }
 
     #[test]
     #[should_panic]
     fn no_type_or_value() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    var apple
-}
-            "#,
-        );
+        let source = include_str!("../tests/variables/no_type_or_value.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -158,13 +138,8 @@ func main() {
 
     #[test]
     fn has_type_no_value() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    var pepper: Int32
-}
-            "#,
-        );
+        let source = include_str!("../tests/variables/has_type_no_value.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -189,13 +164,8 @@ func main() {
 
     #[test]
     fn has_type_and_value() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    var potatoes: Int32 = 5
-}
-            "#,
-        );
+        let source = include_str!("../tests/variables/has_type_and_value.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -212,7 +182,7 @@ func main() {
                             data_type: Some(DataType::Int32),
                             value: Some(Expression::Integer(IntegerLit {
                                 value: 5,
-                                span: 41..42
+                                span: 40..41
                             }))
                         })],
                     }),
@@ -223,13 +193,8 @@ func main() {
 
     #[test]
     fn has_value_no_type() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-    var canned_corn = 2 + 5
-}
-            "#,
-        );
+        let source = include_str!("../tests/variables/has_value_no_type.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -247,11 +212,11 @@ func main() {
                             value: Some(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 37..38
+                                    span: 36..37
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 41..42
+                                    span: 40..41
                                 })),
                                 operator: BinaryOperator::Add
                             }))

@@ -1,0 +1,3 @@
+func main() {
+    var potatoes: Int32 = 5
+}

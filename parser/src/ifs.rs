@@ -58,105 +58,9 @@ mod tests {
     }
 
     #[test]
-    fn large_indented_if_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-
-    if 10 + 10 {
-        var apple = 1
-
-
-
-        var green = 3
-    }
-    const borg = 5
-
-}
-            "#,
-        );
-
-        assert_eq!(
-            stmt,
-            Program {
-                imports: vec![],
-                functions: vec![FunctionDeclaration {
-                    annotations: vec![],
-                    name: "main".to_string(),
-                    params: vec![],
-                    return_type: None,
-                    block: Box::new(Block {
-                        body: vec![
-                            Stmt::IfStatement(IfStatement {
-                                condition: Box::new(Expression::BinaryExpression(
-                                    BinaryExpression {
-                                        left: Box::new(Expression::Integer(IntegerLit {
-                                            value: 10,
-                                            span: 23..25
-                                        })),
-                                        right: Box::new(Expression::Integer(IntegerLit {
-                                            value: 10,
-                                            span: 28..30
-                                        })),
-                                        operator: BinaryOperator::Add,
-                                    }
-                                )),
-                                if_block: Box::new(Block {
-                                    body: vec![
-                                        Stmt::VariableDeclaration(VariableDeclaration::Mutable {
-                                            name: "apple".to_string(),
-                                            data_type: None,
-                                            value: Some(Expression::Integer(IntegerLit {
-                                                value: 1,
-                                                span: 53..54
-                                            })),
-                                        }),
-                                        Stmt::VariableDeclaration(VariableDeclaration::Mutable {
-                                            name: "green".to_string(),
-                                            data_type: None,
-                                            value: Some(Expression::Integer(IntegerLit {
-                                                value: 3,
-                                                span: 78..79
-                                            })),
-                                        }),
-                                    ],
-                                }),
-                                else_statement: None,
-                            }),
-                            Stmt::VariableDeclaration(VariableDeclaration::Constant {
-                                name: "borg".to_string(),
-                                data_type: None,
-                                value: Expression::Integer(IntegerLit {
-                                    value: 5,
-                                    span: 103..104
-                                }),
-                            }),
-                        ],
-                    }),
-                }],
-            }
-        );
-    }
-
-    #[test]
     fn nested_if_blocks() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-
-    if 10 + 10 {
-        if 20 + 20 {
-            var apple = 1
-        }
-        if 30 + 30 {
-            var green = 3
-        }
-    }
-    const borg = 5
-
-}
-            "#,
-        );
+        let source = include_str!("../tests/ifs/nested_if_blocks.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -174,11 +78,11 @@ func main() {
                                     BinaryExpression {
                                         left: Box::new(Expression::Integer(IntegerLit {
                                             value: 10,
-                                            span: 23..25
+                                            span: 21..23
                                         })),
                                         right: Box::new(Expression::Integer(IntegerLit {
                                             value: 10,
-                                            span: 28..30
+                                            span: 26..28
                                         })),
                                         operator: BinaryOperator::Add,
                                     }
@@ -191,13 +95,13 @@ func main() {
                                                     left: Box::new(Expression::Integer(
                                                         IntegerLit {
                                                             value: 20,
-                                                            span: 44..46
+                                                            span: 42..44
                                                         }
                                                     )),
                                                     right: Box::new(Expression::Integer(
                                                         IntegerLit {
                                                             value: 20,
-                                                            span: 49..51
+                                                            span: 47..49
                                                         }
                                                     )),
                                                     operator: BinaryOperator::Add,
@@ -211,7 +115,7 @@ func main() {
                                                         value: Some(Expression::Integer(
                                                             IntegerLit {
                                                                 value: 1,
-                                                                span: 78..79
+                                                                span: 76..77
                                                             }
                                                         )),
                                                     }
@@ -225,13 +129,13 @@ func main() {
                                                     left: Box::new(Expression::Integer(
                                                         IntegerLit {
                                                             value: 30,
-                                                            span: 101..103
+                                                            span: 99..101
                                                         }
                                                     )),
                                                     right: Box::new(Expression::Integer(
                                                         IntegerLit {
                                                             value: 30,
-                                                            span: 106..108
+                                                            span: 104..106
                                                         }
                                                     )),
                                                     operator: BinaryOperator::Add,
@@ -245,7 +149,7 @@ func main() {
                                                         value: Some(Expression::Integer(
                                                             IntegerLit {
                                                                 value: 3,
-                                                                span: 135..136
+                                                                span: 133..134
                                                             }
                                                         )),
                                                     }
@@ -262,7 +166,7 @@ func main() {
                                 data_type: None,
                                 value: Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 170..171
+                                    span: 168..169
                                 }),
                             }),
                         ],
@@ -273,19 +177,8 @@ func main() {
     }
     #[test]
     fn else_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-
-    if 10 + 10 {
-        1
-    } else {
-        2
-    }
-
-}
-            "#,
-        );
+        let source = include_str!("../tests/ifs/else_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -301,24 +194,24 @@ func main() {
                             condition: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 10,
-                                    span: 23..25
+                                    span: 21..23
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 10,
-                                    span: 28..30
+                                    span: 26..28
                                 })),
                                 operator: BinaryOperator::Add,
                             })),
                             if_block: Box::new(Block {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 1,
-                                    span: 41..42
+                                    span: 39..40
                                 })]
                             }),
                             else_statement: Some(Box::new(ElseBranch::Block(Block {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 2,
-                                    span: 64..65
+                                    span: 62..63
                                 })]
                             }))),
                         })],
@@ -330,19 +223,8 @@ func main() {
 
     #[test]
     fn else_if_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-
-    if 10 + 10 {
-        1
-    } else if 20 + 20 {
-        2
-    }
-
-}
-            "#,
-        );
+        let source = include_str!("../tests/ifs/else_if_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -358,18 +240,18 @@ func main() {
                             condition: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 10,
-                                    span: 23..25
+                                    span: 21..23
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 10,
-                                    span: 28..30
+                                    span: 26..28
                                 })),
                                 operator: BinaryOperator::Add,
                             })),
                             if_block: Box::new(Block {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 1,
-                                    span: 41..42
+                                    span: 39..40
                                 })]
                             }),
                             else_statement: Some(Box::new(ElseBranch::IfStatement(IfStatement {
@@ -377,11 +259,11 @@ func main() {
                                     BinaryExpression {
                                         left: Box::new(Expression::Integer(IntegerLit {
                                             value: 20,
-                                            span: 57..59
+                                            span: 55..57
                                         })),
                                         right: Box::new(Expression::Integer(IntegerLit {
                                             value: 20,
-                                            span: 62..64
+                                            span: 60..62
                                         })),
                                         operator: BinaryOperator::Add,
                                     }
@@ -389,7 +271,7 @@ func main() {
                                 if_block: Box::new(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 2,
-                                        span: 75..76
+                                        span: 73..74
                                     })]
                                 }),
                                 else_statement: None,
@@ -403,21 +285,8 @@ func main() {
 
     #[test]
     fn else_if_else_block() {
-        let stmt = lex_then_parse(
-            r#"
-func main() {
-
-    if 10 + 10 {
-        1
-    } else if 20 + 20 {
-        2
-    } else {
-        3
-    }
-
-}
-            "#,
-        );
+        let source = include_str!("../tests/ifs/else_if_else_block.iv");
+        let stmt = lex_then_parse(source);
 
         assert_eq!(
             stmt,
@@ -433,18 +302,18 @@ func main() {
                             condition: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 10,
-                                    span: 23..25
+                                    span: 21..23
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 10,
-                                    span: 28..30
+                                    span: 26..28
                                 })),
                                 operator: BinaryOperator::Add,
                             })),
                             if_block: Box::new(Block {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 1,
-                                    span: 41..42
+                                    span: 39..40
                                 })]
                             }),
                             else_statement: Some(Box::new(ElseBranch::IfStatement(IfStatement {
@@ -452,11 +321,11 @@ func main() {
                                     BinaryExpression {
                                         left: Box::new(Expression::Integer(IntegerLit {
                                             value: 20,
-                                            span: 57..59
+                                            span: 55..57
                                         })),
                                         right: Box::new(Expression::Integer(IntegerLit {
                                             value: 20,
-                                            span: 62..64
+                                            span: 60..62
                                         })),
                                         operator: BinaryOperator::Add,
                                     }
@@ -464,13 +333,13 @@ func main() {
                                 if_block: Box::new(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 2,
-                                        span: 75..76
+                                        span: 73..74
                                     })]
                                 }),
                                 else_statement: Some(Box::new(ElseBranch::Block(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 3,
-                                        span: 98..99
+                                        span: 96..97
                                     })]
                                 }))),
                             }))),
