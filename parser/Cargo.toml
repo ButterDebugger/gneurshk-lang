@@ -11,3 +11,5 @@ path = "src/lib.rs"
 gneurshk_lexer = { path = "../lexer" }
 
 anyhow.workspace = true
+strum_macros = "0.28.0"
+strum = "0.28.0"
