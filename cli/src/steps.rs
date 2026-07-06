@@ -47,7 +47,14 @@ pub(crate) fn build(source: &str, output_ir: bool, pb: Box<ProgressBar>) -> Resu
             let all_errors = analyzed.get_all_errors();
 
             if !all_errors.is_empty() {
-                return Err(anyhow!("{:?}", all_errors));
+                for error in &all_errors {
+                    pb.println(format!("Error: {error}"));
+                }
+
+                return Err(anyhow!(
+                    "Failed to build due to {} error(s)",
+                    all_errors.len()
+                ));
             }
 
             // Print the warnings
