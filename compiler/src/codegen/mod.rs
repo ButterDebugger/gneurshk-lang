@@ -134,6 +134,7 @@ impl<'ctx> Codegen<'ctx> {
             Stmt::Loop(loop_stmt) => self.build_loop(loop_stmt),
             Stmt::Break => self.build_break_statement(),
             Stmt::Continue => self.build_continue_statement(),
+            Stmt::Cast(_) => todo!(),
         }
     }
 

@@ -173,6 +173,7 @@ pub enum Expression {
     Identifier(Identifier),
     FunctionCall(FunctionCall),
     MemberAccess(MemberAccess),
+    Cast(CastExpression),
 }
 
 impl From<Expression> for Stmt {
@@ -193,6 +194,7 @@ impl From<Expression> for Stmt {
             Expression::Identifier(identifier) => Stmt::Identifier(identifier),
             Expression::FunctionCall(function_call) => Stmt::FunctionCall(function_call),
             Expression::MemberAccess(member_access) => Stmt::MemberAccess(member_access),
+            Expression::Cast(cast) => Stmt::Cast(cast),
         }
     }
 }
@@ -244,6 +246,12 @@ pub struct BinaryExpression {
 pub struct UnaryExpression {
     pub value: Box<Expression>,
     pub operator: UnaryOperator,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct CastExpression {
+    pub value: Box<Expression>,
+    pub data_type: DataType,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -304,6 +312,7 @@ pub enum Stmt {
     Identifier(Identifier),
     FunctionCall(FunctionCall),
     MemberAccess(MemberAccess),
+    Cast(CastExpression),
     Integer(IntegerLit),
     Float(FloatLit),
     Boolean(BooleanLit),

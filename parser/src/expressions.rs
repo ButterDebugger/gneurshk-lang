@@ -1,8 +1,8 @@
 use super::{
-    BinaryExpression, BinaryOperator, BooleanLit, FloatLit, IntegerLit, StringLit, TokenStream,
-    UnaryExpression, UnaryOperator,
+    BinaryExpression, BinaryOperator, BooleanLit, CastExpression, FloatLit, IntegerLit, StringLit,
+    TokenStream, UnaryExpression, UnaryOperator,
 };
-use crate::{Expression, identifiers::parse_member_expression_base};
+use crate::{Expression, identifiers::parse_member_expression_base, types::parse_type};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
@@ -15,7 +15,7 @@ pub fn parse_expression(tokens: &mut TokenStream) -> Result<Expression> {
 fn parse_logical_or(tokens: &mut TokenStream) -> Result<Expression> {
     let mut left = parse_logical_and(tokens)?; // Parse the next priority level first
 
-    // Continuously parse the given operators on this priority level until there are no more
+    // Continuously parse the given operators on this level until there are no more
     while let Some(operator) = match tokens.peek() {
         Some((Token::Or, _)) => Some(BinaryOperator::Or),
         _ => None, // Stop parsing this level
@@ -38,7 +38,7 @@ fn parse_logical_or(tokens: &mut TokenStream) -> Result<Expression> {
 fn parse_logical_and(tokens: &mut TokenStream) -> Result<Expression> {
     let mut left = parse_comparison(tokens)?; // Parse the next priority level first
 
-    // Continuously parse the given operators on this priority level until there are no more
+    // Continuously parse the given operators on this level until there are no more
     while let Some(operator) = match tokens.peek() {
         Some((Token::And, _)) => Some(BinaryOperator::And),
         _ => None, // Stop parsing this level
@@ -61,7 +61,7 @@ fn parse_logical_and(tokens: &mut TokenStream) -> Result<Expression> {
 fn parse_comparison(tokens: &mut TokenStream) -> Result<Expression> {
     let mut left = parse_addition_subtraction(tokens)?; // Parse the next priority level first
 
-    // Continuously parse the given operators on this priority level until there are no more
+    // Continuously parse the given operators on this level until there are no more
     while let Some(operator) = match tokens.peek() {
         Some((Token::GreaterThan, _)) => Some(BinaryOperator::GreaterThan),
         Some((Token::GreaterThanEqual, _)) => Some(BinaryOperator::GreaterThanEqual),
@@ -89,7 +89,7 @@ fn parse_comparison(tokens: &mut TokenStream) -> Result<Expression> {
 fn parse_addition_subtraction(tokens: &mut TokenStream) -> Result<Expression> {
     let mut left = parse_multiplication_division(tokens)?; // Parse the next priority level first
 
-    // Continuously parse the given operators on this priority level until there are no more
+    // Continuously parse the given operators on this level until there are no more
     while let Some(operator) = match tokens.peek() {
         Some((Token::Plus, _)) => Some(BinaryOperator::Add),
         Some((Token::Minus, _)) => Some(BinaryOperator::Subtract),
@@ -110,9 +110,9 @@ fn parse_addition_subtraction(tokens: &mut TokenStream) -> Result<Expression> {
 
 /// Parses multiplication, division, and modulus
 fn parse_multiplication_division(tokens: &mut TokenStream) -> Result<Expression> {
-    let mut left = parse_term(tokens)?; // Parse the next priority level first
+    let mut left = parse_cast(tokens)?; // Parse the next priority level first
 
-    // Continuously parse the given operators on this priority level until there are no more
+    // Continuously parse the given operators on this level until there are no more
     while let Some(operator) = match tokens.peek() {
         Some((Token::Multiply, _)) => Some(BinaryOperator::Multiply),
         Some((Token::Divide, _)) => Some(BinaryOperator::Divide),
@@ -130,6 +130,29 @@ fn parse_multiplication_division(tokens: &mut TokenStream) -> Result<Expression>
         });
     }
     Ok(left)
+}
+
+/// Parses casting
+fn parse_cast(tokens: &mut TokenStream) -> Result<Expression> {
+    let mut value = parse_term(tokens)?; // Parse the next priority level first
+
+    // Continuously parse casts on this level until there are no more
+    while let Some((Token::As, _)) = tokens.peek() {
+        tokens.next(); // Consume the 'as' token
+
+        // Parse the target type
+        let data_type = match parse_type(tokens)? {
+            Some(data_type) => data_type,
+            None => return Err(anyhow!("Expected a type after the 'as' keyword")),
+        };
+
+        value = Expression::Cast(CastExpression {
+            value: Box::new(value),
+            data_type,
+        });
+    }
+
+    Ok(value)
 }
 
 /// Parses literals and parenthesized expressions (highest priority)
@@ -192,7 +215,11 @@ fn parse_literal(tokens: &mut TokenStream) -> Result<Expression> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{BinaryOperator, Block, FunctionDeclaration, Program, Stmt, UnaryOperator, parse};
+    use crate::{
+        BinaryOperator, Block, CastExpression, DataType, Expression, FunctionDeclaration,
+        Identifier, IntegerLit, MemberAccess, MemberExpressionBase, MemberExpressionMember,
+        Program, Stmt, UnaryOperator, VariableDeclaration, parse,
+    };
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -831,6 +858,269 @@ mod tests {
                         body: vec![Stmt::String(StringLit {
                             value: "i love you".to_string(),
                             span: 18..30,
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn cast_basic() {
+        let source = include_str!("../tests/expressions/cast_basic.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::Cast(CastExpression {
+                            value: Box::new(Expression::Integer(IntegerLit {
+                                value: 5,
+                                span: 18..19
+                            })),
+                            data_type: DataType::Float32,
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn cast_precedence_addition() {
+        let source = include_str!("../tests/expressions/cast_precedence_addition.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::BinaryExpression(BinaryExpression {
+                            left: Box::new(Expression::Integer(IntegerLit {
+                                value: 1,
+                                span: 18..19
+                            })),
+                            right: Box::new(Expression::Cast(CastExpression {
+                                value: Box::new(Expression::Integer(IntegerLit {
+                                    value: 2,
+                                    span: 22..23
+                                })),
+                                data_type: DataType::Float32,
+                            })),
+                            operator: BinaryOperator::Add,
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn cast_parenthesized() {
+        let source = include_str!("../tests/expressions/cast_parenthesized.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::Cast(CastExpression {
+                            value: Box::new(Expression::BinaryExpression(BinaryExpression {
+                                left: Box::new(Expression::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 19..20
+                                })),
+                                right: Box::new(Expression::Integer(IntegerLit {
+                                    value: 2,
+                                    span: 23..24
+                                })),
+                                operator: BinaryOperator::Add,
+                            })),
+                            data_type: DataType::Float32,
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn cast_with_multiplication() {
+        let source = include_str!("../tests/expressions/cast_with_multiplication.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::BinaryExpression(BinaryExpression {
+                            left: Box::new(Expression::Cast(CastExpression {
+                                value: Box::new(Expression::Integer(IntegerLit {
+                                    value: 2,
+                                    span: 18..19
+                                })),
+                                data_type: DataType::Float32,
+                            })),
+                            right: Box::new(Expression::Integer(IntegerLit {
+                                value: 3,
+                                span: 33..34
+                            })),
+                            operator: BinaryOperator::Multiply,
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn cast_in_variable() {
+        let source = include_str!("../tests/expressions/cast_in_variable.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::VariableDeclaration(VariableDeclaration::Mutable {
+                            name: "x".to_string(),
+                            data_type: None,
+                            value: Some(Expression::Cast(CastExpression {
+                                value: Box::new(Expression::Integer(IntegerLit {
+                                    value: 5,
+                                    span: 26..27
+                                })),
+                                data_type: DataType::Float32,
+                            })),
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn cast_custom_type() {
+        let source = include_str!("../tests/expressions/cast_custom_type.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::Cast(CastExpression {
+                            value: Box::new(Expression::Integer(IntegerLit {
+                                value: 5,
+                                span: 18..19
+                            })),
+                            data_type: DataType::Custom("CustomType".to_string()),
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn cast_identifier() {
+        let source = include_str!("../tests/expressions/cast_identifier.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::Cast(CastExpression {
+                            value: Box::new(Expression::Identifier(Identifier {
+                                name: "foo".to_string(),
+                                span: 18..21
+                            })),
+                            data_type: DataType::Int32,
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn cast_missing_type() {
+        let source = include_str!("../tests/expressions/cast_missing_type.iv");
+        let _ = lex_then_parse(source);
+    }
+
+    #[test]
+    fn cast_member_access() {
+        let source = include_str!("../tests/expressions/cast_member_access.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::Cast(CastExpression {
+                            value: Box::new(Expression::MemberAccess(MemberAccess {
+                                base: Box::new(MemberExpressionBase::Identifier(Identifier {
+                                    name: "foo".to_string(),
+                                    span: 18..21,
+                                })),
+                                member: MemberExpressionMember::Identifier(Identifier {
+                                    name: "bar".to_string(),
+                                    span: 22..25,
+                                }),
+                                is_static: false,
+                            })),
+                            data_type: DataType::Int32,
                         })],
                     }),
                 }],
