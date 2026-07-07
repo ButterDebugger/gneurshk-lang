@@ -1,4 +1,4 @@
-use gneurshk_parser::types::DataType;
+use gneurshk_parser::{BinaryOperator, types::DataType};
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone, PartialEq, Eq, Hash)]
@@ -20,8 +20,11 @@ pub enum SematicError {
     #[error("Variable '{0}' not found")]
     VariableNotFound(String),
 
-    #[error("Type mismatch: '{0}' != '{1}'")]
-    TypeMismatch(DataType, DataType),
+    #[error("Variable '{0}' of type '{1}' cannot be set to a value of type '{2}'")]
+    AssignmentTypeMismatch(String, DataType, DataType),
+
+    #[error("Cannot use the '{1}' operator to types '{0}' and '{2}'")]
+    UnsupportedOperator(DataType, BinaryOperator, DataType),
 
     #[error("No type or value provided for variable declaration")]
     NoTypeOrValueProvided,

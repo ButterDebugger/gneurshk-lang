@@ -80,7 +80,7 @@ impl ProgramAnalyzer {
             .map(|function| FunctionAnalyzer::analyze(&mut analyzer, function))
             .collect();
 
-        // Check for unused variables in the global scope
+        // Check for unused variables before exiting the scope
         for variable in analyzer.scope.get_unused_variables() {
             analyzer
                 .warnings

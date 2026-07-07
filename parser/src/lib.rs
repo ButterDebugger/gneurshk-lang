@@ -32,7 +32,7 @@ pub struct Program {
 }
 
 /// A binary operator which takes in two operands
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash, strum_macros::Display)]
 pub enum BinaryOperator {
     Add,
     Subtract,

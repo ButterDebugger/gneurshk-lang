@@ -53,17 +53,10 @@ impl Scope {
     }
 
     pub fn get_unused_variables(&self) -> Vec<Variable> {
-        let mut unused = self
-            .variables
+        self.variables
             .iter()
             .filter(|(_, variable)| !variable.used)
             .map(|(_, var)| var.clone())
-            .collect::<Vec<Variable>>();
-
-        if let Some(parent) = self.parent.as_ref() {
-            unused.extend(parent.get_unused_variables());
-        }
-
-        unused
+            .collect::<Vec<Variable>>()
     }
 }

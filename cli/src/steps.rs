@@ -1,4 +1,5 @@
 use anyhow::{Result, anyhow};
+use console::style;
 use gneurshk_analyzer::program::{AnalyzedProgram, ProgramAnalyzer};
 use gneurshk_compiler::output::{executable::compile_to_executable, ir::create_llvm_ir_file};
 use gneurshk_lexer::{TokenStream, lex};
@@ -45,12 +46,15 @@ pub(crate) fn build(source: &str, output_ir: bool, pb: Box<ProgressBar>) -> Resu
         Ok((ast, analyzed)) => {
             // Cancel the build if there are any semantic errors
             let all_errors = analyzed.get_all_errors();
+            let all_warnings = analyzed.get_all_warnings();
 
             if !all_errors.is_empty() {
+                // Print the errors
                 for error in &all_errors {
-                    pb.println(format!("Error: {error}"));
+                    pb.println(format!("{} {}", style("Error:").red().bright(), error));
                 }
 
+                // Cancel the build due to the errors
                 return Err(anyhow!(
                     "Failed to build due to {} error(s)",
                     all_errors.len()
@@ -58,8 +62,12 @@ pub(crate) fn build(source: &str, output_ir: bool, pb: Box<ProgressBar>) -> Resu
             }
 
             // Print the warnings
-            for warning in analyzed.warnings {
-                pb.println(format!("Warning: {warning}"));
+            for warning in all_warnings {
+                pb.println(format!(
+                    "{} {}",
+                    style("Warning:").yellow().bright(),
+                    warning
+                ));
             }
 
             // Return the AST

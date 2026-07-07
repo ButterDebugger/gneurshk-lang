@@ -42,7 +42,7 @@ impl<'a> FunctionAnalyzer<'a> {
             _ => {
                 self.program_analyzer
                     .errors
-                    .push(SematicError::TypeMismatch(left_type, right_type));
+                    .push(SematicError::UnsupportedOperator(left_type, operator, right_type));
 
                 None
             }

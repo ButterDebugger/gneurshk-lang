@@ -34,7 +34,8 @@ impl<'a> FunctionAnalyzer<'a> {
                 {
                     self.program_analyzer
                         .errors
-                        .push(SematicError::TypeMismatch(
+                        .push(SematicError::AssignmentTypeMismatch(
+                            name.clone(),
                             variable.data_type.clone(),
                             value_type,
                         ));

@@ -8,7 +8,7 @@ where
 {
     if is_watching {
         if let Err(e) = watch(path, callback) {
-            eprintln!("Watcher error: {e}");
+            eprintln!("{} {}", style("Watcher error:").red().bright(), e);
         }
     } else {
         callback();

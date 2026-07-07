@@ -181,7 +181,7 @@ fn main() {
                         Err(e) => {
                             pb.finish_and_clear();
 
-                            eprintln!("Error: {e}");
+                            eprintln!("{} {}", style("Error:").red().bright(), e);
                         }
                     }
                 },
@@ -202,7 +202,7 @@ fn main() {
             let source = match read_to_string(path) {
                 Ok(source) => source,
                 Err(e) => {
-                    eprintln!("Error: {}", e);
+                    eprintln!("{} {}", style("Error:").red().bright(), e);
                     return;
                 }
             };
@@ -218,7 +218,7 @@ fn main() {
                 Err(e) => {
                     pb.finish_and_clear();
 
-                    eprintln!("Error: {e}");
+                    eprintln!("{} {}", style("Error:").red().bright(), e);
                 }
             };
         }
@@ -234,7 +234,7 @@ fn main() {
             let source = match read_to_string(path) {
                 Ok(source) => source,
                 Err(e) => {
-                    eprintln!("Error: {}", e);
+                    eprintln!("{} {}", style("Error:").red().bright(), e);
                     return;
                 }
             };
@@ -254,7 +254,7 @@ fn main() {
                 Err(e) => {
                     pb.finish_and_clear();
 
-                    eprintln!("Error: {e}")
+                    eprintln!("{} {}", style("Error:").red().bright(), e)
                 }
             }
         }
@@ -269,7 +269,7 @@ fn main() {
             let source = match read_to_string(path) {
                 Ok(source) => source,
                 Err(e) => {
-                    eprintln!("Error: {}", e);
+                    eprintln!("{} {}", style("Error:").red().bright(), e);
                     return;
                 }
             };
@@ -287,7 +287,7 @@ fn main() {
                 Err(e) => {
                     pb.finish_and_clear();
 
-                    eprintln!("Error: {e}")
+                    eprintln!("{} {}", style("Error:").red().bright(), e)
                 }
             }
         }
@@ -309,7 +309,7 @@ fn main() {
                     let source = match read_to_string(path) {
                         Ok(source) => source,
                         Err(e) => {
-                            eprintln!("Error: {}", e);
+                            eprintln!("{} {}", style("Error:").red().bright(), e);
                             return;
                         }
                     };
@@ -327,21 +327,25 @@ fn main() {
 
                             // Print the errors and warnings
                             if errors.is_empty() && warnings.is_empty() {
-                                println!("✅");
+                                println!("{}", style("All checks passed!").green().bright());
                             } else {
-                                for error in errors {
-                                    eprintln!("❗ {}", error);
+                                for warning in warnings {
+                                    eprintln!(
+                                        "{} {}",
+                                        style("Warning:").yellow().bright(),
+                                        warning
+                                    );
                                 }
 
-                                for warning in warnings {
-                                    eprintln!("⚠️  {}", warning);
+                                for error in errors {
+                                    eprintln!("{} {}", style("Error:").red().bright(), error);
                                 }
                             }
                         }
                         Err(error) => {
                             pb.finish_and_clear();
 
-                            eprintln!("❌ Error: {:?}", error);
+                            eprintln!("{} {:?}", style("Error:").red().bright(), error);
                         }
                     }
                 },
