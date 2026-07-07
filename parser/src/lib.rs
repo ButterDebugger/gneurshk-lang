@@ -358,10 +358,8 @@ fn parse_declaration(tokens: &mut TokenStream) -> Result<Declaration> {
         }
     };
 
-    // Consume a NewLine token if its present
-    if let Some((Token::NewLine, _)) = tokens.peek() {
-        tokens.next(); // Consume the new line token
-    }
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
 
     // Return the parsed statement
     Ok(stmt)
@@ -422,11 +420,15 @@ fn parse_statement(tokens: &mut TokenStream) -> Result<Stmt> {
         }
     };
 
-    // Consume a NewLine token if its present
-    if let Some((Token::NewLine, _)) = tokens.peek() {
-        tokens.next(); // Consume the new line token
-    }
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
 
     // Return the parsed statement
     stmt
+}
+
+fn consume_all_newlines(tokens: &mut TokenStream) {
+    while let Some((Token::NewLine, _)) = tokens.peek() {
+        tokens.next(); // Consume the new line token
+    }
 }

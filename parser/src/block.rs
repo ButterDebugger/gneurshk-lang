@@ -1,13 +1,11 @@
-use crate::{Block, TokenStream, parse_statement};
+use crate::{Block, TokenStream, consume_all_newlines, parse_statement};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
 // TODO: Make this return statement consistent with the rest of the parser
 pub fn parse_block(tokens: &mut TokenStream) -> Result<Block> {
-    // Consume an optional NewLine token if its present
-    if let Some((Token::NewLine, _)) = tokens.peek() {
-        tokens.next(); // Consume the new line token
-    }
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
 
     // Consume the OpenBrace token
     match tokens.next() {
@@ -15,10 +13,8 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block> {
         _ => return Err(anyhow!("Expected opening brace")),
     }
 
-    // Consume an optional NewLine token if its present
-    if let Some((Token::NewLine, _)) = tokens.peek() {
-        tokens.next(); // Consume the new line token
-    }
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
 
     let mut body = vec![];
 

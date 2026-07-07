@@ -1,5 +1,5 @@
 use super::{TokenStream, expressions::parse_expression};
-use crate::{ElseBranch, IfStatement, block::parse_block};
+use crate::{ElseBranch, IfStatement, block::parse_block, consume_all_newlines};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
@@ -16,9 +16,15 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<IfStatement> {
     // Parse the body of the if statement
     let if_block = parse_block(tokens)?;
 
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
+
     // Parse the else block if it exists
     let else_block = if let Some((Token::Else, _)) = tokens.peek() {
         tokens.next(); // Consume the Else token
+
+        // Consume all new line tokens
+        consume_all_newlines(tokens);
 
         // Determine what type of statement follows
         match tokens.peek() {
@@ -42,8 +48,8 @@ pub fn parse_if_statement(tokens: &mut TokenStream) -> Result<IfStatement> {
 #[cfg(test)]
 mod tests {
     use crate::{
-        BinaryExpression, BinaryOperator, Block, ElseBranch, Expression, FunctionDeclaration,
-        IfStatement, IntegerLit, Program, Stmt, VariableDeclaration, parse,
+        BinaryExpression, BinaryOperator, Block, BooleanLit, ElseBranch, Expression,
+        FunctionDeclaration, IfStatement, IntegerLit, Program, Stmt, VariableDeclaration, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -342,6 +348,45 @@ mod tests {
                                         span: 96..97
                                     })]
                                 }))),
+                            }))),
+                        })],
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn if_else_on_new_lines() {
+        let source = include_str!("../tests/ifs/if_else_on_new_lines.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![Stmt::IfStatement(IfStatement {
+                            condition: Box::new(Expression::Boolean(BooleanLit {
+                                value: true,
+                                span: 22..26
+                            })),
+                            if_block: Box::new(Block {
+                                body: vec![Stmt::Integer(IntegerLit {
+                                    value: 1,
+                                    span: 43..44
+                                })]
+                            }),
+                            else_statement: Some(Box::new(ElseBranch::Block(Block {
+                                body: vec![Stmt::Integer(IntegerLit {
+                                    value: 2,
+                                    span: 78..79
+                                })]
                             }))),
                         })],
                     }),

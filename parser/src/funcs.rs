@@ -1,6 +1,7 @@
 use super::{TokenStream, expressions::parse_expression};
 use crate::{
-    Annotation, FunctionDeclaration, FunctionParam, block::parse_block, types::parse_type,
+    Annotation, FunctionDeclaration, FunctionParam, block::parse_block, consume_all_newlines,
+    types::parse_type,
 };
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
@@ -45,10 +46,8 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
             }
         }
 
-        // Consume a NewLine token if its present
-        if let Some((Token::NewLine, _)) = tokens.peek() {
-            tokens.next(); // Consume the token
-        }
+        // Consume all new line tokens
+        consume_all_newlines(tokens);
 
         // Add the annotation to the list of annotations
         annotations.push(Annotation { name, args });
@@ -60,11 +59,17 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
         _ => return Err(anyhow!("Expected the 'func' keyword")),
     }
 
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
+
     // Read the function name
     let name = match tokens.next() {
         Some((Token::Word(name), _)) => name,
         _ => return Err(anyhow!("Expected the function name")),
     };
+
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
 
     // Read the parameters
     match tokens.next().clone() {
@@ -87,11 +92,17 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
             Some((Token::Word(name), _)) => {
                 tokens.next(); // Consume the token
 
+                // Consume all new line tokens
+                consume_all_newlines(tokens);
+
                 // Consume the Colon token
                 match tokens.next().clone() {
                     Some((Token::Colon, _)) => {}
                     _ => return Err(anyhow!("Expected a colon after the parameter name")),
                 }
+
+                // Consume all new line tokens
+                consume_all_newlines(tokens);
 
                 // Check for mutability
                 let mutable = if let Some((Token::Mut, _)) = tokens.peek().cloned() {
@@ -101,18 +112,31 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
                     false
                 };
 
+                // Consume all new line tokens
+                consume_all_newlines(tokens);
+
                 // Read the parameter type
                 let data_type = parse_type(tokens)?.unwrap();
+
+                // Consume all new line tokens
+                consume_all_newlines(tokens);
 
                 // Check for a default value
                 let default_value = match tokens.peek().cloned() {
                     Some((Token::Equal, _)) => {
                         tokens.next(); // Consume the token
 
+                        // Consume all new line tokens
+                        consume_all_newlines(tokens);
+
+                        // Parse the default value expression
                         parse_expression(tokens).ok()
                     }
                     _ => None,
                 };
+
+                // Consume all new line tokens
+                consume_all_newlines(tokens);
 
                 // Consume the comma if it exists
                 if let Some((Token::Comma, _)) = tokens.peek().cloned() {
@@ -135,11 +159,17 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
         }
     }
 
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
+
     // Parse the return type
     let return_type = match tokens.peek() {
         Some((Token::OpenBrace, _)) => None,
         Some((Token::Arrow, _)) => {
             tokens.next(); // Consume the Arrow token
+
+            // Consume all new line tokens
+            consume_all_newlines(tokens);
 
             // Read the type
             parse_type(tokens)?
@@ -150,6 +180,9 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
             ));
         }
     };
+
+    // Consume all new line tokens
+    consume_all_newlines(tokens);
 
     // Parse the body of the function
     let block = parse_block(tokens)?;
@@ -165,10 +198,12 @@ pub fn parse_func_declaration(tokens: &mut TokenStream) -> Result<FunctionDeclar
 
 #[cfg(test)]
 mod tests {
+    use crate::MemberExpressionBase::{self};
     use crate::types::DataType;
     use crate::{
-        Annotation, Block, Expression, FloatLit, FunctionDeclaration, FunctionParam, IntegerLit,
-        Program, Stmt, VariableDeclaration, parse,
+        Annotation, Assignment, BinaryExpression, BinaryOperator, Block, Expression, FloatLit,
+        FunctionDeclaration, FunctionParam, Identifier, IntegerLit, Program, Stmt,
+        VariableDeclaration, parse,
     };
     use gneurshk_lexer::lex;
 
@@ -410,6 +445,60 @@ mod tests {
                     ],
                     return_type: None,
                     block: Box::new(Block { body: vec![] }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn many_new_lines() {
+        let source = include_str!("../tests/funcs/many_new_lines.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "add".to_string(),
+                    params: vec![
+                        FunctionParam {
+                            name: "a".to_string(),
+                            mutable: true,
+                            data_type: DataType::Int32,
+                            default_value: None,
+                        },
+                        FunctionParam {
+                            name: "b".to_string(),
+                            mutable: false,
+                            data_type: DataType::Int32,
+                            default_value: Some(Expression::Integer(IntegerLit {
+                                value: 1,
+                                span: 91..92
+                            })),
+                        },
+                    ],
+                    return_type: Some(DataType::Int32),
+                    block: Box::new(Block {
+                        body: vec![Stmt::Assignment(Assignment {
+                            value: Expression::BinaryExpression(BinaryExpression {
+                                left: Box::new(Expression::Identifier(Identifier {
+                                    name: "a".to_string(),
+                                    span: 115..116
+                                })),
+                                right: Box::new(Expression::Identifier(Identifier {
+                                    name: "b".to_string(),
+                                    span: 120..121
+                                })),
+                                operator: BinaryOperator::Add,
+                            }),
+                            member: MemberExpressionBase::Identifier(Identifier {
+                                name: "a".to_string(),
+                                span: 115..116
+                            })
+                        })],
+                    }),
                 }],
             }
         );
