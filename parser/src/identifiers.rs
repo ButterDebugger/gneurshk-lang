@@ -187,7 +187,7 @@ mod tests {
                     block: Box::new(Block {
                         body: vec![Stmt::Identifier(Identifier {
                             name: "chicken".to_string(),
-                            span: 18..25,
+                            span: 19..26,
                         })],
                     }),
                 }],
@@ -213,35 +213,35 @@ mod tests {
                         body: vec![
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 18..25,
+                                span: 19..26,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 26..33,
+                                span: 27..34,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 34..41,
+                                span: 35..42,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 42..49,
+                                span: 43..50,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 50..57,
+                                span: 51..58,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 58..65,
+                                span: 59..66,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 66..73,
+                                span: 67..74,
                             }),
                             Stmt::Identifier(Identifier {
                                 name: "chicken".to_string(),
-                                span: 74..81,
+                                span: 75..82,
                             }),
                         ],
                     }),
@@ -268,7 +268,7 @@ mod tests {
                         body: vec![Stmt::FunctionCall(FunctionCall {
                             name: "foo".to_string(),
                             args: vec![],
-                            span: 18..23,
+                            span: 19..24,
                         })],
                     }),
                 }],
@@ -295,9 +295,9 @@ mod tests {
                             name: "bar".to_string(),
                             args: vec![Expression::Integer(IntegerLit {
                                 value: 42,
-                                span: 22..24
+                                span: 23..25
                             })],
-                            span: 18..25,
+                            span: 19..26,
                         })],
                     }),
                 }],
@@ -325,18 +325,18 @@ mod tests {
                             args: vec![
                                 Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 22..23
+                                    span: 23..24
                                 }),
                                 Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 25..26
+                                    span: 26..27
                                 }),
                                 Expression::Integer(IntegerLit {
                                     value: 3,
-                                    span: 28..29
+                                    span: 29..30
                                 }),
                             ],
-                            span: 18..30,
+                            span: 19..31,
                         })],
                     }),
                 }],
@@ -365,17 +365,17 @@ mod tests {
                                 Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 28..29
+                                        span: 29..30
                                     })),
                                     right: Box::new(Expression::BinaryExpression(
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 2,
-                                                span: 33..34
+                                                span: 34..35
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 5,
-                                                span: 37..38
+                                                span: 38..39
                                             })),
                                             operator: BinaryOperator::Add,
                                         }
@@ -385,16 +385,16 @@ mod tests {
                                 Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 41..42
+                                        span: 42..43
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 45..46
+                                        span: 46..47
                                     })),
                                     operator: BinaryOperator::Multiply,
                                 }),
                             ],
-                            span: 18..47,
+                            span: 19..48,
                         })],
                     }),
                 }],
@@ -420,11 +420,11 @@ mod tests {
                         body: vec![Stmt::MemberAccess(MemberAccess {
                             base: Box::new(MemberExpressionBase::Identifier(Identifier {
                                 name: "foo".to_string(),
-                                span: 18..21,
+                                span: 19..22,
                             })),
                             member: MemberExpressionMember::Identifier(Identifier {
                                 name: "bar".to_string(),
-                                span: 22..25,
+                                span: 23..26,
                             }),
                             is_static: false,
                         })],
@@ -453,17 +453,17 @@ mod tests {
                             base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
                                 base: Box::new(MemberExpressionBase::Identifier(Identifier {
                                     name: "foo".to_string(),
-                                    span: 18..21,
+                                    span: 19..22,
                                 })),
                                 member: MemberExpressionMember::Identifier(Identifier {
                                     name: "bar".to_string(),
-                                    span: 22..25,
+                                    span: 23..26,
                                 }),
                                 is_static: false,
                             })),
                             member: MemberExpressionMember::Identifier(Identifier {
                                 name: "baz".to_string(),
-                                span: 26..29,
+                                span: 27..30,
                             }),
                             is_static: false,
                         })],
@@ -492,18 +492,18 @@ mod tests {
                             base: Box::new(MemberExpressionBase::MemberAccess(MemberAccess {
                                 base: Box::new(MemberExpressionBase::Identifier(Identifier {
                                     name: "foo".to_string(),
-                                    span: 18..21,
+                                    span: 19..22,
                                 })),
                                 member: MemberExpressionMember::FunctionCall(FunctionCall {
                                     name: "bar".to_string(),
-                                    span: 23..28,
+                                    span: 24..29,
                                     args: vec![]
                                 }),
                                 is_static: true,
                             })),
                             member: MemberExpressionMember::Identifier(Identifier {
                                 name: "baz".to_string(),
-                                span: 29..32,
+                                span: 30..33,
                             }),
                             is_static: false,
                         })],

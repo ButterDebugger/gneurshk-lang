@@ -95,7 +95,7 @@ mod tests {
                         body: vec![Stmt::Block(Block {
                             body: vec![Stmt::Integer(IntegerLit {
                                 value: 1,
-                                span: 20..21
+                                span: 21..22
                             })]
                         })],
                     }),
@@ -122,7 +122,7 @@ mod tests {
                         body: vec![Stmt::Block(Block {
                             body: vec![Stmt::Integer(IntegerLit {
                                 value: 1,
-                                span: 28..29
+                                span: 30..31
                             })]
                         })],
                     }),
@@ -152,14 +152,14 @@ mod tests {
                                     body: vec![Stmt::Block(Block {
                                         body: vec![Stmt::Integer(IntegerLit {
                                             value: 3,
-                                            span: 24..25
+                                            span: 25..26
                                         })]
                                     })]
                                 }),
                                 Stmt::Block(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 2,
-                                        span: 32..33
+                                        span: 33..34
                                     })]
                                 })
                             ]

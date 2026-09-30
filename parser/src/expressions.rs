@@ -250,49 +250,49 @@ mod tests {
                         body: vec![
                             Stmt::Integer(IntegerLit {
                                 value: 1,
-                                span: 18..19
+                                span: 19..20
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 2,
-                                span: 20..21
+                                span: 21..22
                             }),
                             Stmt::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 22..23
+                                        span: 23..24
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 26..27
+                                        span: 27..28
                                     })),
                                     operator: BinaryOperator::Add,
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 31..32
+                                    span: 32..33
                                 })),
                                 operator: BinaryOperator::Equal,
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 6,
-                                span: 33..34
+                                span: 34..35
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 7,
-                                span: 35..36
+                                span: 36..37
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 8,
-                                span: 37..38
+                                span: 38..39
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 9,
-                                span: 39..40
+                                span: 40..41
                             }),
                             Stmt::Integer(IntegerLit {
                                 value: 10,
-                                span: 41..43
+                                span: 42..44
                             }),
                         ],
                     }),
@@ -318,7 +318,7 @@ mod tests {
                     block: Box::new(Block {
                         body: vec![Stmt::Integer(IntegerLit {
                             value: 42,
-                            span: 18..20
+                            span: 19..21
                         })],
                     }),
                 }],
@@ -344,23 +344,23 @@ mod tests {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 18..19
+                                span: 19..20
                             })),
                             right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 7,
-                                        span: 22..23
+                                        span: 23..24
                                     })),
                                     right: Box::new(Expression::BinaryExpression(
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 3,
-                                                span: 27..28
+                                                span: 28..29
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 4,
-                                                span: 31..32
+                                                span: 32..33
                                             })),
                                             operator: BinaryOperator::Subtract,
                                         }
@@ -369,7 +369,7 @@ mod tests {
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 36..37
+                                    span: 37..38
                                 })),
                                 operator: BinaryOperator::Divide,
                             })),
@@ -401,22 +401,22 @@ mod tests {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 18..19
+                                        span: 19..20
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 22..23
+                                        span: 23..24
                                     })),
                                     operator: BinaryOperator::LessThan,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 27..28
+                                        span: 28..29
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 31..32
+                                        span: 32..33
                                     })),
                                     operator: BinaryOperator::GreaterThan,
                                 })),
@@ -425,11 +425,11 @@ mod tests {
                             right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 36..37
+                                    span: 37..38
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 6,
-                                    span: 41..42
+                                    span: 42..43
                                 })),
                                 operator: BinaryOperator::Equal,
                             })),
@@ -460,11 +460,11 @@ mod tests {
                             left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 18..19
+                                    span: 19..20
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 22..23
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::LessThan,
                             })),
@@ -472,22 +472,22 @@ mod tests {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 27..28
+                                        span: 28..29
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 31..32
+                                        span: 32..33
                                     })),
                                     operator: BinaryOperator::GreaterThan,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 5,
-                                        span: 36..37
+                                        span: 37..38
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 6,
-                                        span: 41..42
+                                        span: 42..43
                                     })),
                                     operator: BinaryOperator::Equal,
                                 })),
@@ -521,22 +521,22 @@ mod tests {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 18..19
+                                        span: 19..20
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 22..23
+                                        span: 23..24
                                     })),
                                     operator: BinaryOperator::LessThan,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 27..28
+                                        span: 28..29
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 4,
-                                        span: 31..32
+                                        span: 32..33
                                     })),
                                     operator: BinaryOperator::GreaterThan,
                                 })),
@@ -546,22 +546,22 @@ mod tests {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 5,
-                                        span: 36..37
+                                        span: 37..38
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 6,
-                                        span: 41..42
+                                        span: 42..43
                                     })),
                                     operator: BinaryOperator::Equal,
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 7,
-                                        span: 46..47
+                                        span: 47..48
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 8,
-                                        span: 51..52
+                                        span: 52..53
                                     })),
                                     operator: BinaryOperator::NotEqual,
                                 })),
@@ -595,11 +595,11 @@ mod tests {
                                 left: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 1,
-                                        span: 18..19
+                                        span: 19..20
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 22..23
+                                        span: 23..24
                                     })),
                                     operator: BinaryOperator::LessThan,
                                 })),
@@ -608,11 +608,11 @@ mod tests {
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 3,
-                                                span: 27..28
+                                                span: 28..29
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 4,
-                                                span: 31..32
+                                                span: 32..33
                                             })),
                                             operator: BinaryOperator::GreaterThan,
                                         }
@@ -621,11 +621,11 @@ mod tests {
                                         BinaryExpression {
                                             left: Box::new(Expression::Integer(IntegerLit {
                                                 value: 5,
-                                                span: 36..37
+                                                span: 37..38
                                             })),
                                             right: Box::new(Expression::Integer(IntegerLit {
                                                 value: 6,
-                                                span: 41..42
+                                                span: 42..43
                                             })),
                                             operator: BinaryOperator::Equal,
                                         }
@@ -637,11 +637,11 @@ mod tests {
                             right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 7,
-                                    span: 46..47
+                                    span: 47..48
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 8,
-                                    span: 51..52
+                                    span: 52..53
                                 })),
                                 operator: BinaryOperator::NotEqual,
                             })),
@@ -671,7 +671,7 @@ mod tests {
                         body: vec![Stmt::UnaryExpression(UnaryExpression {
                             value: Box::new(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 19..20
+                                span: 20..21
                             })),
                             operator: UnaryOperator::Negative,
                         })],
@@ -700,11 +700,11 @@ mod tests {
                             value: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 20..21
+                                    span: 21..22
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 24..25
+                                    span: 25..26
                                 })),
                                 operator: BinaryOperator::Add,
                             })),
@@ -735,11 +735,11 @@ mod tests {
                             value: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 23..24
+                                    span: 24..25
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 28..29
+                                    span: 29..30
                                 })),
                                 operator: BinaryOperator::Equal,
                             })),
@@ -768,7 +768,7 @@ mod tests {
                     block: Box::new(Block {
                         body: vec![Stmt::Float(FloatLit {
                             value: 1.0,
-                            span: 18..21
+                            span: 19..22
                         })],
                     }),
                 }],
@@ -794,11 +794,11 @@ mod tests {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 18..19
+                                span: 19..20
                             })),
                             right: Box::new(Expression::Float(FloatLit {
                                 value: 2.0,
-                                span: 22..25
+                                span: 23..26
                             })),
                             operator: BinaryOperator::Add,
                         })],
@@ -826,11 +826,11 @@ mod tests {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Float(FloatLit {
                                 value: 1.0,
-                                span: 18..21
+                                span: 19..22
                             })),
                             right: Box::new(Expression::Float(FloatLit {
                                 value: 2.0,
-                                span: 24..27
+                                span: 25..28
                             })),
                             operator: BinaryOperator::Add,
                         })],
@@ -857,7 +857,7 @@ mod tests {
                     block: Box::new(Block {
                         body: vec![Stmt::String(StringLit {
                             value: "i love you".to_string(),
-                            span: 18..30,
+                            span: 19..31,
                         })],
                     }),
                 }],
@@ -883,7 +883,7 @@ mod tests {
                         body: vec![Stmt::Cast(CastExpression {
                             value: Box::new(Expression::Integer(IntegerLit {
                                 value: 5,
-                                span: 18..19
+                                span: 19..20
                             })),
                             data_type: DataType::Float32,
                         })],
@@ -911,12 +911,12 @@ mod tests {
                         body: vec![Stmt::BinaryExpression(BinaryExpression {
                             left: Box::new(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 18..19
+                                span: 19..20
                             })),
                             right: Box::new(Expression::Cast(CastExpression {
                                 value: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 22..23
+                                    span: 23..24
                                 })),
                                 data_type: DataType::Float32,
                             })),
@@ -947,11 +947,11 @@ mod tests {
                             value: Box::new(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 19..20
+                                    span: 20..21
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 23..24
+                                    span: 24..25
                                 })),
                                 operator: BinaryOperator::Add,
                             })),
@@ -982,13 +982,13 @@ mod tests {
                             left: Box::new(Expression::Cast(CastExpression {
                                 value: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 18..19
+                                    span: 19..20
                                 })),
                                 data_type: DataType::Float32,
                             })),
                             right: Box::new(Expression::Integer(IntegerLit {
                                 value: 3,
-                                span: 33..34
+                                span: 34..35
                             })),
                             operator: BinaryOperator::Multiply,
                         })],
@@ -1019,7 +1019,7 @@ mod tests {
                             value: Some(Expression::Cast(CastExpression {
                                 value: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 26..27
+                                    span: 27..28
                                 })),
                                 data_type: DataType::Float32,
                             })),
@@ -1048,7 +1048,7 @@ mod tests {
                         body: vec![Stmt::Cast(CastExpression {
                             value: Box::new(Expression::Integer(IntegerLit {
                                 value: 5,
-                                span: 18..19
+                                span: 19..20
                             })),
                             data_type: DataType::Custom("CustomType".to_string()),
                         })],
@@ -1076,7 +1076,7 @@ mod tests {
                         body: vec![Stmt::Cast(CastExpression {
                             value: Box::new(Expression::Identifier(Identifier {
                                 name: "foo".to_string(),
-                                span: 18..21
+                                span: 19..22
                             })),
                             data_type: DataType::Int32,
                         })],
@@ -1112,11 +1112,11 @@ mod tests {
                             value: Box::new(Expression::MemberAccess(MemberAccess {
                                 base: Box::new(MemberExpressionBase::Identifier(Identifier {
                                     name: "foo".to_string(),
-                                    span: 18..21,
+                                    span: 19..22,
                                 })),
                                 member: MemberExpressionMember::Identifier(Identifier {
                                     name: "bar".to_string(),
-                                    span: 22..25,
+                                    span: 23..26,
                                 }),
                                 is_static: false,
                             })),

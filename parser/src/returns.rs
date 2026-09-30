@@ -78,7 +78,7 @@ mod tests {
                         body: vec![Stmt::Return(Return {
                             value: Some(Expression::Integer(IntegerLit {
                                 value: 1,
-                                span: 25..26
+                                span: 26..27
                             }))
                         })],
                     }),
@@ -106,11 +106,11 @@ mod tests {
                             value: Some(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 25..26
+                                    span: 26..27
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 29..30
+                                    span: 30..31
                                 })),
                                 operator: BinaryOperator::Add,
                             }))
@@ -164,7 +164,7 @@ mod tests {
                             body: vec![Stmt::Return(Return {
                                 value: Some(Expression::Integer(IntegerLit {
                                     value: 1,
-                                    span: 27..28
+                                    span: 28..29
                                 }))
                             })]
                         })],
