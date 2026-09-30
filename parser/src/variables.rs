@@ -182,7 +182,7 @@ mod tests {
                             data_type: Some(DataType::Int32),
                             value: Some(Expression::Integer(IntegerLit {
                                 value: 5,
-                                span: 41..42
+                                span: 40..41
                             }))
                         })],
                     }),
@@ -212,11 +212,11 @@ mod tests {
                             value: Some(Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 37..38
+                                    span: 36..37
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 41..42
+                                    span: 40..41
                                 })),
                                 operator: BinaryOperator::Add
                             }))

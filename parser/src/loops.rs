@@ -90,9 +90,9 @@ mod tests {
                                     name: "println".to_string(),
                                     args: vec![Expression::String(StringLit {
                                         value: "Hello, world!".to_string(),
-                                        span: 43..58
+                                        span: 41..56
                                     })],
-                                    span: 35..59
+                                    span: 33..57
                                 })],
                             }),
                         })],

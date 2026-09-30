@@ -83,11 +83,11 @@ mod tests {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "a".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::Integer(IntegerLit {
                                 value: 2,
-                                span: 23..24
+                                span: 22..23
                             })
                         })],
                     }),
@@ -114,21 +114,21 @@ mod tests {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "a".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "a".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::BinaryExpression(BinaryExpression {
                                     left: Box::new(Expression::Integer(IntegerLit {
                                         value: 2,
-                                        span: 24..25
+                                        span: 23..24
                                     })),
                                     right: Box::new(Expression::Integer(IntegerLit {
                                         value: 3,
-                                        span: 28..29
+                                        span: 27..28
                                     })),
                                     operator: BinaryOperator::Add
                                 })),
@@ -159,16 +159,16 @@ mod tests {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "b".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "b".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 5,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Subtract
                             })
@@ -197,16 +197,16 @@ mod tests {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "c".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "c".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 4,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Multiply
                             })
@@ -235,16 +235,16 @@ mod tests {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "d".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "d".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 2,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Divide
                             })
@@ -273,16 +273,16 @@ mod tests {
                         body: vec![Stmt::Assignment(Assignment {
                             member: MemberExpressionBase::Identifier(Identifier {
                                 name: "e".to_string(),
-                                span: 19..20
+                                span: 18..19
                             }),
                             value: Expression::BinaryExpression(BinaryExpression {
                                 left: Box::new(Expression::Identifier(Identifier {
                                     name: "e".to_string(),
-                                    span: 19..20
+                                    span: 18..19
                                 })),
                                 right: Box::new(Expression::Integer(IntegerLit {
                                     value: 3,
-                                    span: 24..25
+                                    span: 23..24
                                 })),
                                 operator: BinaryOperator::Modulus
                             })
