@@ -4,3 +4,4 @@ members = ["lexer", "parser", "cli", "compiler", "analyzer"]
 
 [workspace.dependencies]
 anyhow = "1.0.102"
+indicatif = "0.18.0"

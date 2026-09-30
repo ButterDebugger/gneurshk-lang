@@ -246,6 +246,7 @@ name = "gneurshk_compiler"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "gneurshk_analyzer",
  "gneurshk_lexer",
  "gneurshk_parser",
  "inkwell",

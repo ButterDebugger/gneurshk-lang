@@ -125,31 +125,25 @@ pub struct Identifier {
 #[derive(Debug, PartialEq, Clone)]
 pub enum ImportStmt {
     Module(ImportModule),
-    Modules(ImportModules),
-    Everything(ImportEverything),
     Collection(ImportCollection),
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ImportModule {
-    module: String,
-    alias: Option<String>,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct ImportModules {
-    modules: Vec<(String, Option<String>)>,
-}
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct ImportEverything {
-    module: String,
+    pub module: String,
+    pub alias: Option<String>,
 }
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct ImportCollection {
-    module: String,
-    items: Vec<(String, Option<String>)>,
+    pub module: String,
+    pub symbols: Vec<ImportedSymbol>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct ImportedSymbol {
+    pub name: String,
+    pub alias: Option<String>,
 }
 
 /// Represents anything that can come after 'else' in an if statement

@@ -29,7 +29,7 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block> {
                 tokens.next(); // Consume the token
                 continue; // Skip to the next token
             }
-            None => return Err(anyhow!("Unexpected end of tokens in indented block")),
+            None => return Err(anyhow!("Unexpected end of tokens inside block")),
             _ => {}
         }
 

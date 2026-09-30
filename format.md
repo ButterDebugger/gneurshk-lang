@@ -90,8 +90,8 @@ struct Point {
 
 ```julia
 
-# Importing specific variables
-import sin, cos, sqrt as square_root from math
+# Importing symbols from a module
+import { sin, cos, sqrt as square_root } from math
 
 println(sin(0.5))
 println(cos(0.5))
@@ -100,17 +100,11 @@ println(square_root(2))
 # Importing modules
 import os
 import time as t
-import * as rng from random
+import random as rng
 
 println(os.cwd())
 println(t.now())
 println(rng.next_int())
-
-# Importing everything from a module
-import * from math
-
-println(pi)
-println(factorial(6))
 
 ```
 
