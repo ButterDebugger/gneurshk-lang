@@ -1,8 +1,14 @@
 use super::{
-    BinaryExpression, BinaryOperator, BooleanLit, CastExpression, FloatLit, IntegerLit, StringLit,
-    TokenStream, UnaryExpression, UnaryOperator,
+    BinaryExpression, BinaryOperator, CastExpression, TokenStream, UnaryExpression, UnaryOperator,
 };
-use crate::{Expression, identifiers::parse_member_expression_base, types::parse_type};
+use crate::{
+    Expression,
+    identifiers::parse_member_expression_base,
+    literals::{
+        parse_boolean_literal, parse_float_literal, parse_integer_literal, parse_string_literal,
+    },
+    types::parse_type,
+};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
@@ -192,23 +198,13 @@ fn parse_term(tokens: &mut TokenStream) -> Result<Expression> {
                 operator: UnaryOperator::Not,
             }))
         }
-        Some((Token::Integer(_), _))
-        | Some((Token::Float(_), _))
-        | Some((Token::Boolean(_), _))
-        | Some((Token::String(_), _)) => parse_literal(tokens),
+        Some((Token::Integer(_), _)) => Ok(Expression::Integer(parse_integer_literal(tokens)?)),
+        Some((Token::Float(_), _)) => Ok(Expression::Float(parse_float_literal(tokens)?)),
+        Some((Token::Boolean(_), _)) => Ok(Expression::Boolean(parse_boolean_literal(tokens)?)),
+        Some((Token::String(_), _)) => Ok(Expression::String(parse_string_literal(tokens)?)),
         Some((Token::Word(_), _)) => Ok(parse_member_expression_base(tokens)?.into()),
         Some(_) => Err(anyhow!("Unexpected token in expression")),
         None => Err(anyhow!("Unexpected end of tokens in expression")),
-    }
-}
-
-fn parse_literal(tokens: &mut TokenStream) -> Result<Expression> {
-    match tokens.next() {
-        Some((Token::Integer(value), span)) => Ok(Expression::Integer(IntegerLit { value, span })),
-        Some((Token::Float(value), span)) => Ok(Expression::Float(FloatLit { value, span })),
-        Some((Token::Boolean(value), span)) => Ok(Expression::Boolean(BooleanLit { value, span })),
-        Some((Token::String(value), span)) => Ok(Expression::String(StringLit { value, span })),
-        _ => Err(anyhow!("Expected literal")),
     }
 }
 
@@ -216,9 +212,9 @@ fn parse_literal(tokens: &mut TokenStream) -> Result<Expression> {
 mod tests {
     use super::*;
     use crate::{
-        BinaryOperator, Block, CastExpression, DataType, Expression, FunctionDeclaration,
+        BinaryOperator, Block, CastExpression, DataType, Expression, FloatLit, FunctionDeclaration,
         Identifier, IntegerLit, MemberAccess, MemberExpressionBase, MemberExpressionMember,
-        Program, Stmt, UnaryOperator, VariableDeclaration, parse,
+        Program, Stmt, StringLit, UnaryOperator, VariableDeclaration, parse,
     };
     use gneurshk_lexer::lex;
 

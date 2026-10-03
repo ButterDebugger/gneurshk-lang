@@ -20,6 +20,7 @@ mod funcs;
 mod identifiers;
 mod ifs;
 mod imports;
+mod literals;
 mod loops;
 mod returns;
 pub mod types;
@@ -124,19 +125,12 @@ pub struct Identifier {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ImportStmt {
-    Module(ImportModule),
     Collection(ImportCollection),
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct ImportModule {
-    pub module: String,
-    pub alias: Option<String>,
-}
-
-#[derive(Debug, PartialEq, Clone)]
 pub struct ImportCollection {
-    pub module: String,
+    pub module: StringLit,
     pub symbols: Vec<ImportedSymbol>,
 }
 

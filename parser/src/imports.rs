@@ -1,5 +1,5 @@
 use super::TokenStream;
-use crate::{ImportCollection, ImportModule, ImportStmt, ImportedSymbol};
+use crate::{ImportCollection, ImportStmt, ImportedSymbol, literals::parse_string_literal};
 use anyhow::{Result, anyhow};
 use gneurshk_lexer::tokens::Token;
 
@@ -10,48 +10,19 @@ pub fn parse_import(tokens: &mut TokenStream) -> Result<ImportStmt> {
         _ => return Err(anyhow!("Expected import statement")),
     }
 
-    // Check if we're importing symbols or a module
-    match tokens.peek() {
-        Some((Token::Word(module), _)) => {
-            let module = module.to_string();
+    // Parse the symbols inside the braces
+    let symbols = parse_import_symbols(tokens)?;
 
-            tokens.next(); // Consume the module name
-
-            // Read optional alias
-            let alias = match tokens.peek() {
-                Some((Token::As, _)) => {
-                    tokens.next(); // Consume the token
-
-                    match tokens.next() {
-                        Some((Token::Word(name), _)) => Some(name),
-                        _ => return Err(anyhow!("Expected an alias name after 'as' keyword")),
-                    }
-                }
-                _ => None,
-            };
-
-            Ok(ImportStmt::Module(ImportModule { module, alias }))
-        }
-        Some((Token::OpenBrace, _)) => {
-            // Parse the symbols inside the braces
-            let symbols = parse_import_symbols(tokens)?;
-
-            // Expect the 'from' keyword
-            match tokens.next() {
-                Some((Token::From, _)) => {}
-                _ => return Err(anyhow!("Expected the 'from' keyword after import symbols")),
-            }
-
-            // Read the module name
-            let module = match tokens.next() {
-                Some((Token::Word(name), _)) => name,
-                _ => return Err(anyhow!("Expected a module name after 'from' keyword")),
-            };
-
-            Ok(ImportStmt::Collection(ImportCollection { module, symbols }))
-        }
-        _ => Err(anyhow!("Expected a module or symbol name after import")),
+    // Expect the 'from' keyword
+    match tokens.next() {
+        Some((Token::From, _)) => {}
+        _ => return Err(anyhow!("Expected the 'from' keyword after import symbols")),
     }
+
+    // Read the module name
+    let module = parse_string_literal(tokens)?;
+
+    Ok(ImportStmt::Collection(ImportCollection { module, symbols }))
 }
 
 /// Reads a list of imported names and their optional aliases
@@ -129,7 +100,7 @@ fn parse_import_symbols(tokens: &mut TokenStream) -> Result<Vec<ImportedSymbol>>
 
 #[cfg(test)]
 mod tests {
-    use crate::{ImportCollection, ImportModule, ImportStmt, ImportedSymbol, Program, parse};
+    use crate::{ImportCollection, ImportStmt, ImportedSymbol, Program, StringLit, parse};
     use gneurshk_lexer::lex;
 
     /// Helper function for testing the parse function
@@ -144,13 +115,16 @@ mod tests {
 
     #[test]
     fn import_collection_of_symbols() {
-        let stmt = lex_then_parse("import { sin, cos, sqrt as square_root } from math");
+        let stmt = lex_then_parse("import { sin, cos, sqrt as square_root } from \"math\"");
 
         assert_eq!(
             stmt,
             Program {
                 imports: vec![ImportStmt::Collection(ImportCollection {
-                    module: "math".to_string(),
+                    module: StringLit {
+                        value: "math".to_string(),
+                        span: 46..52
+                    },
                     symbols: vec![
                         ImportedSymbol {
                             name: "sin".to_string(),
@@ -173,17 +147,20 @@ mod tests {
 
     #[test]
     fn import_collection_of_symbols_with_extra_comma() {
-        let stmt = lex_then_parse("import { now, } from time");
+        let stmt = lex_then_parse("import { now, } from \"time\"");
 
         assert_eq!(
             stmt,
             Program {
                 imports: vec![ImportStmt::Collection(ImportCollection {
-                    module: "time".to_string(),
+                    module: StringLit {
+                        value: "time".to_string(),
+                        span: 21..27
+                    },
                     symbols: vec![ImportedSymbol {
                         name: "now".to_string(),
                         alias: None
-                    },],
+                    }],
                 })],
                 functions: vec![],
             }
@@ -191,52 +168,32 @@ mod tests {
     }
 
     #[test]
+    #[should_panic]
     fn import_module() {
-        let stmt = lex_then_parse("import os");
-
-        assert_eq!(
-            stmt,
-            Program {
-                imports: vec![ImportStmt::Module(ImportModule {
-                    module: "os".to_string(),
-                    alias: None
-                })],
-                functions: vec![],
-            }
-        );
+        let _ = lex_then_parse("import \"os\"");
     }
 
     #[test]
+    #[should_panic]
     fn import_module_as_alias() {
-        let stmt = lex_then_parse("import time as t");
-
-        assert_eq!(
-            stmt,
-            Program {
-                imports: vec![ImportStmt::Module(ImportModule {
-                    module: "time".to_string(),
-                    alias: Some("t".to_string())
-                })],
-                functions: vec![],
-            }
-        );
+        let _ = lex_then_parse("import \"time\" as t");
     }
 
     #[test]
     #[should_panic]
     fn import_everything_as_alias_from_module() {
-        let _ = lex_then_parse("import * as rng from random");
+        let _ = lex_then_parse("import * as rng from \"random\"");
     }
 
     #[test]
     #[should_panic]
     fn import_multiple_modules() {
-        let _ = lex_then_parse("import os, time as t, random as rng");
+        let _ = lex_then_parse("import \"os\", \"time\" as t, \"random\" as rng");
     }
 
     #[test]
     #[should_panic]
     fn import_everything_from_module_without_alias() {
-        let _ = lex_then_parse("import * from math");
+        let _ = lex_then_parse("import * from \"math\"");
     }
 }
