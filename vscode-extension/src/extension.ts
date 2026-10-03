@@ -5,7 +5,10 @@ import * as vscode from "vscode";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  console.log("Gneorknof is now active");
+  const output = vscode.window.createOutputChannel("Gneorknof");
+  context.subscriptions.push(output);
+
+  output.appendLine("Gneorknof is now active");
 }
 
 // This method is called when your extension is deactivated
