@@ -250,7 +250,8 @@ mod tests {
                                 value: 2,
                                 span: 37..38
                             })),
-                        })]
+                        })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -278,7 +279,8 @@ mod tests {
                                 value: 8,
                                 span: 34..35
                             }),
-                        })]
+                        })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -311,7 +313,10 @@ mod tests {
                         },
                     ],
                     return_type: None,
-                    block: Box::new(Block { body: vec![] }),
+                    block: Box::new(Block {
+                        body: vec![],
+                        allow_implicit_return: true
+                    }),
                 }],
             }
         );
@@ -349,7 +354,10 @@ mod tests {
                         },
                     ],
                     return_type: None,
-                    block: Box::new(Block { body: vec![] }),
+                    block: Box::new(Block {
+                        body: vec![],
+                        allow_implicit_return: true
+                    }),
                 }],
             }
         );
@@ -371,7 +379,10 @@ mod tests {
                     name: "egg".to_string(),
                     params: vec![],
                     return_type: None,
-                    block: Box::new(Block { body: vec![] }),
+                    block: Box::new(Block {
+                        body: vec![],
+                        allow_implicit_return: true
+                    }),
                 }],
             }
         );
@@ -412,7 +423,10 @@ mod tests {
                     name: "ham".to_string(),
                     params: vec![],
                     return_type: None,
-                    block: Box::new(Block { body: vec![] }),
+                    block: Box::new(Block {
+                        body: vec![],
+                        allow_implicit_return: true
+                    }),
                 }],
             }
         );
@@ -444,7 +458,10 @@ mod tests {
                         },
                     ],
                     return_type: None,
-                    block: Box::new(Block { body: vec![] }),
+                    block: Box::new(Block {
+                        body: vec![],
+                        allow_implicit_return: true
+                    }),
                 }],
             }
         );
@@ -498,6 +515,7 @@ mod tests {
                                 span: 115..116
                             })
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }

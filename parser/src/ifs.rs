@@ -125,7 +125,8 @@ mod tests {
                                                             }
                                                         )),
                                                     }
-                                                )]
+                                                )],
+                                                allow_implicit_return: true
                                             }),
                                             else_statement: None,
                                         }),
@@ -159,11 +160,13 @@ mod tests {
                                                             }
                                                         )),
                                                     }
-                                                )]
+                                                )],
+                                                allow_implicit_return: true
                                             }),
                                             else_statement: None,
                                         })
-                                    ]
+                                    ],
+                                    allow_implicit_return: true
                                 }),
                                 else_statement: None,
                             }),
@@ -176,6 +179,7 @@ mod tests {
                                 }),
                             }),
                         ],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -212,15 +216,18 @@ mod tests {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 1,
                                     span: 39..40
-                                })]
+                                })],
+                                allow_implicit_return: true
                             }),
                             else_statement: Some(Box::new(ElseBranch::Block(Block {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 2,
                                     span: 62..63
-                                })]
+                                })],
+                                allow_implicit_return: true
                             }))),
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -258,7 +265,8 @@ mod tests {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 1,
                                     span: 39..40
-                                })]
+                                })],
+                                allow_implicit_return: true
                             }),
                             else_statement: Some(Box::new(ElseBranch::IfStatement(IfStatement {
                                 condition: Box::new(Expression::BinaryExpression(
@@ -278,11 +286,13 @@ mod tests {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 2,
                                         span: 73..74
-                                    })]
+                                    })],
+                                    allow_implicit_return: true
                                 }),
                                 else_statement: None,
                             }))),
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -320,7 +330,8 @@ mod tests {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 1,
                                     span: 39..40
-                                })]
+                                })],
+                                allow_implicit_return: true
                             }),
                             else_statement: Some(Box::new(ElseBranch::IfStatement(IfStatement {
                                 condition: Box::new(Expression::BinaryExpression(
@@ -340,16 +351,19 @@ mod tests {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 2,
                                         span: 73..74
-                                    })]
+                                    })],
+                                    allow_implicit_return: true
                                 }),
                                 else_statement: Some(Box::new(ElseBranch::Block(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 3,
                                         span: 96..97
-                                    })]
+                                    })],
+                                    allow_implicit_return: true
                                 }))),
                             }))),
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -380,15 +394,18 @@ mod tests {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 1,
                                     span: 43..44
-                                })]
+                                })],
+                                allow_implicit_return: true
                             }),
                             else_statement: Some(Box::new(ElseBranch::Block(Block {
                                 body: vec![Stmt::Integer(IntegerLit {
                                     value: 2,
                                     span: 78..79
-                                })]
+                                })],
+                                allow_implicit_return: true
                             }))),
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }

@@ -4,25 +4,28 @@ use logos::{Lexer, Logos};
 #[logos(skip r"[ \r\t\f]+")] // Skip whitespace
 #[logos(skip r"#[^\r\n]*")] // Skip comments
 pub enum Token {
-    #[regex(r"(\n|\r\n|;)+")]
+    #[regex(r"(\n|\r\n)+")]
     NewLine,
 
-    /// "{"
+    /// `;`
+    #[token(";")]
+    Semicolon,
+    /// `{`
     #[token("{")]
     OpenBrace,
-    /// "}"
+    /// `}`
     #[token("}")]
     CloseBrace,
-    /// "("
+    /// `(`
     #[token("(")]
     OpenParen,
-    /// ")"
+    /// `)`
     #[token(")")]
     CloseParen,
-    /// "["
+    /// `[`
     #[token("[")]
     OpenBracket,
-    /// "]"
+    /// `]`
     #[token("]")]
     CloseBracket,
 

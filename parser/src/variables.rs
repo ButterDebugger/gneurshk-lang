@@ -130,6 +130,7 @@ mod tests {
                             data_type: None,
                             value: None
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -156,6 +157,7 @@ mod tests {
                             data_type: Some(DataType::Int32),
                             value: None
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -185,6 +187,7 @@ mod tests {
                                 span: 40..41
                             }))
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -221,6 +224,7 @@ mod tests {
                                 operator: BinaryOperator::Add
                             }))
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }

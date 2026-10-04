@@ -17,6 +17,7 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block> {
     consume_all_newlines(tokens);
 
     let mut body = vec![];
+    let mut allow_implicit_return = true;
 
     // Keep appending statements until a CloseBrace token is encountered
     loop {
@@ -33,11 +34,27 @@ pub fn parse_block(tokens: &mut TokenStream) -> Result<Block> {
             _ => {}
         }
 
+        // Parse the statement
         let statement = parse_statement(tokens)?;
+
         body.push(statement);
+
+        // Check if there is a semicolon after the statement which disables implicit returns
+        if let Some((Token::Semicolon, _)) = tokens.peek() {
+            tokens.next(); // Consume the token
+            allow_implicit_return = false;
+        } else {
+            allow_implicit_return = true;
+        }
+
+        // Consume all new line tokens
+        consume_all_newlines(tokens);
     }
 
-    Ok(Block { body })
+    Ok(Block {
+        body,
+        allow_implicit_return,
+    })
 }
 
 #[cfg(test)]
@@ -70,7 +87,11 @@ mod tests {
                     params: vec![],
                     return_type: None,
                     block: Box::new(Block {
-                        body: vec![Stmt::Block(Block { body: vec![] })],
+                        body: vec![Stmt::Block(Block {
+                            body: vec![],
+                            allow_implicit_return: true
+                        })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -96,8 +117,10 @@ mod tests {
                             body: vec![Stmt::Integer(IntegerLit {
                                 value: 1,
                                 span: 20..21
-                            })]
+                            })],
+                            allow_implicit_return: true
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -123,8 +146,10 @@ mod tests {
                             body: vec![Stmt::Integer(IntegerLit {
                                 value: 1,
                                 span: 28..29
-                            })]
+                            })],
+                            allow_implicit_return: true
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -153,17 +178,54 @@ mod tests {
                                         body: vec![Stmt::Integer(IntegerLit {
                                             value: 3,
                                             span: 24..25
-                                        })]
-                                    })]
+                                        })],
+                                        allow_implicit_return: true
+                                    })],
+                                    allow_implicit_return: true
                                 }),
                                 Stmt::Block(Block {
                                     body: vec![Stmt::Integer(IntegerLit {
                                         value: 2,
                                         span: 32..33
-                                    })]
+                                    })],
+                                    allow_implicit_return: true
                                 })
-                            ]
+                            ],
+                            allow_implicit_return: true
                         })],
+                        allow_implicit_return: true
+                    }),
+                }],
+            }
+        );
+    }
+
+    #[test]
+    fn no_implicit_return_block() {
+        let source = include_str!("../tests/block/no_implicit_return_block.iv");
+        let stmt = lex_then_parse(source);
+
+        assert_eq!(
+            stmt,
+            Program {
+                imports: vec![],
+                functions: vec![FunctionDeclaration {
+                    annotations: vec![],
+                    name: "main".to_string(),
+                    params: vec![],
+                    return_type: None,
+                    block: Box::new(Block {
+                        body: vec![
+                            Stmt::Integer(IntegerLit {
+                                value: 5,
+                                span: 18..19
+                            }),
+                            Stmt::Integer(IntegerLit {
+                                value: 3,
+                                span: 24..25
+                            })
+                        ],
+                        allow_implicit_return: false
                     }),
                 }],
             }

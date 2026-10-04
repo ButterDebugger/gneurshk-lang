@@ -74,6 +74,7 @@ pub struct Annotation {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Block {
     pub body: Vec<Stmt>,
+    pub allow_implicit_return: bool,
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -416,9 +417,6 @@ fn parse_statement(tokens: &mut TokenStream) -> Result<Stmt> {
             return Err(anyhow!("Unexpected token"));
         }
     };
-
-    // Consume all new line tokens
-    consume_all_newlines(tokens);
 
     // Return the parsed statement
     stmt

@@ -90,6 +90,7 @@ mod tests {
                                 span: 22..23
                             })
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -135,6 +136,7 @@ mod tests {
                                 operator: BinaryOperator::Add
                             })
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -173,6 +175,7 @@ mod tests {
                                 operator: BinaryOperator::Subtract
                             })
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -211,6 +214,7 @@ mod tests {
                                 operator: BinaryOperator::Multiply
                             })
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -249,6 +253,7 @@ mod tests {
                                 operator: BinaryOperator::Divide
                             })
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -287,6 +292,7 @@ mod tests {
                                 operator: BinaryOperator::Modulus
                             })
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }

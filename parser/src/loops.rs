@@ -29,7 +29,7 @@ pub fn parse_while_loop(tokens: &mut TokenStream) -> Result<LoopStmt> {
     let condition = parse_expression(tokens)?;
 
     // Parse the loop body block
-    let body = parse_block(tokens)?;
+    let loop_body = parse_block(tokens)?;
 
     // Create while loop guard
     let guard = Stmt::IfStatement(IfStatement {
@@ -39,15 +39,19 @@ pub fn parse_while_loop(tokens: &mut TokenStream) -> Result<LoopStmt> {
         })),
         if_block: Box::new(Block {
             body: vec![Stmt::Break],
+            allow_implicit_return: true,
         }),
         else_statement: None,
     });
 
     let mut guarded_body = vec![guard];
-    guarded_body.extend(body.body);
+    guarded_body.extend(loop_body.body);
 
     Ok(LoopStmt {
-        block: Box::new(Block { body: guarded_body }),
+        block: Box::new(Block {
+            body: guarded_body,
+            allow_implicit_return: loop_body.allow_implicit_return,
+        }),
     })
 }
 
@@ -94,8 +98,10 @@ mod tests {
                                     })],
                                     span: 33..57
                                 })],
+                                allow_implicit_return: false
                             }),
                         })],
+                        allow_implicit_return: true
                     })
                 }]
             }
@@ -120,8 +126,10 @@ mod tests {
                         body: vec![Stmt::Loop(LoopStmt {
                             block: Box::new(Block {
                                 body: vec![Stmt::Break, Stmt::Continue],
+                                allow_implicit_return: true,
                             }),
                         })],
+                        allow_implicit_return: true
                     })
                 }]
             }

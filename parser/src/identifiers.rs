@@ -189,6 +189,7 @@ mod tests {
                             name: "chicken".to_string(),
                             span: 18..25,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -244,6 +245,7 @@ mod tests {
                                 span: 74..81,
                             }),
                         ],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -270,6 +272,7 @@ mod tests {
                             args: vec![],
                             span: 18..23,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -299,6 +302,7 @@ mod tests {
                             })],
                             span: 18..25,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -338,6 +342,7 @@ mod tests {
                             ],
                             span: 18..30,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -396,6 +401,7 @@ mod tests {
                             ],
                             span: 18..47,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -428,6 +434,7 @@ mod tests {
                             }),
                             is_static: false,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -467,6 +474,7 @@ mod tests {
                             }),
                             is_static: false,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -507,6 +515,7 @@ mod tests {
                             }),
                             is_static: false,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }

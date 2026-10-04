@@ -54,6 +54,7 @@ mod tests {
                     return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Return(Return { value: None })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -81,6 +82,7 @@ mod tests {
                                 span: 25..26
                             }))
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -115,6 +117,7 @@ mod tests {
                                 operator: BinaryOperator::Add,
                             }))
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -137,8 +140,10 @@ mod tests {
                     return_type: None,
                     block: Box::new(Block {
                         body: vec![Stmt::Block(Block {
-                            body: vec![Stmt::Return(Return { value: None })]
+                            body: vec![Stmt::Return(Return { value: None })],
+                            allow_implicit_return: true
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -166,8 +171,10 @@ mod tests {
                                     value: 1,
                                     span: 27..28
                                 }))
-                            })]
+                            })],
+                            allow_implicit_return: true
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }

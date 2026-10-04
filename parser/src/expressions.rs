@@ -291,6 +291,7 @@ mod tests {
                                 span: 41..43
                             }),
                         ],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -316,6 +317,7 @@ mod tests {
                             value: 42,
                             span: 18..20
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -371,6 +373,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Add
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -431,6 +434,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Or,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -491,6 +495,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Or,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -565,6 +570,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Or,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -643,6 +649,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Or,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -671,6 +678,7 @@ mod tests {
                             })),
                             operator: UnaryOperator::Negative,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -706,6 +714,7 @@ mod tests {
                             })),
                             operator: UnaryOperator::Negative,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -741,6 +750,7 @@ mod tests {
                             })),
                             operator: UnaryOperator::Not,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -766,6 +776,7 @@ mod tests {
                             value: 1.0,
                             span: 18..21
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -798,6 +809,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Add,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -830,6 +842,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Add,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -855,6 +868,7 @@ mod tests {
                             value: "i love you".to_string(),
                             span: 18..30,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -883,6 +897,7 @@ mod tests {
                             })),
                             data_type: DataType::Float32,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -918,6 +933,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Add,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -953,6 +969,7 @@ mod tests {
                             })),
                             data_type: DataType::Float32,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -988,6 +1005,7 @@ mod tests {
                             })),
                             operator: BinaryOperator::Multiply,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -1020,6 +1038,7 @@ mod tests {
                                 data_type: DataType::Float32,
                             })),
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -1048,6 +1067,7 @@ mod tests {
                             })),
                             data_type: DataType::Custom("CustomType".to_string()),
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -1076,6 +1096,7 @@ mod tests {
                             })),
                             data_type: DataType::Int32,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
@@ -1118,6 +1139,7 @@ mod tests {
                             })),
                             data_type: DataType::Int32,
                         })],
+                        allow_implicit_return: true
                     }),
                 }],
             }
